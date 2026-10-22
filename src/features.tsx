@@ -882,6 +882,13 @@ export function OneDriveDialog({
             onChange={(e) => setSecret(e.target.value)}
           />
         </label>
+        <p className="fineprint">
+          Requires Microsoft Graph application permissions and tenant
+          administrator consent. Sites.ReadWrite.All enables the full connector
+          with tenant-wide access. For restricted access, use Sites.Selected
+          with a write grant on your storage site and enter its Drive ID
+          manually. Delegated permissions do not apply to this sign-in method.
+        </p>
         <div className="feature-actions">
           <label>
             OneDrive owner email

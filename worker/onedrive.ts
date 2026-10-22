@@ -46,13 +46,16 @@ export class OneDriveStorage {
   ) {
     this.config = JSON.parse(connector.config);
   }
+  tokenKey() {
+    return `${this.config.tenantId}:${this.config.clientId}:${this.connector.encrypted_credentials}`;
+  }
   async accessToken() {
     ensure(
       this.connector.encrypted_credentials,
       503,
       "OneDrive application credentials are not configured.",
     );
-    const cacheKey = `${this.config.tenantId}:${this.config.clientId}:${this.connector.encrypted_credentials}`;
+    const cacheKey = this.tokenKey();
     const cached = tokens.get(cacheKey);
     if (cached && cached.expires > Date.now() + 60000) return cached.value;
     const credentials = await decrypt(
@@ -98,21 +101,41 @@ export class OneDriveStorage {
       500,
       "Invalid Microsoft Graph path.",
     );
-    const response = await fetch(GRAPH + path, {
-      ...init,
-      redirect: "manual",
-      headers: {
-        Authorization: `Bearer ${await this.accessToken()}`,
-        ...(init.body ? { "Content-Type": "application/json" } : {}),
-        ...init.headers,
-      },
-    });
+    const send = (accessToken: string) =>
+      fetch(GRAPH + path, {
+        ...init,
+        redirect: "manual",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          ...(init.body ? { "Content-Type": "application/json" } : {}),
+          ...init.headers,
+        },
+      });
+    let response = await send(await this.accessToken());
+    if (response.status === 401) {
+      // Consent or token revocation can invalidate an otherwise unexpired token.
+      await response.body?.cancel();
+      tokens.delete(this.tokenKey());
+      response = await send(await this.accessToken());
+    }
     if (!response.ok) {
       const status = response.status;
-      await response.body?.cancel();
+      let code = "";
+      try {
+        const value = ((await response.json()) as Row)?.error?.code;
+        if (typeof value === "string" && /^[a-zA-Z0-9_.-]{1,80}$/.test(value))
+          code = value;
+      } catch {
+        /* Do not expose provider bodies, tokens or identity details. */
+      }
+      const detail = `HTTP ${status}${code ? `, ${code}` : ""}`;
       throw new HttpError(
         502,
-        `OneDrive request failed (HTTP ${status}). Check the selected drive/folder and the application's granted permissions.`,
+        status === 401
+          ? `Microsoft Graph rejected the application's access token (${detail}). Check Microsoft Graph application permissions and grant tenant administrator consent, then retry. The tenant, client ID and secret value must belong to the same application.`
+          : status === 403
+            ? `Microsoft Graph denied access (${detail}). Grant the required application permissions and administrator consent. Selected permissions also require a write grant on the selected site or folder; drive discovery may require entering its ID manually.`
+            : `OneDrive request failed (${detail}). Check the selected drive/folder and the application's granted permissions.`,
       );
     }
     return response.status === 204 ? {} : ((await response.json()) as Row);

@@ -562,6 +562,138 @@ describe("collaboration working copies", () => {
 describe("OneDrive for Business", () => {
   const tenantId = "11111111-1111-4111-8111-111111111111",
     clientId = "22222222-2222-4222-8222-222222222222";
+  const discovery = {
+    tenantId,
+    clientId,
+    clientSecret: "app-secret-value",
+    userEmail: "owner@contoso.com",
+  };
+  it("finds the business drive using the application-supported drives collection", async () => {
+    const admin = await login();
+    vi.mocked(fetch).mockImplementation(async (input, init) => {
+      const url = new URL(String(input));
+      if (url.hostname === "login.microsoftonline.com")
+        return Response.json({ access_token: "graph-token" });
+      expect(url.hostname).toBe("graph.microsoft.com");
+      expect(url.pathname).toBe("/v1.0/users/owner%40contoso.com/drives");
+      expect(url.searchParams.get("$select")).toContain("driveType");
+      expect(new Headers(init?.headers).get("authorization")).toBe(
+        "Bearer graph-token",
+      );
+      return Response.json({
+        value: [
+          { id: "private-drive", name: "OneDrive", driveType: "business" },
+        ],
+      });
+    });
+    const response = await request(
+      "/admin/onedrive/resolve",
+      "POST",
+      discovery,
+      admin.cookie,
+    );
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({
+      driveId: "private-drive",
+      name: "OneDrive",
+    });
+  });
+  it("refreshes a rejected token once before retrying drive discovery", async () => {
+    const admin = await login();
+    let tokens = 0,
+      calls = 0;
+    vi.mocked(fetch).mockImplementation(async (input, init) => {
+      if (String(input).startsWith("https://login.microsoftonline.com/"))
+        return Response.json({ access_token: `token-${++tokens}` });
+      expect(new Headers(init?.headers).get("authorization")).toBe(
+        `Bearer token-${tokens}`,
+      );
+      if (++calls === 1)
+        return Response.json(
+          { error: { code: "InvalidAuthenticationToken" } },
+          { status: 401 },
+        );
+      return Response.json({
+        value: [{ id: "drive", name: "OneDrive", driveType: "business" }],
+      });
+    });
+    const response = await request(
+      "/admin/onedrive/resolve",
+      "POST",
+      discovery,
+      admin.cookie,
+    );
+    expect(response.status).toBe(200);
+    expect(tokens).toBe(2);
+    expect(calls).toBe(2);
+  });
+  it.each([401, 403])(
+    "explains Microsoft HTTP %s without exposing raw provider identity/token details",
+    async (status) => {
+      const admin = await login();
+      let calls = 0;
+      vi.mocked(fetch).mockImplementation(async (input) => {
+        if (String(input).startsWith("https://login.microsoftonline.com/"))
+          return Response.json({ access_token: "private-access-token" });
+        calls++;
+        return Response.json(
+          {
+            error: {
+              code:
+                status === 401 ? "InvalidAuthenticationToken" : "accessDenied",
+              message:
+                "private-access-token app-secret-value sensitive-user@contoso.com",
+            },
+          },
+          { status },
+        );
+      });
+      const response = await request(
+        "/admin/onedrive/resolve",
+        "POST",
+        discovery,
+        admin.cookie,
+      );
+      expect(response.status).toBe(502);
+      const error = ((await response.json()) as Row).error;
+      expect(error).toContain(`HTTP ${status}`);
+      expect(error).toMatch(/administrator consent/);
+      expect(error).not.toContain("private-access-token");
+      expect(error).not.toContain("app-secret-value");
+      expect(error).not.toContain("sensitive-user");
+      expect(calls).toBe(status === 401 ? 2 : 1);
+      if (status === 403) expect(error).toContain("write grant");
+    },
+  );
+  it.each([
+    { value: [] },
+    {
+      value: [
+        { id: "a", driveType: "business" },
+        { id: "b", driveType: "business" },
+      ],
+    },
+  ])(
+    "requires a known Drive ID when discovery cannot identify exactly one business drive (%j)",
+    async ({ value }) => {
+      const admin = await login();
+      vi.mocked(fetch).mockImplementation(async (input) =>
+        String(input).startsWith("https://login.microsoftonline.com/")
+          ? Response.json({ access_token: "graph-token" })
+          : Response.json({ value }),
+      );
+      const response = await request(
+        "/admin/onedrive/resolve",
+        "POST",
+        discovery,
+        admin.cookie,
+      );
+      expect(response.status).toBe(400);
+      expect(((await response.json()) as Row).error).toMatch(
+        /Drive ID|OneDrive for Business/,
+      );
+    },
+  );
   it("requires admin access to browse and never returns the application secret", async () => {
     const user = await login("user@international.gc.ca");
     expect(

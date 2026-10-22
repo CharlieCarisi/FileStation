@@ -42,9 +42,27 @@ export async function oneDriveAdminRoutes(
     encrypted_credentials: encrypted,
   });
   if (path.endsWith("/resolve")) {
-    const drive = await provider.graph(
-      `/users/${encodeURIComponent(email(input.userEmail))}/drive?$select=id,name,webUrl`,
+    // The singular /users/{id}/drive lookup does not support app-only auth.
+    // The drives collection does: https://learn.microsoft.com/graph/api/drive-list.
+    const result = await provider.graph(
+      `/users/${encodeURIComponent(email(input.userEmail))}/drives?$select=id,name,driveType&$top=100`,
     );
+    const drives = Array.isArray(result.value)
+      ? result.value.filter(
+          (drive: Row) => drive.driveType === "business" && drive.id,
+        )
+      : [];
+    ensure(
+      drives.length,
+      400,
+      "No OneDrive for Business drive was returned. Confirm the owner’s Microsoft 365 sign-in address and open their OneDrive once to provision it. With selected permissions, enter the Drive ID manually.",
+    );
+    ensure(
+      drives.length === 1 && !result["@odata.nextLink"],
+      400,
+      "More than one drive may be available. Enter the intended Drive ID manually rather than choosing a drive automatically.",
+    );
+    const drive = drives[0];
     return json({ driveId: drive.id, name: drive.name });
   }
   const folder = await provider.test();
