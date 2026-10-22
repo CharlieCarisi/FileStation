@@ -1,0 +1,102 @@
+{
+  "name": "file-station",
+  "main": "worker/main.ts",
+  "account_id": "273abc9b6e824cf5c616b95ccb64cc30",
+  "compatibility_date": "2026-03-10",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": true,
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "file-station",
+      "database_id": "0067c403-f692-4b00-b132-95a87812b4c8",
+    },
+  ],
+  "r2_buckets": [
+    {
+      "binding": "R2_FILES",
+      "bucket_name": "file-station",
+    },
+  ],
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "STORAGE_COORDINATOR",
+        "class_name": "StorageCoordinator",
+      },
+    ],
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["StorageCoordinator"],
+    },
+  ],
+  "triggers": {
+    "crons": ["0 * * * *"],
+  },
+  "vars": {
+    "ADMIN_EMAIL": "c@bychx.com",
+    "SMTP_FROM": "No-Reply@bychx.com",
+    "APP_NAME": "File Station",
+    "APP_ORIGIN": "",
+    "DEV_MODE": "false",
+  },
+  "env": {
+    "local": {
+      "vars": {
+        "ADMIN_EMAIL": "c@bychx.com",
+        "SMTP_FROM": "No-Reply@bychx.com",
+        "APP_ORIGIN": "",
+        "DEV_MODE": "true",
+        "APP_NAME": "File Station",
+      },
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "file-station-local",
+          "database_id": "local",
+        },
+      ],
+      "r2_buckets": [
+        {
+          "binding": "R2_FILES",
+          "bucket_name": "file-station-local",
+        },
+      ],
+      "durable_objects": {
+        "bindings": [
+          {
+            "name": "STORAGE_COORDINATOR",
+            "class_name": "StorageCoordinator",
+          },
+        ],
+      },
+      "services": [],
+      "routes": [],
+    },
+  },
+  "upload_source_maps": true,
+  "services": [
+    {
+      "binding": "UTILITIES",
+      "service": "bychx-utilities",
+    },
+  ],
+  "workers_dev": true,
+  "routes": [
+    {
+      "pattern": "files.bychx.com",
+      "custom_domain": true,
+    },
+    {
+      "pattern": "utils.bychx.com/files*",
+      "zone_id": "8847c867ee95782268305827c65c61ef",
+    },
+  ],
+}

@@ -1,0 +1,13 @@
+# Submission requests and collaboration
+
+Signed-in, approved users have **File requests** and **Collaborations** tabs. Create an invitation with recipient email addresses, expiry, storage destination and size limits. You can email it automatically or copy its link/access code. Management shows links, submissions and revocation controls; administrators can view all users' invitations. Download shares continue to work.
+
+The home access form accepts download keys, submission keys (`U…`) and collaboration keys (`C…`). Possessing the code is insufficient: the recipient must verify a PIN delivered to an invited email. External recipients require no approved File Station account. Sessions and every subsequent operation check invitation expiry, revocation and owner status.
+
+Submission partners can upload to the requester-selected connector. They see only their own submissions, with no access to other recipients' files, destination credentials, file listings or download access. File-count and size limits are enforced server-side. Quota/retention apply to submitted files as to ordinary uploads, and the requester owns them.
+
+For collaboration, select an uploaded original and specify a target filename with the same extension. The original remains unchanged. Until the first save, downloads use its bytes with the target name. Saves and re-uploads publish one separate working copy. Subsequent saves replace that working copy and delete the previous one. There is **no version history** or simultaneous keystroke synchronization. Concurrent saves use a compare-and-swap token so a stale editor cannot silently overwrite another person's changes. Download your local edits if a conflict occurs, reopen the current copy, and merge them.
+
+DOCX and UTF-8 plain text (including Markdown/CSV/JSON/XML/YAML) up to 20 MiB can be edited in the browser. DOCX uses the Apache-licensed EigenPal editor; complex Word features may render differently, so review documents in Word when layout fidelity is critical. The editor is loaded on demand, uses local fonts and does not send documents to Microsoft 365 or an external editor server. Larger or unsupported documents can be downloaded, edited on a desktop and re-uploaded. Edits are saved only when **Save working copy** finishes its transfer; unsaved browser edits do not survive refresh. Transfers themselves support pause/resume.
+
+Active collaboration originals and current copies are protected from FIFO eviction so a save cannot evict its own original. There must be space for the old copy and the incoming replacement during a save. Age retention, explicit deletion and owner deactivation can still invalidate collaboration. Expired/revoked links do not grant perpetual access.

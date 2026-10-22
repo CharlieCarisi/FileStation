@@ -1,0 +1,17 @@
+CREATE TABLE users (id TEXT PRIMARY KEY, email TEXT NOT NULL UNIQUE, role TEXT NOT NULL DEFAULT 'user' CHECK(role IN ('admin','user')), status TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending','active','inactive','deleted')), created_at INTEGER NOT NULL);
+CREATE TABLE challenges (id TEXT PRIMARY KEY, email TEXT NOT NULL, purpose TEXT NOT NULL CHECK(purpose IN ('login','share')), share_id TEXT, code_hash TEXT NOT NULL, attempts INTEGER NOT NULL DEFAULT 0, expires_at INTEGER NOT NULL, consumed_at INTEGER);
+CREATE INDEX challenges_email ON challenges(email, purpose, expires_at);
+CREATE TABLE sessions (token_hash TEXT PRIMARY KEY, user_id TEXT NOT NULL REFERENCES users(id), expires_at INTEGER NOT NULL);
+CREATE TABLE guest_sessions (token_hash TEXT PRIMARY KEY, share_id TEXT NOT NULL, email TEXT NOT NULL, expires_at INTEGER NOT NULL);
+CREATE TABLE connectors (id TEXT PRIMARY KEY, name TEXT NOT NULL, kind TEXT NOT NULL CHECK(kind IN ('r2','alipan')), limit_bytes INTEGER NOT NULL CHECK(limit_bytes > 0), retention_days INTEGER, enabled INTEGER NOT NULL DEFAULT 1, config TEXT NOT NULL DEFAULT '{}', encrypted_credentials TEXT, created_at INTEGER NOT NULL);
+CREATE TABLE files (id TEXT PRIMARY KEY, owner_id TEXT NOT NULL REFERENCES users(id), connector_id TEXT NOT NULL REFERENCES connectors(id), name TEXT NOT NULL, mime TEXT NOT NULL, size INTEGER NOT NULL CHECK(size > 0), state TEXT NOT NULL CHECK(state IN ('uploading','ready','deleting','deleted')), object_key TEXT NOT NULL, provider_upload_id TEXT, provider_file_id TEXT, fingerprint TEXT NOT NULL, created_at INTEGER NOT NULL, completed_at INTEGER, expires_at INTEGER, deleted_at INTEGER, delete_reason TEXT, upload_expires_at INTEGER NOT NULL);
+CREATE INDEX files_connector_state_age ON files(connector_id, state, created_at);
+CREATE INDEX files_owner ON files(owner_id, state);
+CREATE TABLE upload_parts (file_id TEXT NOT NULL REFERENCES files(id), part_number INTEGER NOT NULL, etag TEXT NOT NULL, size INTEGER NOT NULL, digest TEXT NOT NULL, PRIMARY KEY(file_id, part_number));
+CREATE TABLE shares (id TEXT PRIMARY KEY, file_id TEXT NOT NULL REFERENCES files(id), code_hash TEXT NOT NULL UNIQUE, created_by TEXT NOT NULL REFERENCES users(id), created_at INTEGER NOT NULL, expires_at INTEGER, revoked_at INTEGER);
+CREATE TABLE share_recipients (share_id TEXT NOT NULL REFERENCES shares(id), email TEXT NOT NULL, PRIMARY KEY(share_id,email));
+CREATE TABLE rate_limits (key TEXT PRIMARY KEY, count INTEGER NOT NULL, reset_at INTEGER NOT NULL);
+CREATE TABLE settings (key TEXT PRIMARY KEY, value TEXT NOT NULL);
+CREATE TABLE audit_log (id TEXT PRIMARY KEY, actor_id TEXT, action TEXT NOT NULL, target_id TEXT, created_at INTEGER NOT NULL);
+INSERT OR IGNORE INTO settings(key,value) VALUES ('allowed_domains','["international.gc.ca"]');
+INSERT OR IGNORE INTO connectors(id,name,kind,limit_bytes,retention_days,created_at) VALUES ('r2-default','Cloudflare R2','r2',10000000000,30,0);

@@ -1,0 +1,3 @@
+# Source recovery
+
+The cloud workspace restored on 2026-10-22 contained only an empty Git repository. No source commits existed remotely. The deployed Cloudflare Worker version f8834613-a170-4297-93bd-5ab6def315ca and published browser assets were downloaded without changing production. Worker business modules were separated using their original module boundaries and dependency imports restored. Third-party dependencies are installed from npm, not copied from the recovered Worker. Original TypeScript annotations, test source and build files were not available. New feature code and regression tests are maintained here. The original browser assets are retained while the interface is restored. Never overwrite the production connector encryption key during restoration.
