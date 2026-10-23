@@ -15,6 +15,7 @@ import {
   basePath,
   TransfersPanel,
 } from "./App.jsx";
+import FilePreview from "./FilePreview";
 const DocumentEditor = lazy(() => import("./DocumentEditor"));
 type Row = Record<string, any>;
 const message = (error: unknown) =>
@@ -644,6 +645,11 @@ export function InvitationPortal({ initial }: { initial: Row }) {
             The original is preserved. Saved edits and re-uploads replace this
             working copy.
           </p>
+          <FilePreview
+            key={data.file.id}
+            file={data.file}
+            previewPath={`/invitations/${invitation.id}/preview`}
+          />
           <div className="feature-actions">
             <button
               className="button primary"

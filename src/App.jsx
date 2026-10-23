@@ -4,6 +4,7 @@ import {
   InvitationDialog,
   OneDriveDialog,
 } from "./features";
+import FilePreview from "./FilePreview";
 // Restored from the published browser application; see docs/recovery.md.
 import * as D from "react";
 import * as c from "react/jsx-runtime";
@@ -2932,6 +2933,7 @@ function App() {
       oe &&
         c.jsxs(Modal, {
           title: "A file for you.",
+          wide: true,
           subtitle: "Your recipient email has been verified.",
           onClose: () => sl(void 0),
           children: [
@@ -2953,6 +2955,7 @@ function App() {
                 }),
               ],
             }),
+            c.jsx(FilePreview, { file: oe }, oe.id),
             c.jsxs("button", {
               className: "button primary full",
               onClick: () => {

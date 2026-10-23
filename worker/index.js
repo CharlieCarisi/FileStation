@@ -21,6 +21,7 @@ import { Storage } from "./storage.js";
 import { validateOneDrive, ONEDRIVE_PART_SIZE } from "./onedrive";
 import { coordinate } from "./coordinator.js";
 import { fileAccess, shareRoutes } from "./shares.js";
+import { fileResponse } from "./file-response";
 async function connectorList(env, admin) {
   const result = await env.DB.prepare(
     `SELECT c.id,c.name,COALESCE(c.storage_adapter,c.adapter,c.kind) AS kind,c.limit_bytes,c.retention_days,c.enabled,c.config,c.encrypted_credentials IS NOT NULL AS credentials_configured,COALESCE(SUM(CASE WHEN f.state IN ('ready','deleting') THEN f.size ELSE 0 END),0) AS used_bytes,COALESCE(SUM(CASE WHEN f.state='uploading' THEN f.size ELSE 0 END),0) AS reserved_bytes,COUNT(CASE WHEN f.state='ready' THEN 1 END) AS file_count FROM connectors c LEFT JOIN files f ON f.connector_id=c.id GROUP BY c.id ORDER BY c.created_at`,
@@ -126,64 +127,14 @@ async function routes(request, env) {
         `/delete?file=${file.id}&actor=${user.id}&reason=cancelled`,
       );
   }
-  const download = path.match(/^\/api\/files\/([^/]+)\/download$/);
+  const download = path.match(/^\/api\/files\/([^/]+)\/(download|preview)$/);
   if (download && ["GET", "HEAD"].includes(request.method)) {
     const file = await env.DB.prepare("SELECT * FROM files WHERE id=?")
       .bind(download[1])
       .first();
     ensure(file, 404, "File not found.");
     await fileAccess(request, env, file);
-    const connector = await env.DB.prepare(
-      `SELECT ${CONNECTOR_FIELDS} FROM connectors WHERE id=?`,
-    )
-      .bind(file.connector_id)
-      .first();
-    ensure(connector, 404, "Storage connector not found.");
-    let offset = 0,
-      length = file.size,
-      partial = false;
-    const range = request.headers.get("range");
-    if (range) {
-      const r = range.match(/^bytes=(\d+)-(\d*)$/);
-      ensure(r, 416, "Only a single explicit byte range is supported.");
-      offset = Number(r[1]);
-      const end = r[2] ? Math.min(Number(r[2]), file.size - 1) : file.size - 1;
-      ensure(
-        Number.isSafeInteger(offset) &&
-          Number.isSafeInteger(end) &&
-          offset >= 0 &&
-          offset < file.size &&
-          end >= offset,
-        416,
-        "Requested range is outside this file.",
-      );
-      length = end - offset + 1;
-      partial = true;
-    }
-    const headers = new Headers({
-      "Content-Type": "application/octet-stream",
-      "Content-Length": String(length),
-      "Accept-Ranges": "bytes",
-      ETag: `"${file.id}"`,
-      "Content-Disposition": `attachment; filename="download"; filename*=UTF-8''${encodeURIComponent(file.name).replace(/['()*]/g, (c) => `%${c.charCodeAt(0).toString(16)}`)}`,
-      "Cache-Control": "private, no-store",
-    });
-    if (partial)
-      headers.set(
-        "Content-Range",
-        `bytes ${offset}-${offset + length - 1}/${file.size}`,
-      );
-    let stream = null;
-    if (request.method !== "HEAD") {
-      const result = await coordinate(
-        env,
-        connector.id,
-        `/download?file=${file.id}&offset=${offset}&length=${length}`,
-      );
-      if (!result.ok) return result;
-      stream = result.body;
-    }
-    return new Response(stream, { status: partial ? 206 : 200, headers });
+    return fileResponse(request, env, file, download[2] === "preview");
   }
   const fileRoute = path.match(/^\/api\/files\/([^/]+)$/);
   if (fileRoute && request.method === "DELETE") {
@@ -514,7 +465,7 @@ var securityHeaders = {
   "X-Frame-Options": "DENY",
   "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
   "Content-Security-Policy":
-    "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; worker-src 'self' blob:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'",
+    "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; worker-src 'self' blob:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'",
 };
 var index_default = {
   async fetch(request, env) {

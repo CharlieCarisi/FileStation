@@ -22,6 +22,7 @@ import {
   mail,
 } from "./util.js";
 import { emailLayout } from "./email.js";
+import { fileResponse } from "./file-response";
 
 const fail = () =>
   new HttpError(
@@ -204,7 +205,12 @@ export async function guardAttachedInvitation(env: Env, fileId: string) {
     .first<Row>();
   if (relation) await activeInvitation(env, relation.invitation_id);
 }
-async function download(request: Request, env: Env, invite: Row) {
+async function download(
+  request: Request,
+  env: Env,
+  invite: Row,
+  preview = false,
+) {
   ensure(
     invite.kind === "collaboration",
     403,
@@ -214,51 +220,12 @@ async function download(request: Request, env: Env, invite: Row) {
     .bind(invite.current_file_id || invite.source_file_id)
     .first<Row>();
   if (!file || file.state !== "ready") throw fail();
-  let offset = 0,
-    length = file.size,
-    status = 200;
-  const range = request.headers.get("range");
-  if (range) {
-    const match = range.match(/^bytes=(\d+)-(\d*)$/);
-    ensure(match, 416, "Use a single explicit byte range.");
-    offset = Number(match![1]);
-    const end = match![2]
-      ? Math.min(Number(match![2]), file.size - 1)
-      : file.size - 1;
-    ensure(
-      Number.isSafeInteger(offset) &&
-        Number.isSafeInteger(end) &&
-        offset >= 0 &&
-        end >= offset &&
-        offset < file.size,
-      416,
-      "Requested range is outside this file.",
-    );
-    length = end - offset + 1;
-    status = 206;
-  }
-  const headers = new Headers({
-    "Content-Type": "application/octet-stream",
-    "Content-Length": String(length),
-    "Accept-Ranges": "bytes",
-    ETag: `"${file.id}"`,
-    "Cache-Control": "private, no-store",
-    "Content-Disposition": `attachment; filename="document"; filename*=UTF-8''${encodeURIComponent(invite.target_name).replace(/['()*]/g, (c) => "%" + c.charCodeAt(0).toString(16))}`,
-  });
-  if (status === 206)
-    headers.set(
-      "Content-Range",
-      `bytes ${offset}-${offset + length - 1}/${file.size}`,
-    );
-  if (request.method === "HEAD") return new Response(null, { status, headers });
-  const response = await coordinate(
+  return fileResponse(
+    request,
     env,
-    file.connector_id,
-    `/download?file=${file.id}&offset=${offset}&length=${length}`,
+    { ...file, name: invite.target_name },
+    preview,
   );
-  return response.ok
-    ? new Response(response.body, { status, headers })
-    : response;
 }
 function legacyRequest(request: Request, value: Row) {
   return new Request(request.url, {
@@ -557,7 +524,7 @@ export async function invitationRoutes(
     );
   }
   const match = path.match(
-    /^\/api\/invitations\/([^/]+)(?:\/(view|download|uploads)(?:\/([^/]+)(?:\/(parts\/\d+|complete|publish))?)?)?$/,
+    /^\/api\/invitations\/([^/]+)(?:\/(view|download|preview|uploads)(?:\/([^/]+)(?:\/(parts\/\d+|complete|publish))?)?)?$/,
   );
   if (!match) return null;
   const [, invitationId, action, fileId, fileAction] = match;
@@ -577,8 +544,11 @@ export async function invitationRoutes(
     address = await access(request, env, invite);
   if (action === "view" && request.method === "GET")
     return json(await view(env, invite, address));
-  if (action === "download" && ["GET", "HEAD"].includes(request.method))
-    return download(request, env, invite);
+  if (
+    (action === "download" || action === "preview") &&
+    ["GET", "HEAD"].includes(request.method)
+  )
+    return download(request, env, invite, action === "preview");
   if (action !== "uploads") return null;
   if (!fileId && request.method === "POST") {
     await rate(

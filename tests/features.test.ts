@@ -10,6 +10,7 @@ async function request(
   value?: any,
   cookie = "",
   prefix = "",
+  headers: Record<string, string> = {},
 ) {
   const raw =
     value instanceof Uint8Array
@@ -22,6 +23,7 @@ async function request(
     headers: {
       Origin: origin,
       Cookie: cookie,
+      ...headers,
       ...(raw
         ? {
             "Content-Type":
@@ -241,6 +243,236 @@ describe("restored service and URL prefixes", () => {
       body: JSON.stringify({ email: "p@example.com" }),
     });
     expect(response.status).toBe(403);
+  });
+});
+describe("authorized file previews", () => {
+  it("requires a verified recipient, serves safe text and ranges, and stops access after revocation", async () => {
+    const admin = await login(),
+      file = await upload(
+        admin.cookie,
+        "<script>alert(1)</script>",
+        "r2-default",
+        "notes.html",
+      );
+    await env.DB.prepare("UPDATE files SET mime='text/html' WHERE id=?")
+      .bind(file.id)
+      .run();
+    const path = `/files/${file.id}/preview`;
+    expect((await request(path, "GET", undefined, "", "/files")).status).toBe(
+      401,
+    );
+    const share = (await (
+      await request(
+        `/files/${file.id}/shares`,
+        "POST",
+        {
+          recipients: ["partner@example.com"],
+          expiresDays: 7,
+          sendEmail: false,
+        },
+        admin.cookie,
+      )
+    ).json()) as Row;
+    const partner = await verify(share);
+    const response = await request(
+      path,
+      "GET",
+      undefined,
+      partner.cookie,
+      "/files",
+    );
+    expect(response.headers.get("content-type")).toBe(
+      "text/plain; charset=utf-8",
+    );
+    expect(response.headers.get("content-disposition")).toContain("inline;");
+    expect(response.headers.get("x-content-type-options")).toBe("nosniff");
+    expect(response.headers.get("cache-control")).toContain("no-store");
+    expect(await response.text()).toBe("<script>alert(1)</script>");
+    const range = await request(
+      path,
+      "GET",
+      undefined,
+      partner.cookie,
+      "/files",
+      { Range: "bytes=1-6" },
+    );
+    expect(range.status).toBe(206);
+    expect(range.headers.get("content-range")).toBe(`bytes 1-6/${file.size}`);
+    expect(await range.text()).toBe("script");
+    const suffix = await request(path, "GET", undefined, partner.cookie, "", {
+      Range: "bytes=-9",
+    });
+    expect(suffix.status).toBe(206);
+    expect(await suffix.text()).toBe("</script>");
+    const invalid = await request(path, "GET", undefined, partner.cookie, "", {
+      Range: "bytes=999-",
+    });
+    expect(invalid.status).toBe(416);
+    expect(invalid.headers.get("content-range")).toBe(`bytes */${file.size}`);
+    const other = await upload(admin.cookie);
+    expect(
+      (
+        await request(
+          `/files/${other.id}/preview`,
+          "GET",
+          undefined,
+          partner.cookie,
+        )
+      ).status,
+    ).toBe(403);
+    await request(`/shares/${share.id}`, "DELETE", undefined, admin.cookie);
+    expect((await request(path, "GET", undefined, partner.cookie)).status).toBe(
+      410,
+    );
+  });
+  it("previews the current collaboration copy, rejects stale copies, and isolates submission guests", async () => {
+    const admin = await login(),
+      source = await upload(admin.cookie),
+      link = await invitation(admin.cookie, {
+        kind: "collaboration",
+        sourceFileId: source.id,
+        targetName: "working.txt",
+      });
+    const partner = await verify(link),
+      path = `/invitations/${link.id}/preview`;
+    expect(
+      await (await request(path, "GET", undefined, partner.cookie)).text(),
+    ).toBe("original");
+    expect(
+      (
+        await request(
+          `/files/${source.id}/preview`,
+          "GET",
+          undefined,
+          partner.cookie,
+        )
+      ).status,
+    ).toBe(401);
+    const working = await draft(link, partner.cookie, "Updated preview");
+    await request(working.path + "/publish", "POST", {}, partner.cookie);
+    const response = await request(
+      path,
+      "GET",
+      undefined,
+      partner.cookie,
+      "/files",
+    );
+    expect(response.headers.get("etag")).toBe(`"${working.file.id}"`);
+    expect(await response.text()).toBe("Updated preview");
+    expect(
+      (
+        await request(
+          path + `?version=${source.id}`,
+          "GET",
+          undefined,
+          partner.cookie,
+        )
+      ).status,
+    ).toBe(409);
+    const submission = await invitation(admin.cookie),
+      submitter = await verify(submission);
+    expect(
+      (
+        await request(
+          `/invitations/${submission.id}/preview`,
+          "GET",
+          undefined,
+          submitter.cookie,
+        )
+      ).status,
+    ).toBe(403);
+    expect(
+      (await request(path, "GET", undefined, submitter.cookie)).status,
+    ).toBe(401);
+    await request(`/invitations/${link.id}`, "DELETE", undefined, admin.cookie);
+    expect((await request(path, "GET", undefined, partner.cookie)).status).toBe(
+      410,
+    );
+    await request(`/files/${source.id}`, "DELETE", undefined, admin.cookie);
+    expect(
+      (
+        await request(
+          `/files/${source.id}/preview`,
+          "HEAD",
+          undefined,
+          admin.cookie,
+        )
+      ).status,
+    ).toBe(410);
+  });
+  it("bounds movie ranges, rejects unsupported and oversized previews, and retains ordinary downloads", async () => {
+    const admin = await login(),
+      movie = await upload(
+        admin.cookie,
+        "movie bytes",
+        "r2-default",
+        "movie.mp4",
+      );
+    const range = await request(
+      `/files/${movie.id}/preview`,
+      "GET",
+      undefined,
+      admin.cookie,
+      "",
+      { Range: "bytes=2-6" },
+    );
+    expect(range.status).toBe(206);
+    expect(range.headers.get("content-type")).toBe("video/mp4");
+    expect(await range.text()).toBe("vie b");
+    await env.DB.prepare("UPDATE files SET size=? WHERE id=?")
+      .bind(512 * 1024 * 1024, movie.id)
+      .run();
+    const head = await request(
+      `/files/${movie.id}/preview`,
+      "HEAD",
+      undefined,
+      admin.cookie,
+      "",
+      { Range: "bytes=0-" },
+    );
+    expect(head.status).toBe(206);
+    expect(head.headers.get("content-length")).toBe(String(8 * 1024 * 1024));
+    expect(head.headers.get("content-range")).toBe(`bytes 0-8388607/536870912`);
+    const unsupported = await upload(
+      admin.cookie,
+      "binary",
+      "r2-default",
+      "archive.constructor",
+    );
+    expect(
+      (
+        await request(
+          `/files/${unsupported.id}/preview`,
+          "HEAD",
+          undefined,
+          admin.cookie,
+        )
+      ).status,
+    ).toBe(415);
+    expect(
+      (
+        await request(
+          `/files/${unsupported.id}/download`,
+          "GET",
+          undefined,
+          admin.cookie,
+        )
+      ).headers.get("content-disposition"),
+    ).toContain("attachment;");
+    const oversized = await upload(admin.cookie);
+    await env.DB.prepare("UPDATE files SET size=? WHERE id=?")
+      .bind(3 * 1024 * 1024, oversized.id)
+      .run();
+    expect(
+      (
+        await request(
+          `/files/${oversized.id}/preview`,
+          "HEAD",
+          undefined,
+          admin.cookie,
+        )
+      ).status,
+    ).toBe(413);
   });
 });
 describe("private document submissions", () => {

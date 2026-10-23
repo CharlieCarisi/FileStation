@@ -1773,6 +1773,119 @@ dd {
   display: grid;
   gap: 12px;
 }
+.file-preview {
+  border: 1px solid #dce2d6;
+  border-radius: 12px;
+  background: #f8faf6;
+  overflow: hidden;
+  min-width: 0;
+  margin: 12px 0 20px;
+}
+.preview-header,
+.preview-header > span {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.preview-header {
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid #e2e7df;
+  font-size: 13px;
+  font-weight: 600;
+  flex-wrap: wrap;
+}
+.preview-header .text-button {
+  font-size: 12px;
+}
+.preview-note {
+  padding: 12px 16px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #52665c;
+  margin: 0;
+}
+.preview-content {
+  min-width: 0;
+}
+.preview-image,
+.preview-video {
+  text-align: center;
+  background: #eef1eb;
+}
+.preview-image img,
+.preview-video video {
+  display: block;
+  width: 100%;
+  max-height: 55vh;
+  object-fit: contain;
+}
+.preview-video video {
+  background: #18231f;
+}
+.preview-audio {
+  padding: 16px;
+}
+.preview-audio audio {
+  width: 100%;
+}
+.preview-text,
+.pdf-text pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  overflow: auto;
+  max-height: 50vh;
+  margin: 0;
+  padding: 18px;
+  background: white;
+  font:
+    13px/1.7 ui-monospace,
+    monospace;
+  text-align: left;
+}
+.docx-preview > .ep-editor-container,
+.docx-preview > div:first-child {
+  height: 55vh;
+  min-height: 280px;
+}
+.pdf-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 12px;
+  font-size: 12px;
+}
+.pdf-controls label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.pdf-controls select {
+  padding: 6px;
+  width: auto;
+  font-size: 12px;
+}
+.pdf-page {
+  overflow: auto;
+  max-height: 55vh;
+  padding: 12px;
+  text-align: center;
+}
+.pdf-page canvas {
+  display: block;
+  margin: auto;
+  background: white;
+  box-shadow: 0 2px 10px #18231f18;
+}
+.pdf-text {
+  padding: 12px;
+  font-size: 12px;
+}
+.pdf-text summary {
+  cursor: pointer;
+}
 .submission-drop {
   padding: 24px;
   border: 1px dashed #8ba194;

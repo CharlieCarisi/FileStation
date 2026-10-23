@@ -110,6 +110,13 @@ test("under /files, verify an external submission and edit text and DOCX working
       }),
     });
     await card.getByRole("button", { name: "Open document" }).click();
+    const preview = page.getByRole("region", {
+      name: `Preview of working.${extension}`,
+    });
+    await expect(preview).toContainText(
+      extension === "txt" ? "Original text." : "Original DOCX text.",
+      { timeout: 30000 },
+    );
     await page
       .getByRole("button", { name: "Edit online", exact: true })
       .click();
@@ -130,6 +137,10 @@ test("under /files, verify an external submission and edit text and DOCX working
       .getByRole("button", { name: "Save working copy", exact: true })
       .click();
     await expect(editor).not.toBeVisible({ timeout: 30000 });
+    await expect(preview).toContainText(
+      extension === "txt" ? "Edited in File Station." : "Edited in browser.",
+      { timeout: 30000 },
+    );
     const download = await page.request.get(
       `/files/api/invitations/${invitation.id}/download`,
     );
