@@ -17,6 +17,7 @@ import {
   TransfersPanel,
 } from "./App.jsx";
 import FilePreview from "./FilePreview";
+import { FolderSelect } from "./Folders";
 const DocumentEditor = lazy(() => import("./DocumentEditor"));
 type Row = Record<string, any>;
 const message = (error: unknown) =>
@@ -176,6 +177,8 @@ export function InvitationDialog({
     [connectorId, setConnector] = useState(
       source?.connector_id || supplied?.[0]?.id || "",
     );
+  const [folderId, setFolderId] = useState<string | null>(null);
+  const [folderReady, setFolderReady] = useState(false);
   const [recipients, setRecipients] = useState(""),
     [days, setDays] = useState(7),
     [maxMB, setMaxMB] = useState(
@@ -216,6 +219,7 @@ export function InvitationDialog({
           sourceFileId: sourceId,
           targetName: target,
           connectorId,
+          folderId,
           recipients: recipients.split(/[,;\s]+/).filter(Boolean),
           expiresDays: days,
           maxFileBytes: Math.round(maxMB * 1e6),
@@ -348,6 +352,11 @@ export function InvitationDialog({
                 ))}
             </select>
           </label>
+          <FolderSelect
+            value={folderId}
+            onChange={setFolderId}
+            onReady={setFolderReady}
+          />
           <label>
             {t("Invited email addresses")}
             <textarea
@@ -404,7 +413,10 @@ export function InvitationDialog({
             {t("Email the invitation automatically")}
           </label>
           <ErrorMessage error={error} />
-          <button className="button primary full" disabled={busy}>
+          <button
+            className="button primary full"
+            disabled={busy || !folderReady}
+          >
             {busy ? t("Creating\u2026") : t("Create invitation")}
           </button>
         </form>
@@ -520,6 +532,9 @@ export function InvitationManager({
                           getLocale(),
                         ),
                       })}
+              </p>
+              <p className="fineprint">
+                {t("Destination folder")}: {row.folder_name || t("Root")}
               </p>
               {all && <p>{row.owner_email}</p>}
               <p>{row.recipients.join(", ")}</p>

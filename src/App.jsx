@@ -7,6 +7,8 @@ import {
 } from "./features";
 import FilePreview from "./FilePreview";
 import ShareAddressSettings from "./ShareAddressSettings";
+import { FolderPane, FolderSelect } from "./Folders";
+import FileTable from "./FileTable";
 // Restored from the published browser application; see docs/recovery.md.
 import * as D from "react";
 import * as c from "react/jsx-runtime";
@@ -238,7 +240,14 @@ function AccessForm({ initialCode, onFile }) {
     onFile,
   });
 }
-function UploadDialog({ connectors: S, onClose: v, onUploaded: T }) {
+function UploadDialog({
+  connectors: S,
+  onClose: v,
+  onUploaded: T,
+  folderId: defaultFolderId = null,
+}) {
+  const [uploadFolderId, setUploadFolderId] = D.useState(defaultFolderId);
+  const [folderReady, setFolderReady] = D.useState(false);
   const [o, _] = D.useState([]),
     [C, B] = D.useState(
       S.find((G) => G.enabled && (G.kind === "r2" || G.credentials_configured))
@@ -252,7 +261,8 @@ function UploadDialog({ connectors: S, onClose: v, onUploaded: T }) {
     (G.preventDefault(), R(!0), A(""));
     try {
       if (!o.length) throw new Error("Choose at least one file.");
-      for (const $ of o) await transfers.upload($, C);
+      for (const $ of o)
+        await transfers.upload($, C, undefined, uploadFolderId);
       (T(), v());
     } catch ($) {
       (A($.message), T());
@@ -347,6 +357,11 @@ function UploadDialog({ connectors: S, onClose: v, onUploaded: T }) {
             }),
           ],
         }),
+        c.jsx(FolderSelect, {
+          value: uploadFolderId,
+          onChange: setUploadFolderId,
+          onReady: setFolderReady,
+        }),
         k &&
           c.jsxs("div", {
             className: "info",
@@ -376,7 +391,7 @@ function UploadDialog({ connectors: S, onClose: v, onUploaded: T }) {
         c.jsxs("button", {
           type: "submit",
           className: "button primary full",
-          disabled: M || !C || !o.length,
+          disabled: M || !C || !o.length || !folderReady,
           children: [
             M
               ? t("Preparing uploads\u2026")
@@ -1921,23 +1936,77 @@ function App() {
     D.useEffect(() => {
       transfers.setScope(S?.id || "guest");
     }, [S?.id]));
+  const [folders, setFolders] = D.useState([]);
+  const [currentFolder, setCurrentFolder] = D.useState(
+    () => new URLSearchParams(location.search).get("folder") || null,
+  );
+  const browserState = D.useRef();
+  const reloadSequence = D.useRef(0);
+  browserState.current = { user: S, view: R, folder: currentFolder };
+  function openFolder(folder, replace = false) {
+    k([]);
+    setCurrentFolder(folder);
+    J("files");
+    const url = new URL(location.href);
+    if (folder) url.searchParams.set("folder", folder);
+    else url.searchParams.delete("folder");
+    history[replace ? "replaceState" : "pushState"](null, "", url);
+  }
+  D.useEffect(() => {
+    function navigate() {
+      k([]);
+      setCurrentFolder(
+        new URLSearchParams(location.search).get("folder") || null,
+      );
+      J("files");
+    }
+    addEventListener("popstate", navigate);
+    return () => removeEventListener("popstate", navigate);
+  }, []);
   async function Z() {
-    if (S) {
+    const { user, view, folder } = browserState.current;
+    const sequence = ++reloadSequence.current;
+    if (user) {
       Ae("");
       try {
-        const x = await api("/connectors");
-        if ((j(x.connectors), S.status === "active")) {
-          const q = await api(`/files${R === "allfiles" ? "?all=true" : ""}`);
-          k(q.files);
+        const requests = [api("/connectors")];
+        if (user.status === "active")
+          requests.push(
+            api("/folders"),
+            api(
+              `/files${view === "allfiles" ? "?all=true" : view === "files" ? `?folderId=${encodeURIComponent(folder || "root")}` : ""}`,
+            ),
+          );
+        const results = await Promise.all(requests);
+        if (
+          sequence !== reloadSequence.current ||
+          browserState.current.user?.id !== user.id ||
+          browserState.current.view !== view ||
+          browserState.current.folder !== folder
+        )
+          return;
+        j(results[0].connectors);
+        if (user.status === "active") {
+          setFolders(results[1].folders);
+          k(results[2].files);
         }
       } catch (x) {
-        Ae(x.message);
+        if (
+          sequence === reloadSequence.current &&
+          browserState.current.user?.id === user.id &&
+          browserState.current.view === view &&
+          browserState.current.folder === folder
+        ) {
+          if (view === "files" && folder && x.status === 404)
+            openFolder(null, true);
+          else Ae(x.message);
+        }
       }
     }
   }
   (D.useEffect(() => {
     Z();
-  }, [S, R, w]),
+  }, [S, R, w, currentFolder]),
     D.useEffect(() => {
       if (!De) return;
       const x = setTimeout(() => W(""), 6e3);
@@ -1959,7 +2028,7 @@ function App() {
       await post("/auth/logout");
       for (const x of transfers.items)
         x.state === "running" && transfers.pause(x.id);
-      (v(null), k([]), j([]));
+      (v(null), k([]), j([]), setFolders([]), setCurrentFolder(null));
     } catch (x) {
       Ae(x.message);
     }
@@ -2024,183 +2093,27 @@ function App() {
             }),
           ],
         }),
+        R === "files" &&
+          c.jsx(FolderPane, {
+            folders,
+            current: currentFolder,
+            onOpen: openFolder,
+            onChanged: Z,
+          }),
         c.jsxs("div", {
-          className: "table-shell",
+          className: "file-list",
           children: [
-            c.jsxs("table", {
-              className: "files-table",
-              children: [
-                c.jsx("thead", {
-                  children: c.jsxs("tr", {
-                    children: [
-                      c.jsxs("th", {
-                        children: [
-                          t("NAME "),
-                          c.jsx(Gf, {
-                            size: 12,
-                          }),
-                        ],
-                      }),
-                      c.jsx("th", {
-                        children: t("STORAGE"),
-                      }),
-                      c.jsx("th", {
-                        children: t("SIZE"),
-                      }),
-                      c.jsx("th", {
-                        children: R === "allfiles" ? t("OWNER") : t("ADDED"),
-                      }),
-                      c.jsx("th", {
-                        children: t("KEEP UNTIL"),
-                      }),
-                      c.jsx("th", {
-                        "aria-label": t("Actions"),
-                      }),
-                    ],
-                  }),
-                }),
-                c.jsx("tbody", {
-                  children: d.map((x) =>
-                    c.jsxs(
-                      "tr",
-                      {
-                        children: [
-                          c.jsx("td", {
-                            children: c.jsxs("div", {
-                              className: "file-name",
-                              children: [
-                                c.jsx(FileIcon, {
-                                  name: x.name,
-                                }),
-                                c.jsxs("div", {
-                                  children: [
-                                    c.jsx("strong", {
-                                      title: x.name,
-                                      children: x.name,
-                                    }),
-                                    c.jsx("small", {
-                                      children:
-                                        x.state === "uploading"
-                                          ? t("Upload in progress")
-                                          : x.share_count
-                                            ? t("{0} active share{1}", {
-                                                0: x.share_count,
-                                                1:
-                                                  x.share_count > 1
-                                                    ? t("s")
-                                                    : "",
-                                              })
-                                            : x.mime || t("File"),
-                                    }),
-                                  ],
-                                }),
-                              ],
-                            }),
-                          }),
-                          c.jsx("td", {
-                            children: c.jsxs("span", {
-                              className: "storage-tag",
-                              children: [
-                                c.jsx("span", {
-                                  className: `storage-dot ${A.find((q) => q.id === x.connector_id)?.kind}`,
-                                }),
-                                x.connector_name,
-                              ],
-                            }),
-                          }),
-                          c.jsx("td", {
-                            children: formatBytes(x.size),
-                          }),
-                          c.jsx("td", {
-                            children:
-                              R === "allfiles"
-                                ? x.owner_email
-                                : formatDate(x.created_at),
-                          }),
-                          c.jsx("td", {
-                            children:
-                              x.state === "uploading"
-                                ? "\u2014"
-                                : formatDate(x.expires_at),
-                          }),
-                          c.jsx("td", {
-                            children: c.jsxs("div", {
-                              className: "row-actions",
-                              children: [
-                                x.state === "ready"
-                                  ? c.jsxs(c.Fragment, {
-                                      children: [
-                                        c.jsx("button", {
-                                          className: "icon-button",
-                                          "aria-label": t("Download {0}", {
-                                            0: x.name,
-                                          }),
-                                          title: t("Resumable download"),
-                                          onClick: () => {
-                                            fe(x);
-                                          },
-                                          children: c.jsx(gn, {
-                                            size: 17,
-                                          }),
-                                        }),
-                                        canDirectDownload(x) &&
-                                          c.jsx("a", {
-                                            className: "icon-button",
-                                            "aria-label": t(
-                                              "Direct browser download {0}",
-                                              {
-                                                0: x.name,
-                                              },
-                                            ),
-                                            title: t("Direct browser download"),
-                                            href: `${basePath}/api/files/${x.id}/download`,
-                                            children: c.jsx(Gf, {
-                                              size: 17,
-                                            }),
-                                          }),
-                                        c.jsx("button", {
-                                          className: "icon-button",
-                                          "aria-label": t("Share {0}", {
-                                            0: x.name,
-                                          }),
-                                          title: t("Share file"),
-                                          onClick: () => G(x),
-                                          children: c.jsx(Fi, {
-                                            size: 17,
-                                          }),
-                                        }),
-                                      ],
-                                    })
-                                  : c.jsx("button", {
-                                      className: "icon-button",
-                                      title: t("Go to transfers"),
-                                      "aria-label": t("Go to transfers"),
-                                      onClick: () => J("transfers"),
-                                      children: c.jsx(v1, {
-                                        size: 17,
-                                      }),
-                                    }),
-                                c.jsx("button", {
-                                  className: "icon-button danger",
-                                  "aria-label": t("Delete {0}", {
-                                    0: x.name,
-                                  }),
-                                  title: t("Delete file"),
-                                  onClick: () => ye(x),
-                                  children: c.jsx(Lm, {
-                                    size: 16,
-                                  }),
-                                }),
-                              ],
-                            }),
-                          }),
-                        ],
-                      },
-                      x.id,
-                    ),
-                  ),
-                }),
-              ],
+            c.jsx(FileTable, {
+              files: d,
+              connectors: A,
+              showOwner: R === "allfiles",
+              showLocation: R !== "files",
+              contextKey: `${R}:${currentFolder}:${V}:${Ve}`,
+              onDownload: fe,
+              onShare: G,
+              onDelete: ye,
+              onTransfers: () => J("transfers"),
+              onChanged: Z,
             }),
             !d.length &&
               c.jsxs("div", {
@@ -2959,6 +2872,7 @@ function App() {
       B &&
         c.jsx(UploadDialog, {
           connectors: A,
+          folderId: R === "files" ? currentFolder : null,
           onClose: () => M(!1),
           onUploaded: () => {
             (J("transfers"), Z());
@@ -3333,6 +3247,9 @@ export {
   ErrorMessage,
   transfers,
   formatBytes,
+  formatDate,
+  FileIcon,
+  canDirectDownload,
   fingerprint,
   ShareDialog,
   AccessForm,

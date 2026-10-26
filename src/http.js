@@ -16,7 +16,11 @@ async function api(S, v = {}) {
       credentials: "same-origin",
     }),
     o = await T.json();
-  if (!T.ok) throw new Error(o.error || "The request failed.");
+  if (!T.ok) {
+    const error = new Error(o.error || "The request failed.");
+    error.status = T.status;
+    throw error;
+  }
   return o;
 }
 const post = (S, v = {}, options = {}) =>

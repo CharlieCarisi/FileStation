@@ -28,6 +28,7 @@ import { fileAccess, shareRoutes } from "./shares.js";
 import { fileResponse } from "./file-response";
 import { uploadConnections } from "./transfer-options";
 import { SHARE_ADDRESSES } from "./share-links";
+import { folderForOwner, removeUserFolders } from "./folders";
 async function connectorList(env, admin) {
   const result = await env.DB.prepare(
     `SELECT c.id,c.name,COALESCE(c.storage_adapter,c.adapter,c.kind) AS kind,c.limit_bytes,c.retention_days,c.enabled,c.config,c.encrypted_credentials IS NOT NULL AS credentials_configured,COALESCE(SUM(CASE WHEN f.state IN ('ready','deleting') THEN f.size ELSE 0 END),0) AS used_bytes,COALESCE(SUM(CASE WHEN f.state='uploading' THEN f.size ELSE 0 END),0) AS reserved_bytes,COUNT(CASE WHEN f.state='ready' THEN 1 END) AS file_count FROM connectors c LEFT JOIN files f ON f.connector_id=c.id GROUP BY c.id ORDER BY c.created_at`,
@@ -61,10 +62,27 @@ async function routes(request, env) {
   if (path === "/api/files" && request.method === "GET") {
     const user = await currentUser(request, env, true);
     const all = url.searchParams.get("all") === "true" && user.role === "admin";
+    let folderFilter = "",
+      folderBindings = [];
+    if (url.searchParams.has("folderId")) {
+      const requested = url.searchParams.get("folderId");
+      let selected = null;
+      if (all && requested && requested !== "root") {
+        const row = await env.DB.prepare("SELECT id FROM folders WHERE id=?")
+          .bind(requested)
+          .first();
+        ensure(row, 404, "The selected folder is no longer available.");
+        selected = row.id;
+      } else selected = await folderForOwner(env, user.id, requested);
+      folderFilter = selected
+        ? " AND f.folder_id=?"
+        : " AND f.folder_id IS NULL";
+      if (selected) folderBindings.push(selected);
+    }
     const rows = await env.DB.prepare(
-      `SELECT f.*,u.email AS owner_email,c.name AS connector_name,COALESCE(c.storage_adapter,c.adapter,c.kind) AS storage_kind,(SELECT COUNT(*) FROM shares s WHERE s.file_id=f.id AND s.revoked_at IS NULL AND (s.expires_at IS NULL OR s.expires_at>?)) AS share_count FROM files f JOIN users u ON u.id=f.owner_id JOIN connectors c ON c.id=f.connector_id WHERE f.state IN ('ready','uploading') AND ${all ? "1=1" : "f.owner_id=?"} ORDER BY f.created_at DESC LIMIT 500`,
+      `SELECT f.*,directory.name AS folder_name,u.email AS owner_email,c.name AS connector_name,COALESCE(c.storage_adapter,c.adapter,c.kind) AS storage_kind,(SELECT COUNT(*) FROM shares s WHERE s.file_id=f.id AND s.revoked_at IS NULL AND (s.expires_at IS NULL OR s.expires_at>?)) AS share_count FROM files f JOIN users u ON u.id=f.owner_id JOIN connectors c ON c.id=f.connector_id LEFT JOIN folders directory ON directory.id=f.folder_id WHERE f.state IN ('ready','uploading') AND ${all ? "1=1" : "f.owner_id=?"}${folderFilter} ORDER BY f.created_at DESC LIMIT 500`,
     )
-      .bind(...(all ? [now()] : [now(), user.id]))
+      .bind(...(all ? [now()] : [now(), user.id]), ...folderBindings)
       .all();
     return json({ files: rows.results });
   }
@@ -229,6 +247,7 @@ async function adminRoutes(request, env, path) {
           "Some files could not be deleted. The account is deactivated; retry deletion to finish cleanup.",
         );
       }
+      await removeUserFolders(env, user.id);
       await env.DB.prepare("UPDATE users SET status='deleted' WHERE id=?")
         .bind(user.id)
         .run();

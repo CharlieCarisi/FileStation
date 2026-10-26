@@ -14,6 +14,7 @@ import {
 import { Storage } from "./storage.js";
 import { ONEDRIVE_PART_SIZE } from "./onedrive";
 import { OperationGate, uploadConcurrency } from "../shared/concurrency";
+import { folderForOwner, folderError } from "./folders";
 import {
   guardInvitationUpload,
   recordInvitationUpload,
@@ -204,6 +205,7 @@ var StorageCoordinator = class {
         400,
         "A valid file fingerprint is required.",
       );
+      const folderId = await folderForOwner(this.env, b.ownerId, b.folderId);
       await this.cleanup(c);
       const usage = await this.env.DB.prepare(
         "SELECT COALESCE(SUM(size),0) AS used, COALESCE(SUM(CASE WHEN state='uploading' THEN size ELSE 0 END),0) AS reserved FROM files WHERE connector_id=? AND state<>'deleted'",
@@ -222,6 +224,7 @@ var StorageCoordinator = class {
         owner_id: b.ownerId,
         connector_id: c.id,
         name: b.name.trim(),
+        folder_id: folderId,
         mime:
           typeof b.mime === "string"
             ? b.mime.slice(0, 128)
@@ -262,7 +265,7 @@ var StorageCoordinator = class {
           "Storage is awaiting cleanup. Retry later.",
         );
         await this.env.DB.prepare(
-          "INSERT INTO files(id,owner_id,connector_id,name,mime,size,state,object_key,provider_upload_id,provider_file_id,fingerprint,created_at,upload_expires_at,part_size) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+          "INSERT INTO files(id,owner_id,connector_id,name,mime,size,state,object_key,provider_upload_id,provider_file_id,fingerprint,created_at,upload_expires_at,part_size,folder_id) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
         )
           .bind(
             file2.id,
@@ -279,13 +282,14 @@ var StorageCoordinator = class {
             file2.created_at,
             file2.upload_expires_at,
             partSize,
+            folderId,
           )
           .run();
         if (invitation)
           await recordInvitationUpload(this.env, invitation, file2, b);
       } catch (error) {
         await storage.remove(file2);
-        throw error;
+        folderError(error);
       }
       return json(
         {

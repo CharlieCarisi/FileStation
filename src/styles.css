@@ -870,7 +870,7 @@ td {
 tr:last-child td {
   border-bottom: 0;
 }
-.files-table td:first-child {
+.files-table td:nth-child(2) {
   width: 36%;
 }
 .file-name {
@@ -2111,5 +2111,107 @@ html[lang="fr-CA"] .sidebar nav button {
   .app-header .breadcrumb strong {
     font-size: 12px;
     max-width: 95px;
+  }
+}
+
+/* Workspace folders and file selection */
+.folder-workspace {
+  margin: 18px 0;
+}
+.folder-toolbar,
+.folder-breadcrumbs,
+.file-selection {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.folder-toolbar {
+  justify-content: space-between;
+}
+.folder-breadcrumbs {
+  min-width: 0;
+  flex: 1;
+}
+.folder-breadcrumbs .text-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  overflow-wrap: anywhere;
+  text-align: left;
+}
+.folder-breadcrumbs .text-button:disabled {
+  opacity: 1;
+  color: var(--ink);
+  cursor: default;
+}
+.folder-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+.folder-card {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: #fdfefb;
+  min-width: 0;
+}
+.folder-open {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: #617657;
+  cursor: pointer;
+  padding: 8px;
+  text-align: left;
+}
+.folder-open svg {
+  flex-shrink: 0;
+}
+.folder-open strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 13px;
+}
+.file-selection {
+  padding: 12px;
+  margin-bottom: 10px;
+  background: #f4f7ee;
+  border-radius: 9px;
+  color: #617657;
+  font-size: 12px;
+}
+.files-table .file-select-cell {
+  width: 32px;
+  padding: 12px;
+}
+.file-select-cell input {
+  width: 16px;
+  height: 16px;
+  accent-color: #657a53;
+  cursor: pointer;
+}
+@media (max-width: 600px) {
+  .folder-toolbar {
+    align-items: flex-start;
+  }
+  .folder-breadcrumbs {
+    flex-basis: 100%;
+  }
+  .folder-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .folder-open strong {
+    white-space: normal;
+    overflow-wrap: anywhere;
   }
 }
