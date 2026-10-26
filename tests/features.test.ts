@@ -2,6 +2,7 @@ import { SELF, env as bindings } from "cloudflare:test";
 import { describe, expect, it, vi } from "vitest";
 import type { Env, Row } from "../worker/model";
 import { encrypt, hash, decrypt } from "../worker/util.js";
+import { OneDriveStorage } from "../worker/onedrive";
 const env = bindings as unknown as Env;
 const origin = "http://localhost";
 async function request(
@@ -1002,6 +1003,257 @@ describe("OneDrive for Business", () => {
         await request("/connectors", "GET", undefined, user.cookie)
       ).text(),
     ).not.toContain("application-secret");
+  });
+  it("restricts folder creation to admins and creates a selected folder without replacing existing items", async () => {
+    const user = await login("user@international.gc.ca");
+    expect(
+      (await request("/admin/onedrive/folders", "POST", {}, user.cookie))
+        .status,
+    ).toBe(403);
+    const admin = await login();
+    const settings = {
+      tenantId,
+      clientId,
+      clientSecret: "private-secret",
+      driveId: "drive-id",
+      folderId: "root",
+      name: "FileStation",
+    };
+    vi.mocked(fetch).mockImplementation(async (input, init) => {
+      const url = String(input);
+      if (url.startsWith("https://login.microsoftonline.com/"))
+        return Response.json({ access_token: "private-token" });
+      expect(url).toContain("/drives/drive-id/root");
+      if (init?.method === "POST") {
+        expect(url).toBe(
+          "https://graph.microsoft.com/v1.0/drives/drive-id/root/children",
+        );
+        expect(JSON.parse(String(init.body))).toEqual({
+          name: "FileStation",
+          folder: {},
+          "@microsoft.graph.conflictBehavior": "fail",
+        });
+        return Response.json({
+          id: "new-folder",
+          name: "FileStation",
+          folder: {},
+          parentReference: { id: "root-id" },
+        });
+      }
+      return Response.json({ id: "root-id", name: "OneDrive", folder: {} });
+    });
+    const response = await request(
+      "/admin/onedrive/folders",
+      "POST",
+      settings,
+      admin.cookie,
+    );
+    expect(response.status).toBe(201);
+    expect(await response.json()).toEqual({
+      folder: { id: "new-folder", name: "FileStation", parentId: "root-id" },
+    });
+    vi.mocked(fetch).mockClear();
+    const invalid = await request(
+      "/admin/onedrive/folders",
+      "POST",
+      { ...settings, name: "../FileStation" },
+      admin.cookie,
+    );
+    expect(invalid.status).toBe(400);
+    expect(vi.mocked(fetch)).not.toHaveBeenCalled();
+  });
+  it("checks OneDrive folders before saving a connector and preserves settings on an invalid selection", async () => {
+    const admin = await login();
+    const settings = {
+      name: "Private OneDrive",
+      kind: "onedrive",
+      tenantId,
+      clientId,
+      driveId: "drive-id",
+      folderId: "private-folder",
+      limitBytes: 100000000,
+      retentionDays: 30,
+      enabled: true,
+    };
+    vi.mocked(fetch).mockImplementation(async (input) => {
+      const url = String(input);
+      if (url.startsWith("https://login.microsoftonline.com/"))
+        return Response.json({ access_token: "private-token" });
+      if (url.includes("/items/FileStation?"))
+        return Response.json(
+          {
+            error: { code: "itemNotFound", message: "private-provider-detail" },
+          },
+          { status: 404 },
+        );
+      expect(url).toContain("/drives/drive-id/items/private-folder?");
+      return Response.json({
+        id: "private-folder",
+        name: "Storage",
+        folder: {},
+      });
+    });
+    const rejected = await request(
+      "/admin/connectors",
+      "POST",
+      {
+        ...settings,
+        folderId: "FileStation",
+        credentials: { clientSecret: "private-secret" },
+      },
+      admin.cookie,
+    );
+    expect(rejected.status).toBe(400);
+    const error = await rejected.text();
+    expect(error).toContain("not a folder name");
+    expect(error).not.toContain("private-provider-detail");
+    expect(
+      await env.DB.prepare(
+        "SELECT COUNT(*) AS count FROM connectors WHERE storage_adapter='onedrive'",
+      ).first(),
+    ).toMatchObject({ count: 0 });
+    const saved = await request(
+      "/admin/connectors",
+      "POST",
+      { ...settings, credentials: { clientSecret: "private-secret" } },
+      admin.cookie,
+    );
+    expect(saved.status).toBe(200);
+    const connectorId = ((await saved.json()) as Row).id;
+    const stored = await env.DB.prepare(
+      "SELECT config,encrypted_credentials FROM connectors WHERE id=?",
+    )
+      .bind(connectorId)
+      .first<Row>();
+    const badEdit = await request(
+      `/admin/connectors/${connectorId}`,
+      "PUT",
+      { ...settings, folderId: "FileStation" },
+      admin.cookie,
+    );
+    expect(badEdit.status).toBe(400);
+    expect(
+      await env.DB.prepare(
+        "SELECT config,encrypted_credentials FROM connectors WHERE id=?",
+      )
+        .bind(connectorId)
+        .first(),
+    ).toEqual(stored);
+    vi.mocked(fetch).mockClear();
+    const quotaEdit = await request(
+      `/admin/connectors/${connectorId}`,
+      "PUT",
+      { ...settings, limitBytes: 200000000 },
+      admin.cookie,
+    );
+    expect(quotaEdit.status).toBe(200);
+    expect(vi.mocked(fetch)).not.toHaveBeenCalled();
+  });
+  it("explains an invalid saved folder when Graph reports invalidRequest at upload creation", async () => {
+    const admin = await login(),
+      connectorId = crypto.randomUUID(),
+      secret = await encrypt(env, { clientSecret: "private-secret" });
+    await env.DB.prepare(
+      "INSERT INTO connectors(id,name,kind,storage_adapter,limit_bytes,retention_days,config,encrypted_credentials,created_at) VALUES (?,?,?,?,?,?,?,?,?)",
+    )
+      .bind(
+        connectorId,
+        "OneDrive",
+        "r2",
+        "onedrive",
+        100000000,
+        30,
+        JSON.stringify({
+          tenantId,
+          clientId,
+          driveId: "drive-id",
+          folderId: "FileStation",
+        }),
+        secret,
+        Date.now(),
+      )
+      .run();
+    vi.mocked(fetch).mockImplementation(async (input) => {
+      const url = String(input);
+      if (url.startsWith("https://login.microsoftonline.com/"))
+        return Response.json({ access_token: "private-token" });
+      const session = url.endsWith("/createUploadSession");
+      return Response.json(
+        {
+          error: {
+            code: session ? "invalidRequest" : "itemNotFound",
+            message: "private-token private-secret private-provider-detail",
+          },
+        },
+        { status: session ? 400 : 404 },
+      );
+    });
+    const result = await request(
+      "/uploads",
+      "POST",
+      { connectorId, name: "report.txt", size: 5, fingerprint: "a".repeat(64) },
+      admin.cookie,
+    );
+    expect(result.status).toBe(400);
+    const error = ((await result.json()) as Row).error;
+    expect(error).toContain("Browse drive root");
+    expect(error).toContain("Microsoft's item ID");
+    expect(error).not.toMatch(
+      /private-token|private-secret|private-provider-detail/,
+    );
+    expect(
+      await env.DB.prepare(
+        "SELECT COUNT(*) AS count FROM files WHERE connector_id=?",
+      )
+        .bind(connectorId)
+        .first(),
+    ).toMatchObject({ count: 0 });
+  });
+  it("loads computed download URLs from item metadata and retrieves only the requested range without forwarding the Graph token", async () => {
+    const secret = await encrypt(env, { clientSecret: "private-secret" });
+    const provider = new OneDriveStorage(env, {
+      id: "connector",
+      config: JSON.stringify({
+        tenantId,
+        clientId,
+        driveId: "drive-id",
+        folderId: "private-folder",
+      }),
+      encrypted_credentials: secret,
+    });
+    vi.mocked(fetch).mockImplementation(async (input, init) => {
+      const url = String(input);
+      if (url.startsWith("https://login.microsoftonline.com/"))
+        return Response.json({ access_token: "private-token" });
+      if (url.startsWith("https://graph.microsoft.com/")) {
+        expect(url).toBe(
+          "https://graph.microsoft.com/v1.0/drives/drive-id/items/file-id",
+        );
+        return Response.json({
+          id: "file-id",
+          size: 9,
+          "@microsoft.graph.downloadUrl":
+            "https://tenant.sharepoint.com/download?token=private",
+        });
+      }
+      const headers = new Headers(init?.headers);
+      expect(headers.has("authorization")).toBe(false);
+      expect(headers.get("range")).toBe("bytes=3-5");
+      expect(init?.redirect).toBe("manual");
+      return new Response("abc", {
+        status: 206,
+        headers: { "Content-Range": "bytes 3-5/9" },
+      });
+    });
+    expect(
+      await new Response(
+        await provider.download(
+          { id: "file", provider_file_id: "file-id", size: 9 },
+          3,
+          3,
+        ),
+      ).text(),
+    ).toBe("abc");
   });
   it("uses aligned resumable chunks and encrypted upload URLs without Microsoft sharing calls", async () => {
     const admin = await login(),

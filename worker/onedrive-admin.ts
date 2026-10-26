@@ -9,9 +9,11 @@ export async function oneDriveAdminRoutes(
   path: string,
 ) {
   if (
-    !["/api/admin/onedrive/browse", "/api/admin/onedrive/resolve"].includes(
-      path,
-    ) ||
+    ![
+      "/api/admin/onedrive/browse",
+      "/api/admin/onedrive/resolve",
+      "/api/admin/onedrive/folders",
+    ].includes(path) ||
     request.method !== "POST"
   )
     return null;
@@ -41,6 +43,19 @@ export async function oneDriveAdminRoutes(
     config: JSON.stringify(config),
     encrypted_credentials: encrypted,
   });
+  if (path.endsWith("/folders")) {
+    const folder = await provider.createFolder(input.name);
+    return json(
+      {
+        folder: {
+          id: folder.id,
+          name: folder.name,
+          parentId: folder.parentReference?.id,
+        },
+      },
+      201,
+    );
+  }
   if (path.endsWith("/resolve")) {
     // The singular /users/{id}/drive lookup does not support app-only auth.
     // The drives collection does: https://learn.microsoft.com/graph/api/drive-list.

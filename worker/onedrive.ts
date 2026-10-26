@@ -156,9 +156,19 @@ export class OneDriveStorage {
     return `${this.item(this.config.folderId)}:/${encodeURIComponent(this.name(file))}:`;
   }
   async test() {
-    const folder = await this.graph(
-      `${this.item(this.config.folderId)}?$select=id,name,folder,parentReference`,
-    );
+    let folder: Row;
+    try {
+      folder = await this.graph(
+        `${this.item(this.config.folderId)}?$select=id,name,folder,parentReference`,
+      );
+    } catch (error) {
+      if (error instanceof HttpError && /HTTP (400|404)\b/.test(error.message))
+        throw new HttpError(
+          400,
+          "The selected OneDrive folder could not be found in this drive. Storage root folder ID must be Microsoft's item ID, not a folder name or path. Choose Browse drive root, then open the intended folder, or enter root to use the drive root.",
+        );
+      throw error;
+    }
     ensure(folder.folder, 400, "The selected OneDrive item must be a folder.");
     return folder;
   }
@@ -177,16 +187,54 @@ export class OneDriveStorage {
     }
     return { folders: (data.value || []).filter((f: Row) => f.folder), next };
   }
-  async create(file: Row) {
-    const session = await this.graph(`${this.path(file)}/createUploadSession`, {
-      method: "POST",
-      body: JSON.stringify({
-        item: {
+  async createFolder(name: unknown) {
+    ensure(
+      typeof name === "string" &&
+        name.trim().length > 0 &&
+        name.length <= 128 &&
+        !/["*:<>?\\/|\x00-\x1f]/.test(name) &&
+        !/[. ]$/.test(name),
+      400,
+      "Enter a folder name without slashes, reserved characters, or a trailing dot or space.",
+    );
+    await this.test();
+    const folder = await this.graph(
+      `${this.item(this.config.folderId)}/children`,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          name,
+          folder: {},
           "@microsoft.graph.conflictBehavior": "fail",
-          name: this.name(file),
-        },
-      }),
-    });
+        }),
+      },
+    );
+    ensure(
+      folder.id && folder.folder,
+      502,
+      "Microsoft did not return the new folder.",
+    );
+    return folder;
+  }
+  async create(file: Row) {
+    let session: Row;
+    try {
+      session = await this.graph(`${this.path(file)}/createUploadSession`, {
+        method: "POST",
+        body: JSON.stringify({
+          item: {
+            "@microsoft.graph.conflictBehavior": "fail",
+            name: this.name(file),
+          },
+        }),
+      });
+    } catch (error) {
+      // Existing connectors may contain an unverified folder name. Graph often
+      // reports that as invalidRequest when starting an upload, rather than 404.
+      if (error instanceof HttpError && /HTTP (400|404)\b/.test(error.message))
+        await this.test();
+      throw error;
+    }
     ensure(
       session.uploadUrl,
       502,
@@ -304,13 +352,22 @@ export class OneDriveStorage {
     await response.body?.cancel();
   }
   async download(file: Row, offset: number, length: number) {
+    // The preauthenticated download URL is a computed annotation. Request the
+    // default metadata: selecting it as a property can omit it on SharePoint.
     const item = await this.graph(
-      `${file.provider_file_id ? this.item(file.provider_file_id) : this.path(file)}?$select=id,size,@microsoft.graph.downloadUrl`,
+      file.provider_file_id
+        ? this.item(file.provider_file_id)
+        : this.path(file),
     );
     ensure(
-      item.size === file.size && item["@microsoft.graph.downloadUrl"],
+      item.size === file.size,
       502,
       "The OneDrive file changed outside File Station.",
+    );
+    ensure(
+      typeof item["@microsoft.graph.downloadUrl"] === "string",
+      502,
+      "Microsoft did not provide a download URL for this file. Check the application's file read access and the tenant's download policy.",
     );
     const response = await fetch(
       resourceUrl(item["@microsoft.graph.downloadUrl"]),

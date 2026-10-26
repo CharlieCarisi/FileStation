@@ -18,7 +18,11 @@ import { currentUser, authRoute } from "./auth.js";
 import { validateS3Config } from "./s3.js";
 import { validateWebDavEndpoint } from "./webdav.js";
 import { Storage } from "./storage.js";
-import { validateOneDrive, ONEDRIVE_PART_SIZE } from "./onedrive";
+import {
+  validateOneDrive,
+  ONEDRIVE_PART_SIZE,
+  OneDriveStorage,
+} from "./onedrive";
 import { coordinate } from "./coordinator.js";
 import { fileAccess, shareRoutes } from "./shares.js";
 import { fileResponse } from "./file-response";
@@ -409,6 +413,12 @@ async function adminRoutes(request, env, path) {
         400,
         "Connector type cannot be changed.",
       );
+      if (b.kind === "onedrive" && (old.config !== config || encrypted))
+        await new OneDriveStorage(env, {
+          id: connectorId,
+          config,
+          encrypted_credentials: encrypted || old.encrypted_credentials,
+        }).test();
       const r = await coordinate(
         env,
         connectorId,
@@ -427,7 +437,13 @@ async function adminRoutes(request, env, path) {
         }),
       );
       if (!r.ok) return r;
-    } else
+    } else {
+      if (b.kind === "onedrive")
+        await new OneDriveStorage(env, {
+          id: connectorId,
+          config,
+          encrypted_credentials: encrypted,
+        }).test();
       await env.DB.prepare(
         "INSERT INTO connectors(id,name,kind,adapter,storage_adapter,limit_bytes,retention_days,enabled,config,encrypted_credentials,created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
       )
@@ -445,6 +461,7 @@ async function adminRoutes(request, env, path) {
           now(),
         )
         .run();
+    }
     await audit(env, admin.id, "connector.configured", connectorId);
     return json({ ok: true, id: connectorId });
   }

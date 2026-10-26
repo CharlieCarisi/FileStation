@@ -757,6 +757,7 @@ export function OneDriveDialog({
   const [driveId, setDrive] = useState(connector?.config.driveId || ""),
     [folderId, setFolder] = useState(connector?.config.folderId || "root"),
     [userEmail, setUserEmail] = useState(""),
+    [folderName, setFolderName] = useState(""),
     [listing, setListing] = useState<Row | null>(null);
   const [capacity, setCapacity] = useState(
       (connector?.limit_bytes || 10e9) / 1e9,
@@ -813,6 +814,23 @@ export function OneDriveDialog({
       setListing(null);
     } catch (e) {
       setError(message(e));
+    } finally {
+      setBusy(false);
+    }
+  }
+  async function createFolder() {
+    setBusy(true);
+    setError("");
+    try {
+      const result = await post("/admin/onedrive/folders", {
+        ...settings(),
+        name: folderName,
+      });
+      setFolder(result.folder.id);
+      setListing({ folder: result.folder, folders: [], next: "" });
+      setFolderName("");
+    } catch (error) {
+      setError(message(error));
     } finally {
       setBusy(false);
     }
@@ -929,6 +947,7 @@ export function OneDriveDialog({
           Storage root folder ID
           <input
             required
+            aria-describedby="onedrive-folder-hint"
             value={folderId}
             onChange={(e) => {
               setFolder(e.target.value);
@@ -936,14 +955,29 @@ export function OneDriveDialog({
             }}
           />
         </label>
-        <button
-          type="button"
-          className="button secondary"
-          disabled={busy || !driveId}
-          onClick={() => browse()}
-        >
-          Browse folders
-        </button>
+        <p className="fineprint" id="onedrive-folder-hint">
+          Enter Microsoft’s folder item ID, or use the folder picker. A folder
+          name such as FileStation is not an ID. Enter root to use the drive
+          root. The folder is checked when you save a new storage location.
+        </p>
+        <div className="feature-actions">
+          <button
+            type="button"
+            className="button secondary"
+            disabled={busy || !driveId}
+            onClick={() => browse()}
+          >
+            Browse folders
+          </button>
+          <button
+            type="button"
+            className="text-button"
+            disabled={busy || !driveId}
+            onClick={() => browse("root")}
+          >
+            Browse drive root
+          </button>
+        </div>
         {listing && (
           <div className="folder-picker">
             <strong>Selected: {listing.folder.name}</strong>
@@ -991,6 +1025,25 @@ export function OneDriveDialog({
                 More folders
               </button>
             )}
+            <div className="feature-actions">
+              <label>
+                New folder name
+                <input
+                  value={folderName}
+                  maxLength={128}
+                  onChange={(event) => setFolderName(event.target.value)}
+                  placeholder="FileStation"
+                />
+              </label>
+              <button
+                type="button"
+                className="button secondary"
+                disabled={busy || !folderName.trim()}
+                onClick={createFolder}
+              >
+                Create folder here
+              </button>
+            </div>
           </div>
         )}
         <p className="fineprint">
