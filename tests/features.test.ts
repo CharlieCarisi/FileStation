@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import type { Env, Row } from "../worker/model";
 import { encrypt, hash, decrypt } from "../worker/util.js";
 import { OneDriveStorage } from "../worker/onedrive";
+import { Storage } from "../worker/storage.js";
 const env = bindings as unknown as Env;
 const origin = "http://localhost";
 async function request(
@@ -793,6 +794,76 @@ describe("collaboration working copies", () => {
   });
 });
 describe("parallel storage parts", () => {
+  it("coalesces concurrent AliPan refreshes and persists the rotated token", async () => {
+    const connectorId = crypto.randomUUID(),
+      encrypted = await encrypt(env, {
+        clientId: "app",
+        clientSecret: "private-secret",
+        refreshToken: "old-refresh",
+      });
+    const connector = {
+      id: connectorId,
+      kind: "alipan",
+      config: JSON.stringify({ driveId: "drive" }),
+      encrypted_credentials: encrypted,
+    };
+    await env.DB.prepare(
+      "INSERT INTO connectors(id,name,kind,limit_bytes,retention_days,config,encrypted_credentials,created_at) VALUES (?,?,?,?,?,?,?,?)",
+    )
+      .bind(
+        connectorId,
+        "AliPan",
+        "alipan",
+        1000000,
+        30,
+        connector.config,
+        encrypted,
+        Date.now(),
+      )
+      .run();
+    let refreshes = 0;
+    vi.mocked(fetch).mockImplementation(async (input, init) => {
+      if (String(input).endsWith("/oauth/access_token")) {
+        refreshes++;
+        expect(JSON.parse(String(init?.body)).refresh_token).toBe(
+          "old-refresh",
+        );
+        await new Promise((resolve) => setTimeout(resolve, 50));
+        return Response.json({
+          access_token: "new-access",
+          refresh_token: "new-refresh",
+          expires_in: 7200,
+        });
+      }
+      expect(new Headers(init?.headers).get("authorization")).toBe(
+        "Bearer new-access",
+      );
+      return Response.json({ ok: true });
+    });
+    const providers = [1, 2, 3].map(() => new Storage(env, { ...connector }));
+    const results = await Promise.all(
+      providers.map((provider) =>
+        provider.ali("/adrive/v1.0/openFile/getUploadUrl", {}),
+      ),
+    );
+    expect(results).toEqual([{ ok: true }, { ok: true }, { ok: true }]);
+    expect(refreshes).toBe(1);
+    const stored = await env.DB.prepare(
+      "SELECT encrypted_credentials FROM connectors WHERE id=?",
+    )
+      .bind(connectorId)
+      .first<Row>();
+    expect(
+      (await decrypt(env, stored!.encrypted_credentials)).refreshToken,
+    ).toBe("new-refresh");
+    // A stale connector snapshot must re-read the renewed credentials, not rotate again.
+    await new Storage(env, { ...connector }).ali(
+      "/adrive/v1.0/openFile/getUploadUrl",
+      {},
+    );
+    expect(refreshes).toBe(1);
+  });
+
   it("runs three provider parts together and waits for them before completing", async () => {
     const admin = await login(),
       connectorId = crypto.randomUUID();

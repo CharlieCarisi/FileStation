@@ -14,6 +14,7 @@ import {
 import { S3Storage } from "./s3.js";
 import { WebDavStorage } from "./webdav.js";
 import { OneDriveStorage } from "./onedrive";
+const aliRefreshes = new Map();
 var Storage = class {
   constructor(env, connector) {
     this.env = env;
@@ -48,40 +49,72 @@ var Storage = class {
       !credentials.accessToken ||
       (credentials.expiresAt || 0) < Date.now() + 12e4
     ) {
-      const response2 = await fetch(
-        "https://openapi.alipan.com/oauth/access_token",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            client_id: credentials.clientId,
-            client_secret: credentials.clientSecret,
-            grant_type: "refresh_token",
-            refresh_token: credentials.refreshToken,
-          }),
-        },
-      );
-      const t = await response2.json();
-      ensure(
-        response2.ok && t.access_token,
-        502,
-        "AliPan authorization expired. Update this connector\u2019s credentials.",
-      );
-      credentials = {
-        ...credentials,
-        accessToken: t.access_token,
-        refreshToken: t.refresh_token || credentials.refreshToken,
-        expiresAt: Date.now() + (t.expires_in || 7200) * 1e3,
-      };
-      this.connector.encrypted_credentials = await encrypt(
-        this.env,
-        credentials,
-      );
-      await this.env.DB.prepare(
-        "UPDATE connectors SET encrypted_credentials=? WHERE id=?",
-      )
-        .bind(this.connector.encrypted_credentials, this.connector.id)
-        .run();
+      let refresh = aliRefreshes.get(this.connector.id);
+      if (!refresh) {
+        refresh = (async () => {
+          const latest = await this.env.DB.prepare(
+            "SELECT encrypted_credentials FROM connectors WHERE id=?",
+          )
+            .bind(this.connector.id)
+            .first();
+          let credentials = await decrypt(
+            this.env,
+            latest?.encrypted_credentials ||
+              this.connector.encrypted_credentials,
+          );
+          if (
+            credentials.accessToken &&
+            credentials.expiresAt > Date.now() + 12e4
+          )
+            return {
+              credentials,
+              encrypted:
+                latest?.encrypted_credentials ||
+                this.connector.encrypted_credentials,
+            };
+          const response = await fetch(
+            "https://openapi.alipan.com/oauth/access_token",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                client_id: credentials.clientId,
+                client_secret: credentials.clientSecret,
+                grant_type: "refresh_token",
+                refresh_token: credentials.refreshToken,
+              }),
+            },
+          );
+          const value = await response.json();
+          ensure(
+            response.ok && value.access_token,
+            502,
+            "AliPan authorization expired. Update this connector’s credentials.",
+          );
+          credentials = {
+            ...credentials,
+            accessToken: value.access_token,
+            refreshToken: value.refresh_token || credentials.refreshToken,
+            expiresAt: Date.now() + (value.expires_in || 7200) * 1000,
+          };
+          const encrypted = await encrypt(this.env, credentials);
+          await this.env.DB.prepare(
+            "UPDATE connectors SET encrypted_credentials=? WHERE id=?",
+          )
+            .bind(encrypted, this.connector.id)
+            .run();
+          return { credentials, encrypted };
+        })();
+        aliRefreshes.set(this.connector.id, refresh);
+      }
+      try {
+        const result = await refresh;
+        credentials = result.credentials;
+        this.connector.encrypted_credentials = result.encrypted;
+      } finally {
+        if (aliRefreshes.get(this.connector.id) === refresh)
+          aliRefreshes.delete(this.connector.id);
+      }
     }
     const response = await fetch(`https://openapi.alipan.com${endpoint}`, {
       method: "POST",
