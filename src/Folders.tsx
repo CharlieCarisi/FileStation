@@ -18,6 +18,31 @@ export function folderPath(id: string | null, folders: Row[]): string {
   }
   return [t("Root"), ...names].join(" / ");
 }
+export function SpaceSelect({
+  value,
+  onChange,
+  allowPrivate = true,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  allowPrivate?: boolean;
+}) {
+  return (
+    <label>
+      {t("Workspace")}
+      <select
+        aria-label={t("Workspace")}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+      >
+        <option value="private" disabled={!allowPrivate}>
+          {t("Private")}
+        </option>
+        <option value="public">{t("Public")}</option>
+      </select>
+    </label>
+  );
+}
 export function FolderSelect({
   value,
   onChange,
@@ -25,7 +50,9 @@ export function FolderSelect({
   ownerId,
   excludeId,
   onReady,
+  space = "private",
 }: {
+  space?: string;
   value: string | null;
   onChange: (value: string | null) => void;
   label?: string;
@@ -40,7 +67,9 @@ export function FolderSelect({
     let active = true;
     setLoading(true);
     setError("");
-    api(`/folders${ownerId ? `?ownerId=${encodeURIComponent(ownerId)}` : ""}`)
+    api(
+      `/folders?space=${space}${ownerId && space === "private" ? `&ownerId=${encodeURIComponent(ownerId)}` : ""}`,
+    )
       .then((result) => {
         if (active) setFolders(result.folders);
       })
@@ -53,7 +82,7 @@ export function FolderSelect({
     return () => {
       active = false;
     };
-  }, [ownerId]);
+  }, [ownerId, space]);
   useEffect(() => {
     onReady?.(!loading && !error);
   }, [loading, error, onReady]);
@@ -95,11 +124,13 @@ export function FolderSelect({
 function FolderForm({
   folder,
   parentId,
+  space,
   onClose,
   onSaved,
 }: {
   folder?: Row;
   parentId: string | null;
+  space: string;
   onClose: () => void;
   onSaved: () => void | Promise<void>;
 }) {
@@ -117,7 +148,7 @@ function FolderForm({
     try {
       await api(`/folders${folder ? `/${folder.id}` : ""}`, {
         method: folder ? "PATCH" : "POST",
-        body: JSON.stringify({ name, parentId: parent }),
+        body: JSON.stringify({ name, parentId: parent, space }),
       });
       await onSaved();
       onClose();
@@ -145,6 +176,7 @@ function FolderForm({
         </label>
         <FolderSelect
           value={parent}
+          space={space}
           onChange={setParent}
           ownerId={folder?.owner_id}
           excludeId={folder?.id}
@@ -162,11 +194,13 @@ function FolderForm({
 export function FolderPane({
   folders,
   current,
+  space = "private",
   onOpen,
   onChanged,
 }: {
   folders: Row[];
   current: string | null;
+  space?: string;
   onOpen: (id: string | null) => void;
   onChanged: () => void | Promise<void>;
 }) {
@@ -270,6 +304,7 @@ export function FolderPane({
         <FolderForm
           folder={editing || undefined}
           parentId={current}
+          space={space}
           onClose={() => setEditing(undefined)}
           onSaved={onChanged}
         />
@@ -286,8 +321,15 @@ export function MoveFilesDialog({
   onClose: () => void;
   onMoved: () => void | Promise<void>;
 }) {
+  const allowPrivate =
+    files.every((file) => file.can_make_private !== false) &&
+    new Set(files.map((file) => file.owner_id)).size === 1;
+  const initialSpace = allowPrivate ? files[0]?.space || "private" : "public";
+  const [space, setSpace] = useState(initialSpace);
   const [folder, setFolder] = useState<string | null>(
-      files[0]?.folder_id || null,
+      (files[0]?.space || "private") === initialSpace
+        ? files[0]?.folder_id || null
+        : null,
     ),
     [ready, setReady] = useState(false),
     [busy, setBusy] = useState(false),
@@ -300,6 +342,7 @@ export function MoveFilesDialog({
       await post("/files/move", {
         fileIds: files.map((file) => file.id),
         folderId: folder,
+        space,
       });
       await onMoved();
       onClose();
@@ -313,7 +356,25 @@ export function MoveFilesDialog({
     <Modal title={t("Move files")} onClose={onClose}>
       <form className="feature-form" onSubmit={move}>
         <p>{t("{0} selected", { 0: files.length })}</p>
+        <SpaceSelect
+          value={space}
+          allowPrivate={allowPrivate}
+          onChange={(value) => {
+            setReady(false);
+            setSpace(value);
+            setFolder(null);
+          }}
+        />
+        {space === "public" && (
+          <p className="info">
+            {t(
+              "Everyone with an approved account can view, upload, organize, download, and share in Public.",
+            )}
+          </p>
+        )}
         <FolderSelect
+          key={space}
+          space={space}
           value={folder}
           onChange={setFolder}
           ownerId={files[0]?.owner_id}
@@ -324,13 +385,22 @@ export function MoveFilesDialog({
             "Moving files keeps their shares, storage connector, and retention dates.",
           )}
         </p>
+        <p className="fineprint">
+          {t(
+            "Existing share links and invitations remain valid when changing spaces.",
+          )}
+        </p>
         <ErrorMessage error={error} />
         <button
           className="button primary"
           disabled={
             busy ||
             !ready ||
-            files.every((file) => (file.folder_id || null) === folder)
+            files.every(
+              (file) =>
+                (file.folder_id || null) === folder &&
+                (file.space || "private") === space,
+            )
           }
         >
           {busy ? t("Moving…") : t("Move files")}

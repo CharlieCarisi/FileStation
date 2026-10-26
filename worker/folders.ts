@@ -1,11 +1,13 @@
 import type { Env, Row } from "./model";
 import { currentUser } from "./auth.js";
+import { workspaceSpace, ownsFile, readsFile, type Space } from "./workspaces";
 import { body, ensure, json, id, now, audit, HttpError } from "./util.js";
 
 export async function folderForOwner(
   env: Env,
   ownerId: string,
   value: unknown,
+  space: Space = "private",
 ): Promise<string | null> {
   if (value === null || value === undefined || value === "" || value === "root")
     return null;
@@ -15,9 +17,9 @@ export async function folderForOwner(
     "Choose a valid folder.",
   );
   const folder = await env.DB.prepare(
-    "SELECT id FROM folders WHERE id=? AND owner_id=?",
+    "SELECT id FROM folders WHERE id=? AND space=? AND (space='public' OR owner_id=?)",
   )
-    .bind(value, ownerId)
+    .bind(value, space, ownerId)
     .first<Row>();
   ensure(folder, 404, "The selected folder is no longer available.");
   return folder!.id;
@@ -43,7 +45,11 @@ export function folderError(error: unknown): never {
     );
   if (message.includes("folders_sibling_name"))
     throw new HttpError(409, "A folder with this name already exists here.");
-  if (message.includes("folder_owner") || message.includes("FOREIGN KEY"))
+  if (
+    message.includes("folder_owner") ||
+    message.includes("folder_space") ||
+    message.includes("FOREIGN KEY")
+  )
     throw new HttpError(
       409,
       "The selected folder changed or was removed. Choose it again.",
@@ -89,7 +95,7 @@ export async function removeUserFolders(env: Env, ownerId: string) {
     .run();
   for (let level = 0; level < 20; level++) {
     const result = await env.DB.prepare(
-      "DELETE FROM folders WHERE owner_id=? AND NOT EXISTS(SELECT 1 FROM folders child WHERE child.parent_id=folders.id)",
+      "DELETE FROM folders WHERE owner_id=? AND space='private' AND NOT EXISTS(SELECT 1 FROM folders child WHERE child.parent_id=folders.id)",
     )
       .bind(ownerId)
       .run();
@@ -123,7 +129,7 @@ export async function folderRoutes(request: Request, env: Env, path: string) {
         count = JSON.parse(ids).length;
       const rows = (
         await env.DB.prepare(
-          "SELECT id,owner_id,state FROM files WHERE id IN (SELECT value FROM json_each(?))",
+          "SELECT id,owner_id,state,space FROM files WHERE id IN (SELECT value FROM json_each(?))",
         )
           .bind(ids)
           .all<Row>()
@@ -132,27 +138,40 @@ export async function folderRoutes(request: Request, env: Env, path: string) {
         rows.length === count &&
           rows.every(
             (file) =>
-              (file.owner_id === user.id || user.role === "admin") &&
+              readsFile(user, file) &&
               ["ready", "uploading"].includes(file.state),
           ),
         404,
         "One or more selected files are no longer available.",
       );
+      const space = workspaceSpace(input.space ?? rows[0].space);
       const owners = new Set(rows.map((file) => file.owner_id));
-      ensure(
-        owners.size === 1,
-        400,
-        "Select files belonging to one owner to move them.",
-      );
-      const ownerId = rows[0].owner_id,
-        folder = await folderForOwner(env, ownerId, input.folderId);
+      if (space === "private") {
+        ensure(
+          owners.size === 1,
+          400,
+          "Select files belonging to one owner to move them.",
+        );
+        ensure(
+          rows.every((file) => ownsFile(user, file)),
+          403,
+          "Only the uploader or an administrator can move this file to Private.",
+        );
+      }
+      const ownerId = rows[0].owner_id;
+      const folder = await folderForOwner(env, ownerId, input.folderId, space);
+      // Recheck permissions and availability in the transaction: a public file
+      // may have returned to Private since the initial lookup.
+      const predicate =
+        "id IN (SELECT value FROM json_each(?)) AND state IN ('ready','uploading') AND (owner_id=? OR ?=1 OR (space='public' AND ?='public'))";
+      const args = [ids, user.id, user.role === "admin" ? 1 : 0, space];
       const results = await env.DB.batch([
         env.DB.prepare(
-          "UPDATE files SET folder_id=? WHERE owner_id=? AND id IN (SELECT value FROM json_each(?)) AND state IN ('ready','uploading') AND (SELECT COUNT(*) FROM files WHERE owner_id=? AND id IN (SELECT value FROM json_each(?)) AND state IN ('ready','uploading'))=? RETURNING id",
-        ).bind(folder, ownerId, ids, ownerId, ids, count),
+          `UPDATE files SET folder_id=?,space=? WHERE ${predicate} AND (SELECT COUNT(*) FROM files WHERE ${predicate})=? RETURNING id`,
+        ).bind(folder, space, ...args, ...args, count),
         env.DB.prepare(
-          "UPDATE invitations SET folder_id=? WHERE owner_id=? AND current_file_id<>source_file_id AND current_file_id IN (SELECT value FROM json_each(?)) AND (SELECT COUNT(*) FROM files WHERE owner_id=? AND id IN (SELECT value FROM json_each(?)) AND state IN ('ready','uploading'))=?",
-        ).bind(folder, ownerId, ids, ownerId, ids, count),
+          `UPDATE invitations SET folder_id=?,space=? WHERE current_file_id<>source_file_id AND current_file_id IN (SELECT value FROM json_each(?)) AND (SELECT COUNT(*) FROM files WHERE ${predicate})=?`,
+        ).bind(folder, space, ids, ...args, count),
       ]);
       ensure(
         results[0].results.length === count,
@@ -165,33 +184,41 @@ export async function folderRoutes(request: Request, env: Env, path: string) {
     if (!match) return null;
     const folderId = match[1];
     if (!folderId && request.method === "GET") {
-      const ownerId = await owner(
-        env,
-        user,
-        new URL(request.url).searchParams.get("ownerId"),
+      const space = workspaceSpace(
+        new URL(request.url).searchParams.get("space") ?? "private",
       );
+      const ownerId =
+        space === "public"
+          ? user.id
+          : await owner(
+              env,
+              user,
+              new URL(request.url).searchParams.get("ownerId"),
+            );
       const rows = await env.DB.prepare(
-        "SELECT id,owner_id,parent_id,name,created_at FROM folders WHERE owner_id=? ORDER BY name COLLATE NOCASE,id",
+        "SELECT id,owner_id,parent_id,name,created_at,space FROM folders WHERE space=? AND (space='public' OR owner_id=?) ORDER BY name COLLATE NOCASE,id",
       )
-        .bind(ownerId)
+        .bind(space, ownerId)
         .all();
       return json({ folders: rows.results });
     }
     if (!folderId && request.method === "POST") {
       const input = await body(request),
         ownerId = await owner(env, user, input.ownerId);
-      const parent = await folderForOwner(env, ownerId, input.parentId),
+      const space = workspaceSpace(input.space);
+      const parent = await folderForOwner(env, ownerId, input.parentId, space),
         folder = {
           id: id(),
           owner_id: ownerId,
           parent_id: parent,
           name: name(input.name),
           created_at: now(),
+          space,
         };
       await env.DB.prepare(
-        "INSERT INTO folders(id,owner_id,parent_id,name,created_at) VALUES (?,?,?,?,?)",
+        "INSERT INTO folders(id,owner_id,parent_id,name,created_at,space) VALUES (?,?,?,?,?,?)",
       )
-        .bind(folder.id, ownerId, parent, folder.name, folder.created_at)
+        .bind(folder.id, ownerId, parent, folder.name, folder.created_at, space)
         .run();
       await audit(env, user.id, "folder.created", folder.id);
       return json({ folder }, 201);
@@ -199,11 +226,7 @@ export async function folderRoutes(request: Request, env: Env, path: string) {
     const folder = await env.DB.prepare("SELECT * FROM folders WHERE id=?")
       .bind(folderId)
       .first<Row>();
-    ensure(
-      folder && (folder.owner_id === user.id || user.role === "admin"),
-      404,
-      "Folder not found.",
-    );
+    ensure(folder && readsFile(user, folder), 404, "Folder not found.");
     if (request.method === "PATCH") {
       const input = await body(request);
       ensure(
@@ -212,7 +235,12 @@ export async function folderRoutes(request: Request, env: Env, path: string) {
         "Choose a folder change to save.",
       );
       const parent = Object.hasOwn(input, "parentId")
-        ? await folderForOwner(env, folder!.owner_id, input.parentId)
+        ? await folderForOwner(
+            env,
+            folder!.owner_id,
+            input.parentId,
+            folder!.space,
+          )
         : folder!.parent_id;
       const updated = await env.DB.prepare(
         "UPDATE folders SET name=?,parent_id=? WHERE id=? RETURNING *",

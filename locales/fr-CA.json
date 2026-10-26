@@ -788,5 +788,22 @@
   "folder created": "Dossier créé",
   "folder updated": "Dossier modifié",
   "folder deleted": "Dossier supprimé",
-  "files moved": "Fichiers déplacés"
+  "files moved": "Fichiers déplacés",
+  "Private": "Privé",
+  "Public": "Commun",
+  "Private files": "Fichiers personnels",
+  "Public files": "Fichiers communs",
+  "Choose Private or Public space.": "Choisissez l’espace privé ou commun.",
+  "Only the uploader or an administrator can move this file to Private.": "Seule la personne ayant téléversé le fichier ou un administrateur peut le déplacer vers l’espace privé.",
+  "Everyone with an approved account can view, upload, organize, download, and share in Public.": "Toute personne ayant un compte approuvé peut consulter, téléverser, organiser, télécharger et partager des fichiers dans l’espace commun.",
+  "Existing share links and invitations remain valid when changing spaces.": "Les liens de partage et les invitations existants demeurent valides lors d’un changement d’espace.",
+  "Public files are visible to all approved team members": "Les fichiers communs sont visibles par tous les membres approuvés de l’équipe",
+  "A shared workspace for your team. Only the uploader or an administrator can delete files or move them to Private.": "Un espace de travail commun pour votre équipe. Seule la personne ayant téléversé un fichier ou un administrateur peut le supprimer ou le déplacer vers l’espace privé.",
+  "Your personal workspace. Move selected files to Public when your team needs access.": "Votre espace de travail personnel. Déplacez les fichiers sélectionnés vers l’espace commun lorsque votre équipe doit y accéder.",
+  "Files from different uploaders can be moved together within Public.": "Les fichiers de différentes personnes peuvent être déplacés ensemble dans l’espace commun.",
+  "Submitted files will be visible to all approved team members.": "Les fichiers soumis seront visibles par tous les membres approuvés de l’équipe.",
+  "The file changed. Refresh and try again.": "Le fichier a été modifié. Actualisez la page et réessayez.",
+  "Delete user and personal files": "Supprimer le compte et les fichiers personnels",
+  "This deactivates {0} and deletes their Private files and unfinished uploads. Completed Public files remain available to the team.": "Cette action désactive {0} et supprime ses fichiers privés et ses téléversements inachevés. Les fichiers communs dont le téléversement est terminé demeurent accessibles à l’équipe.",
+  "Account and personal files deleted. Public files were retained.": "Le compte et les fichiers personnels ont été supprimés. Les fichiers communs ont été conservés."
 }

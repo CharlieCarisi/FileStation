@@ -1,6 +1,6 @@
 # File Station
 
-Private file transfers, workspace folders, recipient verification, submission requests, document collaboration, private file previews, and English/Canadian French/Simplified Chinese interfaces on Cloudflare Workers, D1, and R2. Storage adapters include native R2, S3-compatible providers (including Oracle), AliPan, Synology/WebDAV, and OneDrive for Business.
+Private file transfers, Private/Public workspaces with folders, recipient verification, submission requests, document collaboration, private file previews, and English/Canadian French/Simplified Chinese interfaces on Cloudflare Workers, D1, and R2. Storage adapters include native R2, S3-compatible providers (including Oracle), AliPan, Synology/WebDAV, and OneDrive for Business.
 
 Use Node 24. Run `npm ci`, `npm run db:local`, and `npm run dev`. Local authentication uses an email simulator; the verification PIN appears in the dialog. Production uses SMTP2GO. Never enable `DEV_MODE` in production.
 
@@ -9,7 +9,7 @@ Validation: `npm run build`, `npm test`, and `npm run test:browser` (system Chro
 - [Deployment, share-link address settings and languages](docs/deployment.md)
 - [OneDrive application and private folder setup](docs/onedrive.md)
 - [Submissions and collaboration](docs/collaboration.md)
-- [Folders and file organization](docs/folders.md)
+- [Private/Public spaces, folders and file organization](docs/folders.md)
 - [Source recovery](docs/recovery.md)
 
 Source maps are enabled to make future recovery possible. Keep code and the lockfile in Git; environment snapshots alone are not a source backup. Credentials belong in Worker secrets or encrypted connector settings, never Git.

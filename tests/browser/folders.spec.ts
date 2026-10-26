@@ -70,7 +70,7 @@ test("browse folders, upload inside a subfolder, move a selection to root and re
     })
     .toBe(2);
   await page
-    .getByRole("button", { name: "My files", exact: true })
+    .getByRole("button", { name: "Private files", exact: true })
     .first()
     .click();
   await expect(

@@ -788,3 +788,20 @@ folder created|Dossier créé|已创建文件夹
 folder updated|Dossier modifié|已更新文件夹
 folder deleted|Dossier supprimé|已删除文件夹
 files moved|Fichiers déplacés|已移动文件
+Private|Privé|个人
+Public|Commun|公共
+Private files|Fichiers personnels|个人文件
+Public files|Fichiers communs|公共文件
+Choose Private or Public space.|Choisissez l’espace privé ou commun.|请选择个人或公共工作区。
+Only the uploader or an administrator can move this file to Private.|Seule la personne ayant téléversé le fichier ou un administrateur peut le déplacer vers l’espace privé.|只有上传者或管理员可以将此文件移至个人工作区。
+Everyone with an approved account can view, upload, organize, download, and share in Public.|Toute personne ayant un compte approuvé peut consulter, téléverser, organiser, télécharger et partager des fichiers dans l’espace commun.|所有已获批准的用户都可以在公共工作区中查看、上传、整理、下载和共享文件。
+Existing share links and invitations remain valid when changing spaces.|Les liens de partage et les invitations existants demeurent valides lors d’un changement d’espace.|更改工作区后，现有共享链接和邀请仍然有效。
+Public files are visible to all approved team members|Les fichiers communs sont visibles par tous les membres approuvés de l’équipe|所有已获批准的团队成员都可以查看公共文件
+A shared workspace for your team. Only the uploader or an administrator can delete files or move them to Private.|Un espace de travail commun pour votre équipe. Seule la personne ayant téléversé un fichier ou un administrateur peut le supprimer ou le déplacer vers l’espace privé.|这是团队的共享工作区。只有上传者或管理员可以删除文件或将其移至个人工作区。
+Your personal workspace. Move selected files to Public when your team needs access.|Votre espace de travail personnel. Déplacez les fichiers sélectionnés vers l’espace commun lorsque votre équipe doit y accéder.|这是您的个人工作区。需要向团队开放访问时，可将所选文件移至公共工作区。
+Files from different uploaders can be moved together within Public.|Les fichiers de différentes personnes peuvent être déplacés ensemble dans l’espace commun.|不同上传者的文件可以在公共工作区内一起移动。
+Submitted files will be visible to all approved team members.|Les fichiers soumis seront visibles par tous les membres approuvés de l’équipe.|提交的文件将对所有已获批准的团队成员可见。
+The file changed. Refresh and try again.|Le fichier a été modifié. Actualisez la page et réessayez.|文件已更改。请刷新后重试。
+Delete user and personal files|Supprimer le compte et les fichiers personnels|删除用户及个人文件
+This deactivates {0} and deletes their Private files and unfinished uploads. Completed Public files remain available to the team.|Cette action désactive {0} et supprime ses fichiers privés et ses téléversements inachevés. Les fichiers communs dont le téléversement est terminé demeurent accessibles à l’équipe.|此操作将停用 {0}，并删除其个人文件及未完成的上传。已上传完成的公共文件仍可供团队访问。
+Account and personal files deleted. Public files were retained.|Le compte et les fichiers personnels ont été supprimés. Les fichiers communs ont été conservés.|用户账户及个人文件已删除。公共文件已保留。

@@ -2,7 +2,7 @@
 
 The existing Worker is `file-station`, D1 `file-station`, and R2 bucket `file-station`. Production configuration keeps `DEV_MODE=false`. Keep the deployed `CONNECTOR_ENCRYPTION_KEY` and `SMTP2GO_API_KEY` secrets; do not overwrite them when deploying. `.dev.vars.local` is generated only for local emulation and is never uploaded.
 
-Build with `npm run build`. Apply `npm run db:remote` before deploying `node scripts/wrangler.mjs deploy --env=`. Migration 0004 adds invitation tables and a per-file part size; existing files default to their original 8 MiB. It does not reset user data. Migration 0005 adds private workspace folders; existing files and invitations start at Root, and storage objects are unchanged. Earlier migration names match the production ledger recovered from D1.
+Build with `npm run build`. Apply `npm run db:remote` before deploying `node scripts/wrangler.mjs deploy --env=`. Migration 0004 adds invitation tables and a per-file part size; existing files default to their original 8 MiB. It does not reset user data. Migration 0005 adds private workspace folders; existing files and invitations start at Root, and storage objects are unchanged. Migration 0006 adds Private/Public workspaces; existing data defaults to Private without publishing files. Earlier migration names match the production ledger recovered from D1.
 
 Both addresses use the same Worker and database:
 

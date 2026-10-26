@@ -29,6 +29,7 @@ import { fileResponse } from "./file-response";
 import { uploadConnections } from "./transfer-options";
 import { SHARE_ADDRESSES } from "./share-links";
 import { folderForOwner, removeUserFolders } from "./folders";
+import { workspaceSpace, ownsFile } from "./workspaces";
 async function connectorList(env, admin) {
   const result = await env.DB.prepare(
     `SELECT c.id,c.name,COALESCE(c.storage_adapter,c.adapter,c.kind) AS kind,c.limit_bytes,c.retention_days,c.enabled,c.config,c.encrypted_credentials IS NOT NULL AS credentials_configured,COALESCE(SUM(CASE WHEN f.state IN ('ready','deleting') THEN f.size ELSE 0 END),0) AS used_bytes,COALESCE(SUM(CASE WHEN f.state='uploading' THEN f.size ELSE 0 END),0) AS reserved_bytes,COUNT(CASE WHEN f.state='ready' THEN 1 END) AS file_count FROM connectors c LEFT JOIN files f ON f.connector_id=c.id GROUP BY c.id ORDER BY c.created_at`,
@@ -62,29 +63,74 @@ async function routes(request, env) {
   if (path === "/api/files" && request.method === "GET") {
     const user = await currentUser(request, env, true);
     const all = url.searchParams.get("all") === "true" && user.role === "admin";
-    let folderFilter = "",
-      folderBindings = [];
+    const selectedSpace =
+      url.searchParams.get("space") ??
+      (all && !url.searchParams.has("folderId") ? "all" : "private");
+    ensure(
+      selectedSpace === "all" || ["private", "public"].includes(selectedSpace),
+      400,
+      "Choose Private or Public space.",
+    );
+    const filters = ["f.state IN ('ready','uploading')"];
+    const bindings = [now()];
+    if (!all) {
+      filters.push("(f.owner_id=? OR f.space='public')");
+      bindings.push(user.id);
+    }
+    if (selectedSpace !== "all") {
+      filters.push("f.space=?");
+      bindings.push(selectedSpace);
+    }
+    if (url.searchParams.get("sharedByMe") === "true") {
+      filters.push(
+        "EXISTS(SELECT 1 FROM shares mine WHERE mine.file_id=f.id AND mine.created_by=? AND mine.revoked_at IS NULL AND (mine.expires_at IS NULL OR mine.expires_at>?))",
+      );
+      bindings.push(user.id, now());
+    }
     if (url.searchParams.has("folderId")) {
+      ensure(selectedSpace !== "all", 400, "Choose Private or Public space.");
       const requested = url.searchParams.get("folderId");
       let selected = null;
       if (all && requested && requested !== "root") {
-        const row = await env.DB.prepare("SELECT id FROM folders WHERE id=?")
-          .bind(requested)
+        const row = await env.DB.prepare(
+          "SELECT id FROM folders WHERE id=? AND space=?",
+        )
+          .bind(requested, selectedSpace)
           .first();
         ensure(row, 404, "The selected folder is no longer available.");
         selected = row.id;
-      } else selected = await folderForOwner(env, user.id, requested);
-      folderFilter = selected
-        ? " AND f.folder_id=?"
-        : " AND f.folder_id IS NULL";
-      if (selected) folderBindings.push(selected);
+      } else
+        selected = await folderForOwner(
+          env,
+          user.id,
+          requested,
+          workspaceSpace(selectedSpace),
+        );
+      filters.push(selected ? "f.folder_id=?" : "f.folder_id IS NULL");
+      if (selected) bindings.push(selected);
     }
     const rows = await env.DB.prepare(
-      `SELECT f.*,directory.name AS folder_name,u.email AS owner_email,c.name AS connector_name,COALESCE(c.storage_adapter,c.adapter,c.kind) AS storage_kind,(SELECT COUNT(*) FROM shares s WHERE s.file_id=f.id AND s.revoked_at IS NULL AND (s.expires_at IS NULL OR s.expires_at>?)) AS share_count FROM files f JOIN users u ON u.id=f.owner_id JOIN connectors c ON c.id=f.connector_id LEFT JOIN folders directory ON directory.id=f.folder_id WHERE f.state IN ('ready','uploading') AND ${all ? "1=1" : "f.owner_id=?"}${folderFilter} ORDER BY f.created_at DESC LIMIT 500`,
+      `SELECT f.*,directory.name AS folder_name,u.email AS owner_email,c.name AS connector_name,COALESCE(c.storage_adapter,c.adapter,c.kind) AS storage_kind,(SELECT COUNT(*) FROM shares s WHERE s.file_id=f.id AND s.revoked_at IS NULL AND (s.expires_at IS NULL OR s.expires_at>?)) AS share_count FROM files f JOIN users u ON u.id=f.owner_id JOIN connectors c ON c.id=f.connector_id LEFT JOIN folders directory ON directory.id=f.folder_id WHERE ${filters.join(" AND ")} ORDER BY f.created_at DESC LIMIT 500`,
     )
-      .bind(...(all ? [now()] : [now(), user.id]), ...folderBindings)
+      .bind(...bindings)
       .all();
-    return json({ files: rows.results });
+    const files = rows.results.map((file) => {
+      const canManage = ownsFile(user, file);
+      return {
+        ...file,
+        can_delete: canManage,
+        can_make_private: canManage,
+        can_resume: canManage,
+        ...(!canManage
+          ? {
+              provider_upload_id: undefined,
+              provider_file_id: undefined,
+              object_key: undefined,
+            }
+          : {}),
+      };
+    });
+    return json({ files });
   }
   if (path === "/api/uploads" && request.method === "POST") {
     const user = await currentUser(request, env, true);
@@ -231,7 +277,7 @@ async function adminRoutes(request, env, path) {
         env.DB.prepare("DELETE FROM sessions WHERE user_id=?").bind(user.id),
       ]);
       const files = await env.DB.prepare(
-        "SELECT * FROM files WHERE owner_id=? AND state<>'deleted'",
+        "SELECT * FROM files WHERE owner_id=? AND state<>'deleted' AND (space='private' OR state='uploading')",
       )
         .bind(user.id)
         .all();

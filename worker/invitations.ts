@@ -27,6 +27,7 @@ import { uploadConnections } from "./transfer-options";
 import { shareLink } from "./share-links";
 import { translate, localeFor } from "../shared/i18n";
 import { folderForOwner, folderError } from "./folders";
+import { workspaceSpace, readsFile } from "./workspaces";
 
 const fail = () =>
   new HttpError(
@@ -143,17 +144,21 @@ export async function guardInvitationUpload(
     "This invitation does not allow the selected destination.",
   );
   input.folderId = invite.folder_id;
+  input.space = invite.space;
   if (
     invite.kind === "collaboration" &&
     invite.current_file_id &&
     invite.current_file_id !== invite.source_file_id
   ) {
     const current = await env.DB.prepare(
-      "SELECT folder_id FROM files WHERE id=? AND owner_id=?",
+      "SELECT folder_id,space FROM files WHERE id=? AND owner_id=?",
     )
       .bind(invite.current_file_id, invite.owner_id)
       .first<Row>();
-    if (current) input.folderId = current.folder_id;
+    if (current) {
+      input.folderId = current.folder_id;
+      input.space = current.space;
+    }
   }
   const owner = await env.DB.prepare("SELECT email FROM users WHERE id=?")
     .bind(invite.owner_id)
@@ -447,11 +452,7 @@ export async function invitationRoutes(
       )
         .bind(value.sourceFileId, now())
         .first<Row>();
-      ensure(
-        source && (source.owner_id === user.id || user.role === "admin"),
-        404,
-        "Source file not found.",
-      );
+      ensure(source && readsFile(user, source), 404, "Source file not found.");
       ensure(
         typeof value.targetName === "string" &&
           value.targetName.trim().length > 0 &&
@@ -470,14 +471,21 @@ export async function invitationRoutes(
         "The target filename must keep the original file extension.",
       );
     }
+    const space = workspaceSpace(
+      value.space ??
+        (source && source.owner_id === user.id ? source.space : "private"),
+    );
     const folderId = await folderForOwner(
       env,
       user.id,
       Object.hasOwn(value, "folderId")
         ? value.folderId
-        : source && source.owner_id === user.id
+        : source &&
+            source.space === space &&
+            (space === "public" || source.owner_id === user.id)
           ? source.folder_id
           : null,
+      space,
     );
     const invitationId = id(),
       code = (value.kind === "submission" ? "U" : "C") + randomCode(),
@@ -485,9 +493,9 @@ export async function invitationRoutes(
         now() + value.expiresDays * 86400000,
         source?.expires_at || Infinity,
       );
-    await env.DB.batch([
+    const created = await env.DB.batch([
       env.DB.prepare(
-        "INSERT INTO invitations(id,owner_id,kind,title,code_hash,encrypted_code,connector_id,source_file_id,target_name,max_file_bytes,max_files,created_at,expires_at,folder_id) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        "INSERT INTO invitations(id,owner_id,kind,title,code_hash,encrypted_code,connector_id,source_file_id,target_name,max_file_bytes,max_files,created_at,expires_at,folder_id,space) SELECT ?,?,?,?,?,?,?,?,?,?,?,?,?,?,? WHERE ? IS NULL OR EXISTS(SELECT 1 FROM files WHERE id=? AND state='ready' AND (expires_at IS NULL OR expires_at>?) AND (owner_id=? OR space='public' OR ?=1)) RETURNING id",
       ).bind(
         invitationId,
         user.id,
@@ -503,13 +511,24 @@ export async function invitationRoutes(
         now(),
         expiresAt,
         folderId,
+        space,
+        source?.id || null,
+        source?.id || null,
+        now(),
+        user.id,
+        user.role === "admin" ? 1 : 0,
       ),
       ...recipients.map((address) =>
         env.DB.prepare(
-          "INSERT INTO invitation_recipients(invitation_id,email) VALUES (?,?)",
-        ).bind(invitationId, address),
+          "INSERT INTO invitation_recipients(invitation_id,email) SELECT ?,? WHERE EXISTS(SELECT 1 FROM invitations WHERE id=?)",
+        ).bind(invitationId, address, invitationId),
       ),
     ]).catch(folderError);
+    ensure(
+      created[0].results.length,
+      409,
+      "The file changed. Refresh and try again.",
+    );
     const link = await shareLink(request, env, code);
     let emailSent = false,
       emailError;
@@ -694,11 +713,11 @@ export async function invitationRoutes(
       if (invite.current_file_id !== file.id) {
         const results = await env.DB.batch([
           env.DB.prepare(
-            "UPDATE invitations SET folder_id=CASE WHEN current_file_id IS NOT NULL AND current_file_id<>source_file_id THEN (SELECT f.folder_id FROM files f WHERE f.id=invitations.current_file_id) ELSE folder_id END,current_file_id=?,revision=revision+1 WHERE id=? AND revision=? AND revoked_at IS NULL AND expires_at>? AND EXISTS (SELECT 1 FROM files WHERE id=invitations.source_file_id AND state='ready' AND (expires_at IS NULL OR expires_at>?)) RETURNING revision",
+            "UPDATE invitations SET space=CASE WHEN current_file_id IS NOT NULL AND current_file_id<>source_file_id THEN (SELECT f.space FROM files f WHERE f.id=invitations.current_file_id) ELSE space END,folder_id=CASE WHEN current_file_id IS NOT NULL AND current_file_id<>source_file_id THEN (SELECT f.folder_id FROM files f WHERE f.id=invitations.current_file_id) ELSE folder_id END,current_file_id=?,revision=revision+1 WHERE id=? AND revision=? AND revoked_at IS NULL AND expires_at>? AND EXISTS (SELECT 1 FROM files WHERE id=invitations.source_file_id AND state='ready' AND (expires_at IS NULL OR expires_at>?)) RETURNING revision",
           ).bind(file.id, invite.id, file.base_revision, time, time),
           env.DB.prepare(
-            "UPDATE files SET folder_id=(SELECT folder_id FROM invitations WHERE id=?) WHERE id=? AND EXISTS(SELECT 1 FROM invitations WHERE id=? AND current_file_id=?)",
-          ).bind(invite.id, file.id, invite.id, file.id),
+            "UPDATE files SET folder_id=(SELECT folder_id FROM invitations WHERE id=?),space=(SELECT space FROM invitations WHERE id=?) WHERE id=? AND EXISTS(SELECT 1 FROM invitations WHERE id=? AND current_file_id=?)",
+          ).bind(invite.id, invite.id, file.id, invite.id, file.id),
           env.DB.prepare(
             "UPDATE invitation_files SET published_at=? WHERE file_id=? AND EXISTS (SELECT 1 FROM invitations WHERE id=? AND current_file_id=?)",
           ).bind(time, file.id, invite.id, file.id),

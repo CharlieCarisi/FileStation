@@ -114,7 +114,7 @@ class TransferManager {
         this.update());
     }
   }
-  async upload(v, T, invitation, folderId = null) {
+  async upload(v, T, invitation, folderId = null, space = "private") {
     const o = await fingerprint(v),
       _ = await post(
         invitation ? `/invitations/${invitation.id}/uploads` : "/uploads",
@@ -122,6 +122,7 @@ class TransferManager {
           ...(invitation ? { baseRevision: invitation.baseRevision } : {}),
           connectorId: T,
           folderId,
+          space,
           name: v.name,
           size: v.size,
           mime: v.type,

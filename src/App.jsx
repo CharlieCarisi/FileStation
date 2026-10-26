@@ -7,7 +7,7 @@ import {
 } from "./features";
 import FilePreview from "./FilePreview";
 import ShareAddressSettings from "./ShareAddressSettings";
-import { FolderPane, FolderSelect } from "./Folders";
+import { FolderPane, FolderSelect, SpaceSelect } from "./Folders";
 import FileTable from "./FileTable";
 // Restored from the published browser application; see docs/recovery.md.
 import * as D from "react";
@@ -245,7 +245,9 @@ function UploadDialog({
   onClose: v,
   onUploaded: T,
   folderId: defaultFolderId = null,
+  space: defaultSpace = "private",
 }) {
+  const [uploadSpace, setUploadSpace] = D.useState(defaultSpace);
   const [uploadFolderId, setUploadFolderId] = D.useState(defaultFolderId);
   const [folderReady, setFolderReady] = D.useState(false);
   const [o, _] = D.useState([]),
@@ -262,7 +264,7 @@ function UploadDialog({
     try {
       if (!o.length) throw new Error("Choose at least one file.");
       for (const $ of o)
-        await transfers.upload($, C, undefined, uploadFolderId);
+        await transfers.upload($, C, undefined, uploadFolderId, uploadSpace);
       (T(), v());
     } catch ($) {
       (A($.message), T());
@@ -357,7 +359,24 @@ function UploadDialog({
             }),
           ],
         }),
+        c.jsx(SpaceSelect, {
+          value: uploadSpace,
+          onChange: (space) => {
+            setFolderReady(false);
+            setUploadSpace(space);
+            setUploadFolderId(null);
+          },
+        }),
+        uploadSpace === "public" &&
+          c.jsx("p", {
+            className: "info",
+            children: t(
+              "Everyone with an approved account can view, upload, organize, download, and share in Public.",
+            ),
+          }),
         c.jsx(FolderSelect, {
+          key: uploadSpace,
+          space: uploadSpace,
           value: uploadFolderId,
           onChange: setUploadFolderId,
           onReady: setFolderReady,
@@ -1598,7 +1617,7 @@ function UsersPanel({ current: S, onNotice: v }) {
                               }),
                               c.jsx("button", {
                                 className: "icon-button danger",
-                                title: t("Delete user and files"),
+                                title: t("Delete user and personal files"),
                                 "aria-label": t("Delete {0}", {
                                   0: N.email,
                                 }),
@@ -1623,7 +1642,7 @@ function UsersPanel({ current: S, onNotice: v }) {
         c.jsx(ConfirmDialog, {
           title: t("Delete this account?"),
           message: t(
-            "This deactivates {0}, permanently deletes all their files, and invalidates their shares.",
+            "This deactivates {0} and deletes their Private files and unfinished uploads. Completed Public files remain available to the team.",
             {
               0: B.email,
             },
@@ -1634,7 +1653,9 @@ function UsersPanel({ current: S, onNotice: v }) {
               method: "DELETE",
             }),
               await A(),
-              v("Account and files deleted."));
+              v(
+                "Account and personal files deleted. Public files were retained.",
+              ));
           },
         }),
     ],
@@ -1811,9 +1832,10 @@ function SettingsPanel({ onNotice: S }) {
 const userNavigation = [
     {
       page: "files",
-      label: "My files",
+      label: "Private files",
       icon: Xf,
     },
+    { page: "public", label: "Public files", icon: S1 },
     {
       page: "shared",
       label: "Shared by me",
@@ -1909,7 +1931,11 @@ function App() {
     [T, o] = D.useState(!1),
     [_, C] = D.useState(!1),
     [B, M] = D.useState(!1),
-    [R, J] = D.useState("files"),
+    [R, J] = D.useState(
+      new URLSearchParams(location.search).get("space") === "public"
+        ? "public"
+        : "files",
+    ),
     [A, j] = D.useState([]),
     [N, k] = D.useState([]),
     [xe, G] = D.useState(),
@@ -1937,17 +1963,30 @@ function App() {
       transfers.setScope(S?.id || "guest");
     }, [S?.id]));
   const [folders, setFolders] = D.useState([]);
+  const [currentSpace, setCurrentSpace] = D.useState(() =>
+    new URLSearchParams(location.search).get("space") === "public"
+      ? "public"
+      : "private",
+  );
   const [currentFolder, setCurrentFolder] = D.useState(
     () => new URLSearchParams(location.search).get("folder") || null,
   );
   const browserState = D.useRef();
   const reloadSequence = D.useRef(0);
-  browserState.current = { user: S, view: R, folder: currentFolder };
-  function openFolder(folder, replace = false) {
+  browserState.current = {
+    user: S,
+    view: R,
+    folder: currentFolder,
+    space: currentSpace,
+  };
+  function openFolder(folder, replace = false, space = currentSpace) {
     k([]);
     setCurrentFolder(folder);
-    J("files");
+    setCurrentSpace(space);
+    J(space === "public" ? "public" : "files");
     const url = new URL(location.href);
+    if (space === "public") url.searchParams.set("space", space);
+    else url.searchParams.delete("space");
     if (folder) url.searchParams.set("folder", folder);
     else url.searchParams.delete("folder");
     history[replace ? "replaceState" : "pushState"](null, "", url);
@@ -1958,13 +1997,18 @@ function App() {
       setCurrentFolder(
         new URLSearchParams(location.search).get("folder") || null,
       );
-      J("files");
+      const space =
+        new URLSearchParams(location.search).get("space") === "public"
+          ? "public"
+          : "private";
+      setCurrentSpace(space);
+      J(space === "public" ? "public" : "files");
     }
     addEventListener("popstate", navigate);
     return () => removeEventListener("popstate", navigate);
   }, []);
   async function Z() {
-    const { user, view, folder } = browserState.current;
+    const { user, view, folder, space } = browserState.current;
     const sequence = ++reloadSequence.current;
     if (user) {
       Ae("");
@@ -1972,9 +2016,9 @@ function App() {
         const requests = [api("/connectors")];
         if (user.status === "active")
           requests.push(
-            api("/folders"),
+            api(`/folders?space=${space}`),
             api(
-              `/files${view === "allfiles" ? "?all=true" : view === "files" ? `?folderId=${encodeURIComponent(folder || "root")}` : ""}`,
+              `/files${view === "allfiles" ? "?all=true" : ["files", "public"].includes(view) ? `?space=${space}&folderId=${encodeURIComponent(folder || "root")}` : view === "shared" ? "?space=all&sharedByMe=true" : "?space=all"}`,
             ),
           );
         const results = await Promise.all(requests);
@@ -1982,7 +2026,8 @@ function App() {
           sequence !== reloadSequence.current ||
           browserState.current.user?.id !== user.id ||
           browserState.current.view !== view ||
-          browserState.current.folder !== folder
+          browserState.current.folder !== folder ||
+          browserState.current.space !== space
         )
           return;
         j(results[0].connectors);
@@ -1995,9 +2040,10 @@ function App() {
           sequence === reloadSequence.current &&
           browserState.current.user?.id === user.id &&
           browserState.current.view === view &&
-          browserState.current.folder === folder
+          browserState.current.folder === folder &&
+          browserState.current.space === space
         ) {
-          if (view === "files" && folder && x.status === 404)
+          if (["files", "public"].includes(view) && folder && x.status === 404)
             openFolder(null, true);
           else Ae(x.message);
         }
@@ -2006,7 +2052,7 @@ function App() {
   }
   (D.useEffect(() => {
     Z();
-  }, [S, R, w, currentFolder]),
+  }, [S, R, w, currentFolder, currentSpace]),
     D.useEffect(() => {
       if (!De) return;
       const x = setTimeout(() => W(""), 6e3);
@@ -2028,7 +2074,12 @@ function App() {
       await post("/auth/logout");
       for (const x of transfers.items)
         x.state === "running" && transfers.pause(x.id);
-      (v(null), k([]), j([]), setFolders([]), setCurrentFolder(null));
+      (v(null),
+        k([]),
+        j([]),
+        setFolders([]),
+        setCurrentFolder(null),
+        setCurrentSpace("private"));
     } catch (x) {
       Ae(x.message);
     }
@@ -2093,8 +2144,10 @@ function App() {
             }),
           ],
         }),
-        R === "files" &&
+        ["files", "public"].includes(R) &&
           c.jsx(FolderPane, {
+            key: currentSpace,
+            space: currentSpace,
             folders,
             current: currentFolder,
             onOpen: openFolder,
@@ -2106,9 +2159,9 @@ function App() {
             c.jsx(FileTable, {
               files: d,
               connectors: A,
-              showOwner: R === "allfiles",
-              showLocation: R !== "files",
-              contextKey: `${R}:${currentFolder}:${V}:${Ve}`,
+              showOwner: R === "allfiles" || R === "public",
+              showLocation: !["files", "public"].includes(R),
+              contextKey: `${R}:${currentSpace}:${currentFolder}:${V}:${Ve}`,
               onDownload: fe,
               onShare: G,
               onDelete: ye,
@@ -2170,7 +2223,9 @@ function App() {
                 c.jsx(yu, {
                   size: 14,
                 }),
-                t(" Files stay private until you share them"),
+                R === "public"
+                  ? t("Public files are visible to all approved team members")
+                  : t(" Files stay private until you share them"),
               ],
             }),
           ],
@@ -2200,7 +2255,18 @@ function App() {
                             {
                               className: R === x.page ? "selected" : "",
                               onClick: () => {
-                                (J(x.page), il(!1));
+                                (["files", "public"].includes(x.page) &&
+                                (x.page === "public" ? "public" : "private") !==
+                                  currentSpace
+                                  ? openFolder(
+                                      null,
+                                      false,
+                                      x.page === "public"
+                                        ? "public"
+                                        : "private",
+                                    )
+                                  : J(x.page),
+                                  il(!1));
                               },
                               children: [
                                 c.jsx(x.icon, {
@@ -2408,7 +2474,12 @@ function App() {
                             })
                           : c.jsxs(c.Fragment, {
                               children: [
-                                ["files", "shared", "allfiles"].includes(R) &&
+                                [
+                                  "files",
+                                  "public",
+                                  "shared",
+                                  "allfiles",
+                                ].includes(R) &&
                                   c.jsxs(c.Fragment, {
                                     children: [
                                       c.jsxs("div", {
@@ -2427,32 +2498,36 @@ function App() {
                                               }),
                                               c.jsx("h1", {
                                                 children:
-                                                  R === "shared"
-                                                    ? t(
-                                                        "Good things, passed along.",
-                                                      )
-                                                    : R === "allfiles"
-                                                      ? t(
-                                                          "Every file at your station.",
-                                                        )
-                                                      : t(
-                                                          "Your files, right at home.",
-                                                        ),
+                                                  R === "public"
+                                                    ? t("Public files")
+                                                    : R === "files"
+                                                      ? t("Private files")
+                                                      : R === "shared"
+                                                        ? t(
+                                                            "Good things, passed along.",
+                                                          )
+                                                        : t(
+                                                            "Every file at your station.",
+                                                          ),
                                               }),
                                               c.jsx("p", {
                                                 className: "muted",
                                                 children:
-                                                  R === "shared"
+                                                  R === "public"
                                                     ? t(
-                                                        "Manage the files you\u2019ve shared and the people who can access them.",
+                                                        "A shared workspace for your team. Only the uploader or an administrator can delete files or move them to Private.",
                                                       )
-                                                    : R === "allfiles"
+                                                    : R === "shared"
                                                       ? t(
-                                                          "Manage all users\u2019 files and sharing permissions.",
+                                                          "Manage the files you’ve shared and the people who can access them.",
                                                         )
-                                                      : t(
-                                                          "Everything you\u2019ve uploaded, with room for what\u2019s next.",
-                                                        ),
+                                                      : R === "allfiles"
+                                                        ? t(
+                                                            "Manage all users’ files and sharing permissions.",
+                                                          )
+                                                        : t(
+                                                            "Your personal workspace. Move selected files to Public when your team needs access.",
+                                                          ),
                                               }),
                                             ],
                                           }),
@@ -2872,7 +2947,8 @@ function App() {
       B &&
         c.jsx(UploadDialog, {
           connectors: A,
-          folderId: R === "files" ? currentFolder : null,
+          folderId: ["files", "public"].includes(R) ? currentFolder : null,
+          space: ["files", "public"].includes(R) ? currentSpace : "private",
           onClose: () => M(!1),
           onUploaded: () => {
             (J("transfers"), Z());

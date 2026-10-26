@@ -60,7 +60,6 @@ export default function FileTable({
           <span>{t("{0} selected", { 0: chosen.length })}</span>
           <button
             className="button secondary"
-            disabled={mixed}
             onClick={() => setMoving(chosen)}
           >
             {t("Move selected files")}
@@ -73,7 +72,9 @@ export default function FileTable({
           </button>
           {mixed && (
             <small>
-              {t("Select files belonging to one owner to move them.")}
+              {t(
+                "Files from different uploaders can be moved together within Public.",
+              )}
             </small>
           )}
         </div>
@@ -134,7 +135,9 @@ export default function FileTable({
                       </small>
                       {showLocation && (
                         <small>
-                          {t("Folder")}: {file.folder_name || t("Root")}
+                          {t("Folder")}:{" "}
+                          {file.space === "public" ? t("Public") : t("Private")}{" "}
+                          / {file.folder_name || t("Root")}
                         </small>
                       )}
                     </div>
@@ -190,7 +193,7 @@ export default function FileTable({
                           <Link2 size={17} />
                         </button>
                       </>
-                    ) : (
+                    ) : file.can_resume !== false ? (
                       <button
                         className="icon-button"
                         aria-label={t("Go to transfers")}
@@ -199,7 +202,7 @@ export default function FileTable({
                       >
                         <Upload size={17} />
                       </button>
-                    )}
+                    ) : null}
                     <button
                       className="icon-button"
                       aria-label={t("Move {0}", { 0: file.name })}
@@ -208,14 +211,16 @@ export default function FileTable({
                     >
                       <FolderInput size={17} />
                     </button>
-                    <button
-                      className="icon-button danger"
-                      aria-label={t("Delete {0}", { 0: file.name })}
-                      title={t("Delete file")}
-                      onClick={() => onDelete(file)}
-                    >
-                      <Trash2 size={16} />
-                    </button>
+                    {file.can_delete !== false && (
+                      <button
+                        className="icon-button danger"
+                        aria-label={t("Delete {0}", { 0: file.name })}
+                        title={t("Delete file")}
+                        onClick={() => onDelete(file)}
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    )}
                   </div>
                 </td>
               </tr>

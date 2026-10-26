@@ -17,7 +17,7 @@ import {
   TransfersPanel,
 } from "./App.jsx";
 import FilePreview from "./FilePreview";
-import { FolderSelect } from "./Folders";
+import { FolderSelect, SpaceSelect } from "./Folders";
 const DocumentEditor = lazy(() => import("./DocumentEditor"));
 type Row = Record<string, any>;
 const message = (error: unknown) =>
@@ -177,6 +177,9 @@ export function InvitationDialog({
     [connectorId, setConnector] = useState(
       source?.connector_id || supplied?.[0]?.id || "",
     );
+  const [destinationSpace, setDestinationSpace] = useState(
+    source?.space || "private",
+  );
   const [folderId, setFolderId] = useState<string | null>(null);
   const [folderReady, setFolderReady] = useState(false);
   const [recipients, setRecipients] = useState(""),
@@ -202,6 +205,9 @@ export function InvitationDialog({
     const file = files.find((f) => f.id === id);
     setSourceId(id);
     if (file) {
+      setDestinationSpace(file.space || "private");
+      setFolderId(null);
+      setFolderReady(false);
       setTarget(workingName(file.name));
       setConnector(file.connector_id);
       setMaxMB(Math.max(100, Math.ceil((file.size * 2) / 1e6)));
@@ -220,6 +226,7 @@ export function InvitationDialog({
           targetName: target,
           connectorId,
           folderId,
+          space: destinationSpace,
           recipients: recipients.split(/[,;\s]+/).filter(Boolean),
           expiresDays: days,
           maxFileBytes: Math.round(maxMB * 1e6),
@@ -352,7 +359,24 @@ export function InvitationDialog({
                 ))}
             </select>
           </label>
+          <SpaceSelect
+            value={destinationSpace}
+            onChange={(space) => {
+              setFolderReady(false);
+              setDestinationSpace(space);
+              setFolderId(null);
+            }}
+          />
+          {destinationSpace === "public" && (
+            <p className="info">
+              {t(
+                "Submitted files will be visible to all approved team members.",
+              )}
+            </p>
+          )}
           <FolderSelect
+            key={destinationSpace}
+            space={destinationSpace}
             value={folderId}
             onChange={setFolderId}
             onReady={setFolderReady}
@@ -534,7 +558,9 @@ export function InvitationManager({
                       })}
               </p>
               <p className="fineprint">
-                {t("Destination folder")}: {row.folder_name || t("Root")}
+                {t("Destination folder")}:{" "}
+                {row.space === "public" ? t("Public") : t("Private")} /{" "}
+                {row.folder_name || t("Root")}
               </p>
               {all && <p>{row.owner_email}</p>}
               <p>{row.recipients.join(", ")}</p>

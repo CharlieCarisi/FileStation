@@ -21,6 +21,7 @@ import {
   mail,
 } from "./util.js";
 import { currentUser, createChallenge, consumeChallenge } from "./auth.js";
+import { readsFile, ownsFile } from "./workspaces";
 async function validShare(env, shareId) {
   const s = await env.DB.prepare(
     "SELECT s.* FROM shares s JOIN files f ON f.id=s.file_id WHERE s.id=? AND s.revoked_at IS NULL AND (s.expires_at IS NULL OR s.expires_at>?) AND f.state='ready' AND (f.expires_at IS NULL OR f.expires_at>?)",
@@ -45,7 +46,7 @@ async function fileAccess(request, env, file) {
   try {
     user = await currentUser(request, env, true);
   } catch {}
-  if (user && (user.id === file.owner_id || user.role === "admin")) return;
+  if (user && readsFile(user, file)) return;
   const t = cookie(request, "fs_guest");
   ensure(t, 401, "Verify your email to download this file.");
   const g = await env.DB.prepare(
@@ -132,16 +133,12 @@ async function shareRoutes(request, env, path) {
       file = await env.DB.prepare("SELECT * FROM files WHERE id=?")
         .bind(match[1])
         .first();
-    ensure(
-      file && (file.owner_id === user.id || user.role === "admin"),
-      404,
-      "File not found.",
-    );
+    ensure(file && readsFile(user, file), 404, "File not found.");
     if (request.method === "GET") {
       const shares = await env.DB.prepare(
-        "SELECT id,created_at,expires_at,revoked_at FROM shares WHERE file_id=? ORDER BY created_at DESC",
+        `SELECT id,created_at,expires_at,revoked_at FROM shares WHERE file_id=? ${ownsFile(user, file) ? "" : "AND created_by=?"} ORDER BY created_at DESC`,
       )
-        .bind(file.id)
+        .bind(...(ownsFile(user, file) ? [file.id] : [file.id, user.id]))
         .all();
       return json({
         shares: await Promise.all(
@@ -187,16 +184,31 @@ async function shareRoutes(request, env, path) {
           now() + b.expiresDays * 864e5,
           file.expires_at || Infinity,
         );
-      await env.DB.batch([
+      const created = await env.DB.batch([
         env.DB.prepare(
-          "INSERT INTO shares(id,file_id,code_hash,created_by,created_at,expires_at) VALUES (?,?,?,?,?,?)",
-        ).bind(shareId, file.id, await hash(code), user.id, now(), expiresAt),
+          "INSERT INTO shares(id,file_id,code_hash,created_by,created_at,expires_at) SELECT ?,?,?,?,?,? WHERE EXISTS(SELECT 1 FROM files WHERE id=? AND state='ready' AND (owner_id=? OR space='public' OR ?=1)) RETURNING id",
+        ).bind(
+          shareId,
+          file.id,
+          await hash(code),
+          user.id,
+          now(),
+          expiresAt,
+          file.id,
+          user.id,
+          user.role === "admin" ? 1 : 0,
+        ),
         ...recipients.map((e) =>
           env.DB.prepare(
-            "INSERT INTO share_recipients(share_id,email) VALUES (?,?)",
-          ).bind(shareId, e),
+            "INSERT INTO share_recipients(share_id,email) SELECT ?,? WHERE EXISTS(SELECT 1 FROM shares WHERE id=?)",
+          ).bind(shareId, e, shareId),
         ),
       ]);
+      ensure(
+        created[0].results.length,
+        409,
+        "The file changed. Refresh and try again.",
+      );
       const link = await shareLink(request, env, code);
       let emailSent = false,
         emailError;
@@ -252,12 +264,15 @@ async function shareRoutes(request, env, path) {
   if (revoke && request.method === "DELETE") {
     const user = await currentUser(request, env, true);
     const s = await env.DB.prepare(
-      "SELECT s.id,f.owner_id FROM shares s JOIN files f ON f.id=s.file_id WHERE s.id=?",
+      "SELECT s.id,s.created_by,f.owner_id FROM shares s JOIN files f ON f.id=s.file_id WHERE s.id=?",
     )
       .bind(revoke[1])
       .first();
     ensure(
-      s && (s.owner_id === user.id || user.role === "admin"),
+      s &&
+        (s.owner_id === user.id ||
+          s.created_by === user.id ||
+          user.role === "admin"),
       404,
       "Share not found.",
     );
