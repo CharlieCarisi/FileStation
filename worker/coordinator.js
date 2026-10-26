@@ -13,6 +13,7 @@ import {
 } from "./util.js";
 import { Storage } from "./storage.js";
 import { ONEDRIVE_PART_SIZE } from "./onedrive";
+import { OperationGate, uploadConcurrency } from "../shared/concurrency";
 import {
   guardInvitationUpload,
   recordInvitationUpload,
@@ -28,11 +29,19 @@ var StorageCoordinator = class {
   static {
     __name(this, "StorageCoordinator");
   }
-  queue = Promise.resolve();
+  gate = new OperationGate(3);
   fetch(request) {
-    const job = this.queue.then(() => this.run(request)).catch(errorResponse);
-    this.queue = job;
-    return job;
+    const url = new URL(request.url);
+    const part = url.pathname === "/part";
+    return this.gate
+      .run(
+        () => this.run(request),
+        part || url.pathname === "/download",
+        part
+          ? `${url.searchParams.get("file")}:${url.searchParams.get("part")}`
+          : "",
+      )
+      .catch(errorResponse);
   }
   async connector() {
     const connectorId = await this.state.storage.get("connectorId");
@@ -278,7 +287,16 @@ var StorageCoordinator = class {
         await storage.remove(file2);
         throw error;
       }
-      return json({ file: file2, partSize, parts: [], evicted }, 201);
+      return json(
+        {
+          file: file2,
+          partSize,
+          uploadConcurrency: uploadConcurrency(c.kind),
+          parts: [],
+          evicted,
+        },
+        201,
+      );
     }
     const fileId = url.searchParams.get("file");
     const file = await this.env.DB.prepare(

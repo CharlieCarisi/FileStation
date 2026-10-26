@@ -26,6 +26,7 @@ import {
 import { coordinate } from "./coordinator.js";
 import { fileAccess, shareRoutes } from "./shares.js";
 import { fileResponse } from "./file-response";
+import { uploadConnections } from "./transfer-options";
 async function connectorList(env, admin) {
   const result = await env.DB.prepare(
     `SELECT c.id,c.name,COALESCE(c.storage_adapter,c.adapter,c.kind) AS kind,c.limit_bytes,c.retention_days,c.enabled,c.config,c.encrypted_credentials IS NOT NULL AS credentials_configured,COALESCE(SUM(CASE WHEN f.state IN ('ready','deleting') THEN f.size ELSE 0 END),0) AS used_bytes,COALESCE(SUM(CASE WHEN f.state='uploading' THEN f.size ELSE 0 END),0) AS reserved_bytes,COUNT(CASE WHEN f.state='ready' THEN 1 END) AS file_count FROM connectors c LEFT JOIN files f ON f.connector_id=c.id GROUP BY c.id ORDER BY c.created_at`,
@@ -110,6 +111,7 @@ async function routes(request, env) {
       return json({
         file,
         partSize: file.part_size || PART_SIZE,
+        uploadConcurrency: await uploadConnections(env, file.connector_id),
         parts: parts.results,
       });
     }

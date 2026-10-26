@@ -46,29 +46,12 @@ import {
   Users as S1,
   X as Lf,
 } from "lucide-react";
-export const basePath =
-  location.pathname === "/files" || location.pathname.startsWith("/files/")
-    ? "/files"
-    : "";
+import { api, post, basePath } from "./http";
+export { basePath };
+import { transfers, fingerprint } from "./transfers";
 const canDirectDownload = (file) =>
   !["synology", "webdav"].includes(file.storage_kind || "") ||
   file.size <= 256 * 1024 * 1024;
-async function api(S, v = {}) {
-  const T = await fetch(`${basePath}/api${S}`, {
-      ...v,
-      headers: {
-        ...(v.body && typeof v.body == "string"
-          ? { "Content-Type": "application/json" }
-          : {}),
-        ...v.headers,
-      },
-      credentials: "same-origin",
-    }),
-    o = await T.json();
-  if (!T.ok) throw new Error(o.error || "The request failed.");
-  return o;
-}
-const post = (S, v = {}) => api(S, { method: "POST", body: JSON.stringify(v) });
 function formatBytes(S) {
   if (S === 0) return "0 B";
   const v = ["B", "KB", "MB", "GB", "TB"],
@@ -83,368 +66,6 @@ const formatDate = (S) =>
         year: "numeric",
       })
     : "No expiry";
-class DiskWorker {
-  worker = new Worker(new URL("./disk.worker.js", import.meta.url), {
-    type: "module",
-  });
-  serial = 0;
-  failed = !1;
-  pending = new Map();
-  constructor() {
-    ((this.worker.onmessage = (v) => {
-      const T = this.pending.get(v.data.id);
-      T &&
-        (this.pending.delete(v.data.id),
-        v.data.error
-          ? T.reject(new Error(v.data.error))
-          : T.resolve(v.data.result));
-    }),
-      (this.worker.onerror = () => {
-        this.failed = !0;
-        for (const v of this.pending.values())
-          v.reject(
-            new Error(
-              "Browser download storage could not start. Use the direct browser download.",
-            ),
-          );
-        this.pending.clear();
-      }));
-  }
-  command(v, T = {}, o = []) {
-    if (this.failed)
-      return Promise.reject(
-        new Error(
-          "Browser download storage is unavailable. Use the direct browser download.",
-        ),
-      );
-    const _ = ++this.serial;
-    return new Promise((C, B) => {
-      (this.pending.set(_, { resolve: C, reject: B }),
-        this.worker.postMessage({ id: _, action: v, ...T }, o));
-    });
-  }
-  open(v) {
-    return this.command("open", { name: v });
-  }
-  write(v, T) {
-    return this.command("write", { data: v, offset: T }, [v]);
-  }
-  async close() {
-    try {
-      await this.command("close");
-    } finally {
-      this.worker.terminate();
-    }
-  }
-}
-const DOWNLOAD_PART_SIZE = 8 * 1024 * 1024,
-  loadTransfers = (S) => {
-    try {
-      return JSON.parse(localStorage.getItem(`fs-transfers:${S}`) || "[]");
-    } catch {
-      return [];
-    }
-  };
-class TransferManager {
-  scope = "guest";
-  items = loadTransfers("guest").map((v) => ({
-    ...v,
-    state: v.state === "complete" ? "complete" : "paused",
-  }));
-  listeners = new Set();
-  controllers = new Map();
-  files = new Map();
-  snapshot = 0;
-  subscribe = (v) => (this.listeners.add(v), () => this.listeners.delete(v));
-  getSnapshot = () => this.snapshot;
-  update() {
-    (this.snapshot++,
-      localStorage.setItem(
-        `fs-transfers:${this.scope}`,
-        JSON.stringify(this.items),
-      ),
-      this.listeners.forEach((v) => v()));
-  }
-  async setScope(v) {
-    if (v !== this.scope) {
-      for (const T of this.items) T.state === "running" && this.pause(T.id);
-      for (; this.controllers.size;)
-        await new Promise((T) => setTimeout(T, 50));
-      (this.files.clear(),
-        (this.scope = v),
-        (this.items = loadTransfers(v).map((T) => ({
-          ...T,
-          state: T.state === "complete" ? "complete" : "paused",
-        }))),
-        this.update());
-    }
-  }
-  async upload(v, T, invitation) {
-    const o = await fingerprint(v),
-      _ = await post(
-        invitation ? `/invitations/${invitation.id}/uploads` : "/uploads",
-        {
-          ...(invitation ? { baseRevision: invitation.baseRevision } : {}),
-          connectorId: T,
-          name: v.name,
-          size: v.size,
-          mime: v.type,
-          fingerprint: o,
-        },
-      ),
-      C = {
-        id: crypto.randomUUID(),
-        apiBase: invitation
-          ? `/invitations/${invitation.id}/uploads`
-          : "/uploads",
-        invitationId: invitation?.id,
-        fileId: _.file.id,
-        name: v.name,
-        size: v.size,
-        done: 0,
-        direction: "upload",
-        state: "paused",
-        fingerprint: o,
-        partSize: _.partSize,
-        evicted: _.evicted,
-      };
-    (this.items.unshift(C),
-      this.files.set(C.id, v),
-      this.update(),
-      this.resume(C.id));
-    return C.id;
-  }
-  pause(v) {
-    const T = this.items.find((o) => o.id === v);
-    T &&
-      ((T.state = "paused"), this.controllers.get(v)?.abort(), this.update());
-  }
-  async resume(v, T) {
-    const o = this.items.find((_) => _.id === v);
-    if (!(!o || o.state === "running" || o.state === "complete")) {
-      this.controllers.has(v) &&
-        (await new Promise((_) => {
-          const C = setInterval(() => {
-            this.controllers.has(v) || (clearInterval(C), _());
-          }, 50);
-        }));
-      try {
-        if (T) {
-          if (T.size !== o.size || (await fingerprint(T)) !== o.fingerprint)
-            throw new Error("Select the original file to resume this upload.");
-          this.files.set(v, T);
-        }
-        if (o.direction === "upload" && !this.files.has(v)) {
-          ((o.error = "Select the original file to resume."),
-            (o.state = "paused"),
-            this.update());
-          return;
-        }
-        ((o.state = "running"), (o.error = void 0));
-        const _ = new AbortController();
-        (this.controllers.set(v, _),
-          this.update(),
-          o.direction === "upload"
-            ? await this.runUpload(o, this.files.get(v), _.signal)
-            : await this.runDownload(o, _.signal),
-          o.state === "running" && (o.state = "complete"));
-      } catch (_) {
-        o.state !== "paused" &&
-          ((o.state = "error"),
-          (o.error = _ instanceof Error ? _.message : "Transfer failed."));
-      } finally {
-        (this.controllers.delete(v), this.update());
-      }
-    }
-  }
-  async cancel(v) {
-    const T = this.items.find((o) => o.id === v);
-    if (T) {
-      for (this.pause(v); this.controllers.has(v);)
-        await new Promise((o) => setTimeout(o, 50));
-      if (
-        (T.direction === "upload" &&
-          T.state !== "complete" &&
-          (await api(`${T.apiBase || "/uploads"}/${T.fileId}`, {
-            method: "DELETE",
-          })),
-        T.direction === "download")
-      )
-        try {
-          await (await downloadDirectory()).removeEntry(T.id);
-        } catch {}
-      ((this.items = this.items.filter((o) => o.id !== v)),
-        this.files.delete(v),
-        this.update());
-    }
-  }
-  dismiss(v) {
-    (this.items.find((o) => o.id === v)?.direction === "download" &&
-      downloadDirectory()
-        .then((o) => o.removeEntry(v))
-        .catch(() => {}),
-      (this.items = this.items.filter((o) => o.id !== v)),
-      this.files.delete(v),
-      this.update());
-  }
-  async download(v, downloadPath) {
-    await downloadDirectory();
-    const T = {
-      id: crypto.randomUUID(),
-      fileId: v.id,
-      name: v.name,
-      size: v.size,
-      done: 0,
-      direction: "download",
-      state: "paused",
-      partSize: DOWNLOAD_PART_SIZE,
-      downloadPath,
-    };
-    (this.items.unshift(T), this.update(), this.resume(T.id));
-  }
-  async runUpload(v, T, o) {
-    const _ = await api(`${v.apiBase || "/uploads"}/${v.fileId}`, {
-      signal: o,
-    });
-    if (_.file.state === "ready") {
-      if (v.invitationId) await post(`${v.apiBase}/${v.fileId}/publish`);
-      v.done = v.size;
-      return;
-    }
-    if (_.file.state !== "uploading")
-      throw new Error("This upload was deleted or expired.");
-    const C = new Set(_.parts.map((M) => M.part_number));
-    ((v.done = _.parts.reduce((M, R) => M + R.size, 0)), this.update());
-    const B = Math.ceil(v.size / v.partSize);
-    for (let M = 1; M <= B; M++) {
-      if ((o.throwIfAborted(), C.has(M))) continue;
-      const R = T.slice((M - 1) * v.partSize, Math.min(M * v.partSize, v.size));
-      (await retryTransfer(
-        () =>
-          api(`${v.apiBase || "/uploads"}/${v.fileId}/parts/${M}`, {
-            method: "PUT",
-            body: R,
-            signal: o,
-          }),
-        o,
-      ),
-        (v.done += R.size),
-        this.update());
-    }
-    (o.throwIfAborted(),
-      await post(`${v.apiBase || "/uploads"}/${v.fileId}/complete`));
-    if (v.invitationId) await post(`${v.apiBase}/${v.fileId}/publish`);
-  }
-  async runDownload(v, T) {
-    const o = new DiskWorker();
-    try {
-      if (((v.done = await o.open(v.id)), v.done > v.size))
-        throw new Error("The saved download is invalid. Restart it.");
-      for (this.update(); v.done < v.size;) {
-        T.throwIfAborted();
-        const C = Math.min(v.done + v.partSize, v.size) - 1,
-          B = await retryTransfer(async () => {
-            const J = await fetch(
-              `${basePath}/api${v.downloadPath || `/files/${v.fileId}/download`}`,
-              {
-                headers: { Range: `bytes=${v.done}-${C}` },
-                signal: T,
-              },
-            );
-            if (!J.ok) {
-              const A = await J.json();
-              throw new Error(A.error || "Download failed.");
-            }
-            if (
-              J.status !== 206 ||
-              J.headers.get("etag") !== `"${v.fileId}"` ||
-              J.headers.get("content-range") !==
-                `bytes ${v.done}-${C}/${v.size}`
-            )
-              throw new Error("The server returned an unexpected byte range.");
-            return J;
-          }, T),
-          M = new Uint8Array(await B.arrayBuffer());
-        if (M.length !== C - v.done + 1)
-          throw new Error(
-            "An incomplete download part was received. Retry to continue.",
-          );
-        T.throwIfAborted();
-        const R = M.length;
-        (await o.write(M.buffer, v.done), (v.done += R), this.update());
-      }
-    } finally {
-      await o.close();
-    }
-    if (
-      !(
-        await fetch(
-          `${basePath}/api${v.downloadPath || `/files/${v.fileId}/download`}`,
-          {
-            method: "HEAD",
-            signal: T,
-          },
-        )
-      ).ok
-    )
-      throw new Error("This share expired or the file was deleted.");
-    await this.saveDownload(v);
-  }
-  async saveDownload(v) {
-    const T = await (
-        await (await downloadDirectory()).getFileHandle(v.id)
-      ).getFile(),
-      o = URL.createObjectURL(T),
-      _ = document.createElement("a");
-    ((_.href = o),
-      (_.download = v.name),
-      _.click(),
-      setTimeout(() => URL.revokeObjectURL(o), 6e4));
-  }
-}
-async function downloadDirectory() {
-  if (!navigator.storage?.getDirectory)
-    throw new Error(
-      "Resumable downloads need a browser with private file storage (current Chrome, Edge, Firefox, or Safari) and a secure connection. Use the direct download instead.",
-    );
-  return navigator.storage.getDirectory();
-}
-async function fingerprint(S) {
-  const v = new Blob([
-    JSON.stringify({
-      name: S.name,
-      size: S.size,
-      lastModified: S.lastModified,
-    }),
-    S.slice(0, 65536),
-    S.slice(Math.max(0, S.size - 65536)),
-  ]);
-  return Array.from(
-    new Uint8Array(
-      await crypto.subtle.digest("SHA-256", await v.arrayBuffer()),
-    ),
-    (T) => T.toString(16).padStart(2, "0"),
-  ).join("");
-}
-async function retryTransfer(S, v) {
-  for (let T = 0; ; T++)
-    try {
-      return await S();
-    } catch (o) {
-      if ((v.throwIfAborted(), T === 2)) throw o;
-      await new Promise((_, C) => {
-        const B = setTimeout(_, 1e3 * 2 ** T);
-        v.addEventListener(
-          "abort",
-          () => {
-            (clearTimeout(B), C(v.reason));
-          },
-          { once: !0 },
-        );
-      });
-    }
-}
-const transfers = new TransferManager();
 function Modal({
   title: S,
   subtitle: v = undefined,
@@ -3005,6 +2626,7 @@ function App() {
   });
 }
 function TransfersPanel({ _version: S = 0, version: v = 0, onError: T }) {
+  D.useSyncExternalStore(transfers.subscribe, transfers.getSnapshot);
   const o = D.useRef(null),
     [_, C] = D.useState();
   async function B(M) {
@@ -3017,6 +2639,29 @@ function TransfersPanel({ _version: S = 0, version: v = 0, onError: T }) {
   return c.jsxs("div", {
     className: "transfer-list",
     children: [
+      c.jsxs("div", {
+        className: "transfer-options",
+        children: [
+          c.jsxs("label", {
+            children: [
+              "Parallel connections",
+              c.jsx("select", {
+                "aria-label": "Parallel connections",
+                value: transfers.concurrency,
+                onChange: (event) =>
+                  transfers.setConcurrency(event.target.value),
+                children: [1, 2, 3].map((value) =>
+                  c.jsx("option", { value, children: String(value) }, value),
+                ),
+              }),
+            ],
+          }),
+          c.jsx("small", {
+            children:
+              "Applies to new or resumed transfers. OneDrive uploads use one connection.",
+          }),
+        ],
+      }),
       c.jsx("input", {
         ref: o,
         type: "file",
@@ -3058,6 +2703,9 @@ function TransfersPanel({ _version: S = 0, version: v = 0, onError: T }) {
                               formatBytes(M.size),
                               " · ",
                               M.state,
+                              M.connections
+                                ? ` · ${M.connections} connection${M.connections === 1 ? "" : "s"}`
+                                : "",
                             ],
                           }),
                         ],

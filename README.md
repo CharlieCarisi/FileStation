@@ -4,7 +4,7 @@ Private file transfers, recipient verification, submission requests, document co
 
 Use Node 24. Run `npm ci`, `npm run db:local`, and `npm run dev`. Local authentication uses an email simulator; the verification PIN appears in the dialog. Production uses SMTP2GO. Never enable `DEV_MODE` in production.
 
-Validation: `npm run build`, `npm test`, and `npm run test:browser` (system Chromium, or set `CHROMIUM_PATH`). Integration tests run against emulated D1/R2 and mocked external providers. Browser tests exercise real local submissions, DOCX/text round trips, verified document/media previews and safe handling of markup. Microsoft credentials and permissions must also be tested in your tenant.
+Validation: `npm run build`, `npm test`, and `npm run test:browser` (system Chromium, or set `CHROMIUM_PATH`). Integration tests run against emulated D1/R2 and mocked external providers. Browser tests exercise real local submissions, DOCX/text round trips, verified document/media previews, parallel transfer pause/reload recovery, out-of-order disk writes and safe handling of markup. Microsoft credentials and permissions must also be tested in your tenant.
 
 - [Deployment and both URLs](docs/deployment.md)
 - [OneDrive application and private folder setup](docs/onedrive.md)

@@ -2010,3 +2010,27 @@ dd {
     padding: 18px;
   }
 }
+
+.transfer-options {
+  display: flex;
+  gap: 12px 20px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin: 12px 0 18px;
+}
+.transfer-options label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.transfer-options select {
+  width: auto;
+  padding: 6px 12px;
+  font-size: 12px;
+}
+.transfer-options small {
+  color: #64756b;
+  font-size: 11px;
+}

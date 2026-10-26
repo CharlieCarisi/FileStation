@@ -23,6 +23,7 @@ import {
 } from "./util.js";
 import { emailLayout } from "./email.js";
 import { fileResponse } from "./file-response";
+import { uploadConnections } from "./transfer-options";
 
 const fail = () =>
   new HttpError(
@@ -598,6 +599,7 @@ export async function invitationRoutes(
     return json({
       file: fileSummary(file),
       partSize: file.part_size,
+      uploadConcurrency: await uploadConnections(env, file.connector_id),
       parts: parts.results,
     });
   }

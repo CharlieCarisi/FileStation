@@ -792,6 +792,89 @@ describe("collaboration working copies", () => {
     ).toBe("first edit");
   });
 });
+describe("parallel storage parts", () => {
+  it("runs three provider parts together and waits for them before completing", async () => {
+    const admin = await login(),
+      connectorId = crypto.randomUUID();
+    await env.DB.prepare(
+      "INSERT INTO connectors(id,name,kind,storage_adapter,limit_bytes,retention_days,config,encrypted_credentials,created_at) VALUES (?,?,?,?,?,?,?,?,?)",
+    )
+      .bind(
+        connectorId,
+        "Parallel WebDAV",
+        "r2",
+        "webdav",
+        100000000,
+        30,
+        JSON.stringify({ endpoint: "https://nas.contoso.com/dav/" }),
+        await encrypt(env, { username: "user", password: "secret" }),
+        Date.now(),
+      )
+      .run();
+    let active = 0,
+      maximum = 0,
+      finished = 0,
+      manifest = false;
+    vi.mocked(fetch).mockImplementation(async (input, init) => {
+      const url = String(input);
+      if (init?.method === "MKCOL") return new Response(null, { status: 201 });
+      if (url.endsWith(".part")) {
+        active++;
+        maximum = Math.max(maximum, active);
+        await new Promise((resolve) => setTimeout(resolve, 150));
+        active--;
+        finished++;
+        return new Response(null, { status: 201 });
+      }
+      if (url.endsWith("manifest.json")) {
+        expect(finished).toBe(3);
+        manifest = true;
+        return new Response(null, { status: 201 });
+      }
+      throw Error("Unexpected provider operation");
+    });
+    const created = (await (
+      await request(
+        "/uploads",
+        "POST",
+        {
+          connectorId,
+          name: "three.bin",
+          size: 3,
+          fingerprint: "a".repeat(64),
+        },
+        admin.cookie,
+      )
+    ).json()) as Row;
+    expect(created.uploadConcurrency).toBe(3);
+    // Small test parts exercise overlap without allocating production-size buffers.
+    await env.DB.prepare("UPDATE files SET part_size=1 WHERE id=?")
+      .bind(created.file.id)
+      .run();
+    const parts = [3, 1, 2].map((part) =>
+      request(
+        `/uploads/${created.file.id}/parts/${part}`,
+        "PUT",
+        new Uint8Array([part]),
+        admin.cookie,
+      ),
+    );
+    await vi.waitFor(() => expect(active).toBe(3));
+    const complete = request(
+      `/uploads/${created.file.id}/complete`,
+      "POST",
+      {},
+      admin.cookie,
+    );
+    expect(manifest).toBe(false);
+    expect(
+      (await Promise.all(parts)).map((response) => response.status),
+    ).toEqual([200, 200, 200]);
+    expect((await complete).status).toBe(200);
+    expect(maximum).toBe(3);
+    expect(manifest).toBe(true);
+  });
+});
 describe("OneDrive for Business", () => {
   const tenantId = "11111111-1111-4111-8111-111111111111",
     clientId = "22222222-2222-4222-8222-222222222222";
@@ -1315,6 +1398,7 @@ describe("OneDrive for Business", () => {
     expect(response.status).toBe(201);
     const created = (await response.json()) as Row;
     expect(created.partSize).toBe(partSize);
+    expect(created.uploadConcurrency).toBe(1);
     expect(created.partSize % 327680).toBe(0);
     expect(JSON.stringify(created)).not.toContain("token=private");
     expect(
