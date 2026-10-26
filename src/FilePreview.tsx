@@ -1,12 +1,15 @@
+import { t } from "./i18n";
 import React, { Component, lazy, Suspense, useEffect, useState } from "react";
 import { Eye, EyeOff, FileSearch } from "lucide-react";
 import { previewInfo, type PreviewInfo } from "../shared/preview";
 import { basePath, formatBytes } from "./App.jsx";
-
 const PdfPreview = lazy(() => import("./PdfPreview"));
 const DocxPreview = lazy(() => import("./DocxPreview"));
-type FileInfo = { id: string; name: string; size: number };
-
+type FileInfo = {
+  id: string;
+  name: string;
+  size: number;
+};
 export default function FilePreview({
   file,
   previewPath = `/files/${file.id}/preview`,
@@ -22,10 +25,16 @@ export default function FilePreview({
   const [attempt, setAttempt] = useState(0);
   const url = `${basePath}/api${previewPath}?version=${encodeURIComponent(file.id)}`;
   return (
-    <section className="file-preview" aria-label={`Preview of ${file.name}`}>
+    <section
+      className="file-preview"
+      aria-label={t("Preview of {0}", {
+        "0": file.name,
+      })}
+    >
       <header className="preview-header">
         <span>
-          <FileSearch size={18} aria-hidden="true" /> File preview
+          <FileSearch size={18} aria-hidden="true" />
+          {t(" File preview")}
         </span>
         {available && (
           <button
@@ -38,18 +47,21 @@ export default function FilePreview({
             ) : (
               <Eye size={15} aria-hidden="true" />
             )}
-            {open ? "Hide preview" : "Show preview"}
+            {open ? t("Hide preview") : t("Show preview")}
           </button>
         )}
       </header>
       {!info ? (
         <p className="preview-note">
-          Preview isn’t available for this format. Download the file to open it.
+          {t(
+            "Preview isn\u2019t available for this format. Download the file to open it.",
+          )}
         </p>
       ) : !available ? (
         <p className="preview-note">
-          Browser previews for this format support files up to{" "}
-          {formatBytes(info.limit)}. Download this file to open it.
+          {t("Browser previews for this format support files up to")}{" "}
+          {formatBytes(info.limit)}
+          {t(". Download this file to open it.")}
         </p>
       ) : open ? (
         <PreviewBoundary
@@ -65,13 +77,12 @@ export default function FilePreview({
         </PreviewBoundary>
       ) : (
         <p className="preview-note">
-          Open a preview without downloading a local copy.
+          {t("Open a preview without downloading a local copy.")}
         </p>
       )}
     </section>
   );
 }
-
 function PreviewContent({
   file,
   info,
@@ -98,7 +109,9 @@ function PreviewContent({
           credentials: "same-origin",
         });
         if (!response.ok) {
-          const result = (await response.json()) as { error?: string };
+          const result = (await response.json()) as {
+            error?: string;
+          };
           throw Error(result.error || "The preview could not be opened.");
         }
         if (response.headers.get("etag") !== `"${file.id}"`)
@@ -110,7 +123,11 @@ function PreviewContent({
           throw Error("The preview download was incomplete. Please retry.");
         if (!controller.signal.aborted) {
           if (info.kind === "text")
-            setText(new TextDecoder("utf-8", { fatal: true }).decode(bytes));
+            setText(
+              new TextDecoder("utf-8", {
+                fatal: true,
+              }).decode(bytes),
+            );
           else setBuffer(bytes);
         }
       } catch (error) {
@@ -136,7 +153,7 @@ function PreviewContent({
     <div className={`preview-content preview-${info.kind}`}>
       {loading && (
         <p className="preview-note" role="status">
-          Loading preview…
+          {t("Loading preview\u2026")}
         </p>
       )}
       {info.kind === "image" ? (
@@ -153,7 +170,9 @@ function PreviewContent({
           controls
           playsInline
           preload="metadata"
-          aria-label={`Video preview: ${file.name}`}
+          aria-label={t("Video preview: {0}", {
+            "0": file.name,
+          })}
           onLoadedMetadata={ready}
           onError={mediaError}
         />
@@ -162,7 +181,9 @@ function PreviewContent({
           src={url}
           controls
           preload="metadata"
-          aria-label={`Audio preview: ${file.name}`}
+          aria-label={t("Audio preview: {0}", {
+            "0": file.name,
+          })}
           onLoadedMetadata={ready}
           onError={mediaError}
         />
@@ -175,7 +196,7 @@ function PreviewContent({
           <Suspense
             fallback={
               <p className="preview-note" role="status">
-                Preparing document preview…
+                {t("Preparing document preview\u2026")}
               </p>
             }
           >
@@ -189,14 +210,14 @@ function PreviewContent({
       )}
       {info.kind === "video" && (
         <p className="preview-note">
-          Playback depends on browser codec support. Use the controls to pause
-          or seek.
+          {t(
+            "Playback depends on browser codec support. Use the controls to pause or seek.",
+          )}
         </p>
       )}
     </div>
   );
 }
-
 function PreviewError({
   message,
   onRetry,
@@ -206,26 +227,36 @@ function PreviewError({
 }) {
   return (
     <div className="preview-note" role="alert">
-      <p>{message}</p>
+      <p>{t(message)}</p>
       <button className="text-button" onClick={onRetry}>
-        Retry preview
+        {t("Retry preview")}
       </button>
     </div>
   );
 }
-
 class PreviewBoundary extends Component<
-  { children: React.ReactNode; onRetry: () => void },
-  { failed: boolean }
+  {
+    children: React.ReactNode;
+    onRetry: () => void;
+  },
+  {
+    failed: boolean;
+  }
 > {
-  state = { failed: false };
+  state = {
+    failed: false,
+  };
   static getDerivedStateFromError() {
-    return { failed: true };
+    return {
+      failed: true,
+    };
   }
   render() {
     return this.state.failed ? (
       <PreviewError
-        message="This document could not be previewed. Download it to open it in your usual app."
+        message={t(
+          "This document could not be previewed. Download it to open it in your usual app.",
+        )}
         onRetry={this.props.onRetry}
       />
     ) : (

@@ -1,0 +1,744 @@
+. Download this file to open it.|. Téléchargez ce fichier pour l’ouvrir.|。请下载此文件以打开。
+1 day|1 jour|1 天
+30 days|30 jours|30 天
+7 days|7 jours|7 天
+90 days|90 jours|90 天
+A LITTLE ORDER. A LOT OF POSSIBILITY.|UN PEU D’ORDRE. PLEIN DE POSSIBILITÉS.|井井有条，无限可能。
+A SAFE LANDING FOR EVERY FILE|CHAQUE FICHIER ARRIVE À BON PORT|让每个文件安全抵达
+A clear track.|La voie est libre.|传输列表为空。
+A different file was selected.|Un autre fichier a été sélectionné.|所选文件与原文件不同。
+A file for you.|Un fichier pour vous.|您有一个共享文件。
+A file. The right people.|Un fichier. Les bonnes personnes.|把文件分享给对的人。
+A hostname without https:// is accepted. For Oracle, use|Un nom d’hôte sans https:// est accepté. Pour Oracle, utilisez|可以输入不含 https:// 的主机名。Oracle 请使用
+A little station for your big ideas. Send files to the people who need them, with your storage and your rules.|Une petite station pour vos grandes idées. Envoyez vos fichiers aux bonnes personnes, avec votre stockage et vos règles.|承载灵感的小站。使用您选择的存储服务，按您的规则把文件发送给需要的人。
+A place for every file.|Une place pour chaque fichier.|每个文件都有归处。
+A place to receive.|Un espace pour recevoir.|收集文件的专属空间。
+A preview is not available for this format. Download the file to open it.|L’aperçu n’est pas offert pour ce format. Téléchargez le fichier pour l’ouvrir.|此格式不支持预览。请下载文件以打开。
+A published working copy cannot be cancelled.|Une copie de travail publiée ne peut pas être annulée.|无法取消已发布的工作副本。
+A safe landing for every file.|Chaque fichier arrive à bon port.|让每个文件安全抵达。
+A simpler way to send.|L’envoi, en toute simplicité.|分享文件，轻松简单。
+A valid file fingerprint is required.|Une empreinte de fichier valide est requise.|需要有效的文件指纹。
+A verification PIN was sent to|Un NIP de vérification a été envoyé à|验证码已发送至
+ACCESS CODE|CODE D’ACCÈS|访问码
+ADDED|AJOUTÉ LE|添加时间
+ADMINISTRATION|ADMINISTRATION|管理
+AT YOUR OWN PACE|À VOTRE RYTHME|按您的节奏
+Access key ID|ID de la clé d’accès|访问密钥 ID
+Access service token client ID|ID client du jeton de service Access|Access 服务令牌客户端 ID
+Access service token client secret|Secret client du jeton de service Access|Access 服务令牌客户端密钥
+Account approval and a record of activity.|Approbation des comptes et journal d’activité.|账号审批与操作记录。
+Actions|Actions|操作
+Active handoffs|Partages actifs|有效共享
+Activity will appear here as people use File Station.|Les activités s’afficheront ici au fil de l’utilisation de File Station.|File Station 的使用记录将显示在此处。
+Add connector|Ajouter un connecteur|添加连接器
+Administrator|Administrateur|管理员
+Administrator access is required.|L’accès administrateur est requis.|需要管理员权限。
+Administrator accounts cannot be changed here.|Les comptes administrateurs ne peuvent pas être modifiés ici.|无法在此处更改管理员账号。
+AliPan / 阿里云盘|AliPan / 阿里云盘|阿里云盘
+AliPan authorization expired. Update this connector’s credentials.|L’autorisation AliPan a expiré. Mettez à jour les identifiants du connecteur.|阿里云盘授权已过期。请更新此连接器的凭据。
+AliPan could not save this part. You can retry it.|AliPan n’a pas pu enregistrer ce bloc. Réessayez.|阿里云盘无法保存此分块。请重试。
+AliPan credentials are not configured.|Les identifiants AliPan ne sont pas configurés.|尚未配置阿里云盘凭据。
+AliPan did not create an upload session.|AliPan n’a pas créé de session de téléversement.|阿里云盘未创建上传会话。
+AliPan did not return the requested byte range.|AliPan n’a pas renvoyé la plage d’octets demandée.|阿里云盘未返回所请求的字节范围。
+AliPan drive ID is not configured.|L’ID du lecteur AliPan n’est pas configuré.|尚未配置阿里云盘的云盘 ID。
+AliPan returned an empty response.|AliPan a renvoyé une réponse vide.|阿里云盘返回了空响应。
+AliPan returned an unexpected byte range.|AliPan a renvoyé une plage d’octets inattendue.|阿里云盘返回的字节范围不符合预期。
+AliPan storage request failed ({0}).|La requête de stockage AliPan a échoué ({0}).|阿里云盘存储请求失败（{0}）。
+AliPan · 阿里云盘|AliPan · 阿里云盘|阿里云盘
+All file types welcome|Tous les types de fichiers sont acceptés|支持所有文件类型
+All storage|Tous les espaces de stockage|所有存储
+Allow new uploads to this connector|Autoriser les nouveaux téléversements vers ce connecteur|允许向此连接器上传新文件
+Allowed email domains|Domaines de courriel autorisés|允许的邮箱域名
+An incomplete download part was received. Retry to continue.|Un bloc téléchargé est incomplet. Réessayez pour continuer.|收到的下载分块不完整。请重试以继续。
+Application (client) ID|ID de l’application (client)|应用程序（客户端）ID
+Applies to new or resumed transfers. OneDrive uploads use one connection.|S’applique aux nouveaux transferts ou aux transferts repris. Les téléversements OneDrive utilisent une connexion.|适用于新建或恢复的传输。OneDrive 上传使用一个连接。
+Approve / reactivate|Approuver / réactiver|批准 / 重新启用
+Approve new accounts and manage access.|Approuvez les nouveaux comptes et gérez les accès.|审批新账号并管理访问权限。
+Approve {0}|Approuver {0}|批准 {0}
+At capacity|Capacité atteinte|容量已满
+Audio preview: {0}|Aperçu audio : {0}|音频预览：{0}
+Automatic approval|Approbation automatique|自动审批
+Awaiting save|En attente d’enregistrement|等待保存
+Both addresses remain available. Existing links and access codes continue to work.|Les deux adresses restent accessibles. Les liens et codes d’accès existants continuent de fonctionner.|两个地址均保持可用。已有链接和访问码仍然有效。
+Bring your files aboard|Embarquez vos fichiers|上传您的文件
+Browse drive root|Parcourir la racine du lecteur|浏览云盘根目录
+Browse folders|Parcourir les dossiers|浏览文件夹
+Browser download storage could not start. Use the direct browser download.|Le stockage de téléchargement du navigateur n’a pas pu démarrer. Utilisez le téléchargement direct.|无法启动浏览器下载存储。请使用浏览器直接下载。
+Browser download storage is unavailable. Use the direct browser download.|Le stockage de téléchargement du navigateur n’est pas disponible. Utilisez le téléchargement direct.|浏览器下载存储不可用。请使用浏览器直接下载。
+Browser previews for this format support files up to|Pour ce format, l’aperçu dans le navigateur accepte les fichiers jusqu’à|此格式的浏览器预览最大支持
+Bucket|Compartiment|存储桶
+Bucket “{0}” was not found or is not accessible in region “{1}”. Check the exact bucket name, namespace, region and the key's bucket permissions.|Le compartiment « {0} » est introuvable ou inaccessible dans la région « {1} ». Vérifiez son nom exact, l’espace de noms, la région et les autorisations de la clé.|在区域“{1}”中找不到或无法访问存储桶“{0}”。请检查准确的桶名称、命名空间、区域及密钥的访问权限。
+Cancel|Annuler|取消
+Cancel and remove transfer|Annuler et retirer le transfert|取消并移除传输
+Cannot read the WebDAV folder. Check the HTTPS folder URL, NAS credentials and Access service token.|Impossible de lire le dossier WebDAV. Vérifiez l’URL HTTPS, les identifiants NAS et le jeton de service Access.|无法读取 WebDAV 文件夹。请检查 HTTPS 文件夹地址、NAS 凭据和 Access 服务令牌。
+Capacity (GB)|Capacité (Go)|容量（GB）
+Check approval status|Vérifier l’état de l’approbation|检查审批状态
+Check connection|Vérifier la connexion|检查连接
+Check the bucket and S3 Customer Secret Key credentials.|Vérifiez le compartiment et les identifiants Customer Secret Key S3.|请检查存储桶和 S3 Customer Secret Key 凭据。
+Check your inbox|Consultez votre boîte de réception|请查收邮件
+Checking…|Vérification…|正在检查…
+Choose R2, AliPan, S3, Synology or WebDAV.|Choisissez R2, AliPan, S3, Synology ou WebDAV.|请选择 R2、阿里云盘、S3、Synology 或 WebDAV。
+Choose a connector|Choisir un connecteur|选择连接器
+Choose a destination. You can pause a transfer and pick up where you left off.|Choisissez une destination. Vous pouvez mettre le transfert en pause et le reprendre là où vous l’avez laissé.|选择存储位置。您可以暂停传输，稍后从中断处继续。
+Choose a per-file limit within the connector capacity.|Choisissez une limite par fichier qui ne dépasse pas la capacité du connecteur.|请选择不超过连接器容量的单文件大小限制。
+Choose a setting to update.|Choisissez un paramètre à modifier.|请选择要更新的设置。
+Choose a storage connector.|Choisissez un connecteur de stockage.|请选择存储连接器。
+Choose a valid OneDrive {0}.|Choisissez un élément OneDrive valide ({0}).|请选择有效的 OneDrive 项目（{0}）。
+Choose active or inactive.|Choisissez actif ou inactif.|请选择启用或停用。
+Choose an enabled storage connector.|Choisissez un connecteur de stockage activé.|请选择已启用的存储连接器。
+Choose an uploaded document|Choisir un document téléversé|选择已上传的文档
+Choose another provider|Choisir un autre fournisseur|选择其他服务商
+Choose documents to submit|Choisir les documents à soumettre|选择要提交的文档
+Choose files|Choisir les fichiers|选择文件
+Choose one of the supported File Station website addresses.|Choisissez une adresse de site File Station prise en charge.|请选择支持的 File Station 网站地址。
+Choose storage|Choisir le stockage|选择存储
+Choose submission or collaboration.|Choisissez la soumission ou la collaboration.|请选择文件提交或协作。
+Choose the website address used in copied links and invitation emails for downloads, file requests, and collaborations.|Choisissez l’adresse utilisée dans les liens copiés et les courriels d’invitation pour les téléchargements, les demandes de fichiers et les collaborations.|选择下载共享、文件收集和协作所用的链接及邀请邮件中的网站地址。
+Client ID|ID client|客户端 ID
+Client secret|Secret client|客户端密钥
+Client secret value|Valeur du secret client|客户端密钥值
+Close|Fermer|关闭
+Close editor|Fermer l’éditeur|关闭编辑器
+Close without saving these edits?|Fermer sans enregistrer les modifications?|关闭而不保存这些修改？
+Cloud drives and your NAS.|Vos lecteurs infonuagiques et votre NAS.|云盘与您的 NAS。
+Cloudflare R2|Cloudflare R2|Cloudflare R2
+Cloudflare R2 object storage|Stockage d’objets Cloudflare R2|Cloudflare R2 对象存储
+Complete the upload before saving it.|Terminez le téléversement avant l’enregistrement.|请完成上传后再保存。
+Configured|Configuré|已配置
+Confirm|Confirmer|确认
+Connect a destination|Connecter une destination|连接存储位置
+Connect an enterprise application. Files stay in your selected folder; File Station handles invitations without OneDrive sharing links.|Connectez une application d’entreprise. Les fichiers restent dans le dossier choisi; File Station gère les invitations sans liens de partage OneDrive.|连接企业应用程序。文件保存在您选择的文件夹中；File Station 负责邀请，无需 OneDrive 共享链接。
+Connection checks are available for Synology and WebDAV.|La vérification de connexion est offerte pour Synology et WebDAV.|Synology 和 WebDAV 支持连接检查。
+Connector encryption key is not configured.|La clé de chiffrement des connecteurs n’est pas configurée.|尚未配置连接器加密密钥。
+Connector encryption key must be base64 encoded.|La clé de chiffrement des connecteurs doit être encodée en base64.|连接器加密密钥必须采用 base64 编码。
+Connector encryption key must contain 32 random bytes.|La clé de chiffrement doit contenir 32 octets aléatoires.|连接器加密密钥必须包含 32 个随机字节。
+Connector mismatch.|Le connecteur ne correspond pas.|连接器不匹配。
+Connector type cannot be changed.|Le type de connecteur ne peut pas être modifié.|无法更改连接器类型。
+Continue securely|Continuer de façon sécuritaire|安全继续
+Copy link|Copier le lien|复制链接
+Copy share link|Copier le lien de partage|复制共享链接
+Copy this link and send it to your recipients. They’ll verify their address before downloading.|Copiez ce lien et envoyez-le aux destinataires. Ils vérifieront leur adresse avant le téléchargement.|复制此链接并发送给接收人。接收人需要验证邮箱后才能下载。
+Create a new connector for a different storage folder. A WebDAV hostname change requires confirmation that it points to the same folder.|Créez un nouveau connecteur pour un autre dossier. Si le nom d’hôte WebDAV change, confirmez qu’il pointe vers le même dossier.|如需更换存储文件夹，请创建新的连接器。更改 WebDAV 主机名时，需确认它指向同一文件夹。
+Create a share from any uploaded file.|Créez un partage à partir d’un fichier téléversé.|您可以为任意已上传文件创建共享。
+Create folder here|Créer un dossier ici|在此创建文件夹
+Create invitation|Créer l’invitation|创建邀请
+Create share|Créer le partage|创建共享
+Creating share…|Création du partage…|正在创建共享…
+Creating…|Création…|正在创建…
+Credentials are encrypted. Leave all four fields blank to preserve them; enter the complete set to replace them.|Les identifiants sont chiffrés. Laissez les quatre champs vides pour les conserver; remplissez-les tous pour les remplacer.|凭据将加密保存。将四个字段全部留空可保留原凭据；如需替换，请填写完整。
+Deactivate|Désactiver|停用
+Deactivate {0}|Désactiver {0}|停用 {0}
+Delete file|Supprimer le fichier|删除文件
+Delete this account?|Supprimer ce compte?|删除此账号？
+Delete this file?|Supprimer ce fichier?|删除此文件？
+Delete user and files|Supprimer l’utilisateur et ses fichiers|删除用户及其文件
+Delete {0}|Supprimer {0}|删除 {0}
+Direct browser download|Téléchargement direct dans le navigateur|浏览器直接下载
+Direct browser download {0}|Téléchargement direct de {0}|直接下载 {0}
+Direct download|Téléchargement direct|直接下载
+Disabled|Désactivé|已停用
+Dismiss|Retirer|移除
+Dismiss notification|Fermer l’avis|关闭通知
+Document text|Texte du document|文档文本
+Documents for our next meeting|Documents pour notre prochaine réunion|下次会议的文档
+Documents will be stored in this folder. Open a folder below to select it.|Les documents seront stockés ici. Ouvrez un dossier ci-dessous pour le sélectionner.|文档将保存在此文件夹中。打开下方文件夹即可选择。
+Documents, together.|Des documents, ensemble.|文档协作，携手完成。
+Done|Terminé|完成
+Download disk is not open.|Le stockage du téléchargement n’est pas ouvert.|下载存储尚未打开。
+Download failed.|Le téléchargement a échoué.|下载失败。
+Download my edits|Télécharger mes modifications|下载我的修改
+Download {0}|Télécharger {0}|下载 {0}
+Download, upload or collaboration code|Code de téléchargement, de téléversement ou de collaboration|下载、上传或协作访问码
+Downloading|Téléchargement|正在下载
+Drive ID|ID du lecteur|云盘 ID
+Drive root|Racine du lecteur|云盘根目录
+Drop files here, or browse|Déposez des fichiers ici ou parcourez-les|将文件拖到此处，或浏览选择
+Easy sharing.|Le partage en toute simplicité.|轻松分享。
+Edit online|Modifier en ligne|在线编辑
+Edit {0}|Modifier {0}|编辑 {0}
+Email address|Adresse courriel|邮箱地址
+Email delivery is not configured.|L’envoi de courriels n’est pas configuré.|尚未配置邮件发送服务。
+Email me a sign-in code|M’envoyer un code de connexion|发送登录验证码
+Email sent to your recipients. They’ll verify their address before downloading.|Le courriel a été envoyé. Les destinataires vérifieront leur adresse avant de télécharger.|邮件已发送给接收人。接收人需要验证邮箱后才能下载。
+Email simulated locally. Copy the link for testing.|Courriel simulé localement. Copiez le lien pour l’essayer.|已在本地模拟发送邮件。请复制链接进行测试。
+Email the invitation automatically|Envoyer l’invitation automatiquement par courriel|自动通过邮件发送邀请
+Email the link automatically|Envoyer le lien automatiquement par courriel|自动通过邮件发送链接
+Email verification PIN|NIP de vérification du courriel|邮箱验证码
+Enabled|Activé|已启用
+Enter 1–20 recipient email addresses.|Entrez de 1 à 20 adresses courriel de destinataires.|请输入 1 至 20 个接收人邮箱地址。
+Enter Microsoft’s folder item ID, or use the folder picker. A folder name such as FileStation is not an ID. Enter root to use the drive root. The folder is checked when you save a new storage location.|Entrez l’ID du dossier Microsoft ou utilisez le sélecteur. Un nom comme FileStation n’est pas un ID. Entrez root pour la racine du lecteur. Le dossier est vérifié à l’enregistrement d’un nouvel emplacement.|请输入 Microsoft 文件夹项目 ID，或使用文件夹选择器。FileStation 这样的文件夹名称不是 ID。输入 root 可使用云盘根目录。保存新的存储位置时会验证文件夹。
+Enter a WebDAV HTTPS folder URL.|Entrez l’URL HTTPS du dossier WebDAV.|请输入 WebDAV 文件夹的 HTTPS 地址。
+Enter a connector name.|Entrez un nom de connecteur.|请输入连接器名称。
+Enter a folder name without slashes, reserved characters, or a trailing dot or space.|Entrez un nom de dossier sans barre oblique ni caractère réservé, et sans point ou espace à la fin.|请输入文件夹名称，不得包含斜杠、保留字符，或以句点、空格结尾。
+Enter a list of allowed domains.|Entrez la liste des domaines autorisés.|请输入允许的域名列表。
+Enter a target filename without folder paths.|Entrez un nom de fichier cible sans chemin de dossier.|请输入目标文件名，不要包含文件夹路径。
+Enter a valid AliPan drive ID.|Entrez un ID de lecteur AliPan valide.|请输入有效的阿里云盘云盘 ID。
+Enter a valid S3 bucket name.|Entrez un nom de compartiment S3 valide.|请输入有效的 S3 存储桶名称。
+Enter a valid WebDAV HTTPS folder URL.|Entrez une URL HTTPS de dossier WebDAV valide.|请输入有效的 WebDAV 文件夹 HTTPS 地址。
+Enter a valid download, submission or collaboration access code.|Entrez un code d’accès valide de téléchargement, de soumission ou de collaboration.|请输入有效的下载、文件提交或协作访问码。
+Enter a valid email address.|Entrez une adresse courriel valide.|请输入有效的邮箱地址。
+Enter a valid file name.|Entrez un nom de fichier valide.|请输入有效的文件名。
+Enter a valid folder ID.|Entrez un ID de dossier valide.|请输入有效的文件夹 ID。
+Enter a valid storage limit up to 5 TB.|Entrez une limite de stockage valide d’au plus 5 To.|请输入不超过 5 TB 的有效存储容量限制。
+Enter all required connector credentials.|Entrez tous les identifiants requis du connecteur.|请填写连接器所需的全部凭据。
+Enter an S3 HTTPS URL or hostname. For Oracle, use your namespace and region: {0}|Entrez une URL HTTPS S3 ou un nom d’hôte. Pour Oracle, utilisez votre espace de noms et votre région : {0}|请输入 S3 HTTPS 地址或主机名。Oracle 请使用您的命名空间和区域：{0}
+Enter an S3 endpoint and bucket.|Entrez un point de terminaison S3 et un compartiment.|请输入 S3 端点和存储桶。
+Enter an email address.|Entrez une adresse courriel.|请输入邮箱地址。
+Enter an invitation title up to 160 characters.|Entrez un titre d’invitation d’au plus 160 caractères.|请输入邀请标题，最多 160 个字符。
+Enter between 1 and 20 recipient email addresses.|Entrez entre 1 et 20 adresses courriel de destinataires.|请输入 1 至 20 个接收人邮箱地址。
+Enter both Cloudflare Access service token fields.|Remplissez les deux champs du jeton de service Cloudflare Access.|请填写 Cloudflare Access 服务令牌的两个字段。
+Enter domains such as international.gc.ca, without @ or a URL.|Entrez des domaines comme international.gc.ca, sans @ ni URL.|请输入类似 international.gc.ca 的域名，不要包含 @ 或完整网址。
+Enter the 12-character access code.|Entrez le code d’accès à 12 caractères.|请输入 12 位访问码。
+Enter the Microsoft application secret value.|Entrez la valeur du secret de l’application Microsoft.|请输入 Microsoft 应用程序密钥的值。
+Enter the Microsoft tenant ID and application (client) ID as UUIDs.|Entrez l’ID du locataire et l’ID de l’application Microsoft au format UUID.|请输入 UUID 格式的 Microsoft 租户 ID 和应用程序（客户端）ID。
+Enter the S3 region (auto for R2).|Entrez la région S3 (auto pour R2).|请输入 S3 区域（R2 填写 auto）。
+Enter the access code you received.|Entrez le code d’accès reçu.|请输入您收到的访问码。
+Enter the application secret value to connect.|Entrez la valeur du secret de l’application pour vous connecter.|请输入应用程序密钥值以连接。
+Enter the exact Oracle bucket name, including capitalization (1–256 letters, numbers, hyphens, underscores or periods).|Entrez le nom exact du compartiment Oracle, en respectant la casse (1 à 256 lettres, chiffres, traits d’union, traits de soulignement ou points).|请输入准确的 Oracle 存储桶名称，区分大小写（1 至 256 个字母、数字、连字符、下划线或句点）。
+Enter the six-digit verification code.|Entrez le code de vérification à six chiffres.|请输入六位数字验证码。
+Enter your invitation code and verify your recipient email.|Entrez votre code d’invitation et vérifiez votre adresse courriel de destinataire.|请输入邀请访问码并验证受邀邮箱。
+Every byte gets there.|Chaque octet à bon port.|每个字节，都能抵达。
+Every file at your station.|Tous les fichiers de votre station.|站内的所有文件。
+Everything you’ve uploaded, with room for what’s next.|Tous vos téléversements, avec de la place pour la suite.|您上传的所有文件，为未来预留更多空间。
+Expired|Expiré|已过期
+Expires|Expire le|到期时间
+Expires in days|Expiration dans (jours)|有效期（天）
+Expires {0}|Expire le {0}|到期时间：{0}
+Expiry must be 1–365 days.|La durée doit être de 1 à 365 jours.|有效期须为 1 至 365 天。
+FILE ACCESS CODE|CODE D’ACCÈS AU FICHIER|文件访问码
+FILE STATION|FILE STATION|FILE STATION
+FOR RECIPIENTS|POUR LES DESTINATAIRES|接收人入口
+FROM HERE TO THERE|D’ICI JUSQU’À VOUS|从这里，抵达您那里
+File|Fichier|文件
+File Station|File Station|File Station
+File Station · Your files, well connected.|File Station · Vos fichiers, bien connectés.|File Station · 连接您与每个文件。
+File access code|Code d’accès au fichier|文件访问码
+File deletion or storage retention invalidates this code immediately.|La suppression du fichier ou sa rétention invalide ce code immédiatement.|文件被手动删除或由保留策略删除后，此访问码立即失效。
+File not found.|Fichier introuvable.|找不到文件。
+File preview|Aperçu du fichier|文件预览
+FileStation|FileStation|FileStation
+Files are kept for {0} days.|Les fichiers sont conservés pendant {0} jours.|文件保留 {0} 天。
+Files in your station|Fichiers dans votre station|站内文件
+Files stay private until you share them|Vos fichiers restent privés jusqu’au partage|文件在共享前保持私密
+Files stored|Fichiers stockés|已存储文件
+Filter by storage|Filtrer par stockage|按存储筛选
+Find drive|Trouver le lecteur|查找云盘
+Fit width|Ajuster à la largeur|适应宽度
+Folder ID|ID du dossier|文件夹 ID
+For Cloudflare Access, create a service token and a Service Auth policy. Enter both fields below; browser login policies alone will block the Worker.|Pour Cloudflare Access, créez un jeton de service et une politique Service Auth. Remplissez les deux champs ci-dessous; une politique de connexion au navigateur seule bloque le Worker.|如使用 Cloudflare Access，请创建服务令牌和 Service Auth 策略，并填写下方两个字段。仅允许浏览器登录的策略会阻止 Worker 访问。
+Go at your own pace|Allez à votre rythme|按您的节奏进行
+Go to transfers|Aller aux transferts|前往传输列表
+Good files.|De bons fichiers.|好文件。
+Good things, passed along.|Les bonnes choses se partagent.|美好内容，传递分享。
+Great Mission.|Une grande mission.|大使命。
+Have an access code?|Vous avez un code d’accès?|有访问码？
+Hide preview|Masquer l’aperçu|收起预览
+I confirm a changed hostname points to the same WebDAV folder, with the same files.|Je confirme que le nouveau nom d’hôte pointe vers le même dossier WebDAV et les mêmes fichiers.|我确认更改后的主机名指向同一 WebDAV 文件夹，其中包含相同文件。
+If this storage reaches its|Si ce stockage atteint sa limite de|当此存储的用量达到
+In progress|En cours|进行中
+Incomplete part.|Bloc incomplet.|分块不完整。
+Invalid JSON.|JSON non valide.|JSON 无效。
+Invalid Microsoft Graph path.|Chemin Microsoft Graph non valide.|Microsoft Graph 路径无效。
+Invalid access code or recipient email.|Code d’accès ou adresse courriel du destinataire non valide.|访问码或接收人邮箱无效。
+Invalid domain.|Domaine non valide.|域名无效。
+Invalid download chunk.|Bloc de téléchargement non valide.|下载分块无效。
+Invalid or expired verification code.|Code de vérification non valide ou expiré.|验证码无效或已过期。
+Invalid part number.|Numéro de bloc non valide.|分块编号无效。
+Invalid storage identifier.|Identifiant de stockage non valide.|存储标识符无效。
+Invitation email sent.|Courriel d’invitation envoyé.|邀请邮件已发送。
+Invitation link|Lien d’invitation|邀请链接
+Invitation not found.|Invitation introuvable.|找不到邀请。
+Invitation title|Titre de l’invitation|邀请标题
+Invite external partners to submit documents to storage you choose.|Invitez des partenaires externes à soumettre des documents au stockage de votre choix.|邀请外部合作伙伴将文档提交到您指定的存储位置。
+Invited email addresses|Adresses courriel invitées|受邀邮箱地址
+Joined|Inscription|注册时间
+KEEP UNTIL|CONSERVER JUSQU’AU|保留至
+Keep the original. Share a working copy for online edits or desktop re-uploads.|Conservez l’original. Partagez une copie de travail pour la modifier en ligne ou téléverser une version modifiée sur ordinateur.|保留原文件，分享工作副本以便在线编辑，或在电脑上修改后重新上传。
+Keys are encrypted on the server. Blank fields preserve existing credentials. Use a dedicated File Station bucket; each connector has its own file prefix.|Les clés sont chiffrées sur le serveur. Les champs vides conservent les identifiants actuels. Utilisez un compartiment dédié à File Station; chaque connecteur a son propre préfixe.|密钥将在服务器上加密保存。字段留空可保留现有凭据。请使用 File Station 专用存储桶，每个连接器均有独立的文件前缀。
+Leave blank for no time limit|Laissez vide pour une durée illimitée|留空表示无时间限制
+Leave blank to keep the saved secret|Laissez vide pour conserver le secret actuel|留空以保留已保存的密钥
+Loading document editor…|Chargement de l’éditeur de documents…|正在加载文档编辑器…
+Loading preview…|Chargement de l’aperçu…|正在加载预览…
+Local email simulator · PIN:|Simulateur de courriel local · NIP :|本地邮件模拟器 · 验证码：
+Make yourself at home.|Vous êtes chez vous.|欢迎使用您的文件空间。
+Manage all users’ files and sharing permissions.|Gérez les fichiers et les autorisations de partage de tous les utilisateurs.|管理所有用户的文件和共享权限。
+Manage connector|Gérer le connecteur|管理连接器
+Manage existing shares|Gérer les partages existants|管理已有共享
+Manage storage|Gérer le stockage|管理存储
+Manage the files you’ve shared and the people who can access them.|Gérez vos fichiers partagés et les personnes qui peuvent y accéder.|管理您共享的文件及其接收人。
+Maximum file size (MB)|Taille maximale par fichier (Mo)|单文件最大大小（MB）
+Maximum submissions across this invitation|Nombre maximal de soumissions pour cette invitation|此邀请允许的最大提交数量
+Microsoft Graph denied access ({0}). Grant the required application permissions and administrator consent. Selected permissions also require a write grant on the selected site or folder; drive discovery may require entering its ID manually.|Microsoft Graph a refusé l’accès ({0}). Accordez les autorisations d’application et le consentement administrateur requis. Les autorisations ciblées exigent aussi un droit d’écriture sur le site ou dossier; vous pourriez devoir entrer l’ID du lecteur manuellement.|Microsoft Graph 拒绝访问（{0}）。请授予所需应用程序权限及管理员同意。使用限定权限时，还需为所选站点或文件夹授予写入权限；查找云盘时可能需要手动输入 ID。
+Microsoft Graph rejected the application's access token ({0}). Check Microsoft Graph application permissions and grant tenant administrator consent, then retry. The tenant, client ID and secret value must belong to the same application.|Microsoft Graph a rejeté le jeton d’accès ({0}). Vérifiez les autorisations d’application et accordez le consentement administrateur du locataire, puis réessayez. Le locataire, l’ID client et le secret doivent appartenir à la même application.|Microsoft Graph 拒绝了应用程序的访问令牌（{0}）。请检查应用程序权限并授予租户管理员同意后重试。租户、客户端 ID 和密钥值必须属于同一应用程序。
+Microsoft application sign-in failed. Check the tenant, client ID, secret value and tenant admin consent.|La connexion à l’application Microsoft a échoué. Vérifiez le locataire, l’ID client, le secret et le consentement administrateur.|Microsoft 应用程序登录失败。请检查租户、客户端 ID、密钥值及租户管理员同意。
+Microsoft did not provide a download URL for this file. Check the application's file read access and the tenant's download policy.|Microsoft n’a pas fourni d’URL de téléchargement. Vérifiez l’accès en lecture de l’application et la politique de téléchargement du locataire.|Microsoft 未提供此文件的下载地址。请检查应用程序的文件读取权限及租户下载策略。
+Microsoft did not return the new folder.|Microsoft n’a pas renvoyé le nouveau dossier.|Microsoft 未返回新建的文件夹。
+Microsoft returned an unsupported storage URL.|Microsoft a renvoyé une URL de stockage non prise en charge.|Microsoft 返回了不支持的存储地址。
+Missing connector.|Connecteur manquant.|缺少连接器。
+More folders|Autres dossiers|更多文件夹
+More than one drive may be available. Enter the intended Drive ID manually rather than choosing a drive automatically.|Plusieurs lecteurs peuvent être disponibles. Entrez manuellement l’ID du lecteur voulu.|可能存在多个云盘。请手动输入所需云盘的 ID。
+NAME|NOM|名称
+Name|Nom|名称
+New collaboration|Nouvelle collaboration|新建协作
+New file request|Nouvelle demande de fichiers|新建文件收集
+New folder name|Nom du nouveau dossier|新文件夹名称
+New users with a verified email at these exact domains are approved automatically. Other users wait for an administrator.|Les nouveaux utilisateurs dont le courriel vérifié appartient exactement à ces domaines sont approuvés automatiquement. Les autres attendent l’approbation d’un administrateur.|邮箱验证通过且域名与此列表完全匹配的新用户会自动获批。其他用户需等待管理员审批。
+Next page|Page suivante|下一页
+No OneDrive for Business drive was returned. Confirm the owner’s Microsoft 365 sign-in address and open their OneDrive once to provision it. With selected permissions, enter the Drive ID manually.|Aucun lecteur OneDrive Entreprise n’a été trouvé. Vérifiez l’adresse de connexion Microsoft 365 du propriétaire et ouvrez son OneDrive une fois pour l’activer. Avec des autorisations ciblées, entrez l’ID manuellement.|未找到 OneDrive for Business 云盘。请确认所有者的 Microsoft 365 登录地址，并先登录其 OneDrive 完成初始化。使用限定权限时，请手动输入云盘 ID。
+No account needed. Just your code and email.|Aucun compte requis. Seulement votre code et votre courriel.|无需账号，只需访问码和邮箱。
+No existing shares.|Aucun partage existant.|暂无共享。
+No matching files|Aucun fichier correspondant|没有匹配的文件
+No time limit|Aucune limite de temps|无时间限制
+No time-based expiry.|Aucune expiration selon la durée.|不设置按时间到期。
+Not enough browser disk space for this file.|L’espace disque du navigateur est insuffisant pour ce fichier.|浏览器磁盘空间不足，无法保存此文件。
+Not enough browser disk space to save download progress.|L’espace disque du navigateur est insuffisant pour enregistrer la progression.|浏览器磁盘空间不足，无法保存下载进度。
+OWNER|PROPRIÉTAIRE|所有者
+Oldest files deleted first|Les fichiers les plus anciens sont supprimés d’abord|优先删除最早上传的文件
+One code to download a file, submit documents, or join a collaboration.|Un seul code pour télécharger un fichier, soumettre des documents ou participer à une collaboration.|一个访问码，即可下载文件、提交文档或参与协作。
+One domain per line. Subdomains are not automatically included. Existing accounts are unchanged.|Un domaine par ligne. Les sous-domaines ne sont pas inclus automatiquement. Les comptes existants restent inchangés.|每行一个域名。不会自动包含子域名。不会更改现有账号。
+One or more connectors could not complete retention cleanup.|Au moins un connecteur n’a pas pu terminer le nettoyage de rétention.|一个或多个连接器未能完成保留策略清理。
+OneDrive application credentials are not configured.|Les identifiants de l’application OneDrive ne sont pas configurés.|尚未配置 OneDrive 应用程序凭据。
+OneDrive connector not found.|Connecteur OneDrive introuvable.|找不到 OneDrive 连接器。
+OneDrive could not cancel the upload. Cleanup will retry.|OneDrive n’a pas pu annuler le téléversement. Le nettoyage réessaiera.|OneDrive 无法取消上传，清理过程将重试。
+OneDrive could not confirm the saved part. Retry this upload.|OneDrive n’a pas pu confirmer le bloc enregistré. Réessayez le téléversement.|OneDrive 无法确认已保存的分块。请重试上传。
+OneDrive could not delete the file. Cleanup will retry.|OneDrive n’a pas pu supprimer le fichier. Le nettoyage réessaiera.|OneDrive 无法删除文件，清理过程将重试。
+OneDrive could not save this part (HTTP {0}). Retry or resume the upload.|OneDrive n’a pas pu enregistrer ce bloc (HTTP {0}). Réessayez ou reprenez le téléversement.|OneDrive 无法保存此分块（HTTP {0}）。请重试或恢复上传。
+OneDrive did not create an upload session.|OneDrive n’a pas créé de session de téléversement.|OneDrive 未创建上传会话。
+OneDrive did not return the requested file range.|OneDrive n’a pas renvoyé la plage de fichier demandée.|OneDrive 未返回所请求的文件范围。
+OneDrive for Business|OneDrive Entreprise|OneDrive for Business
+OneDrive for Business · private application storage|OneDrive Entreprise · stockage privé de l’application|OneDrive for Business · 应用程序私有存储
+OneDrive owner email|Courriel du propriétaire OneDrive|OneDrive 所有者邮箱
+OneDrive parts must be uploaded in sequence. Resume from the first missing part.|Les blocs OneDrive doivent être téléversés dans l’ordre. Reprenez au premier bloc manquant.|OneDrive 分块必须按顺序上传。请从第一个缺失分块继续。
+OneDrive request failed ({0}). Check the selected drive/folder and the application's granted permissions.|La requête OneDrive a échoué ({0}). Vérifiez le lecteur, le dossier et les autorisations accordées à l’application.|OneDrive 请求失败（{0}）。请检查所选云盘、文件夹及应用程序已获授的权限。
+OneDrive returned an unexpected final file size.|OneDrive a renvoyé une taille finale de fichier inattendue.|OneDrive 返回的最终文件大小不符合预期。
+Online editing supports DOCX and plain text up to 20 MiB. For other files, download, edit on your computer, and re-upload below.|La modification en ligne accepte les fichiers DOCX et texte jusqu’à 20 Mio. Pour les autres fichiers, téléchargez-les, modifiez-les sur votre ordinateur, puis téléversez-les ci-dessous.|在线编辑支持不超过 20 MiB 的 DOCX 和纯文本文件。其他文件请下载到电脑上修改，然后在下方重新上传。
+Only approved accounts can upload files.|Seuls les comptes approuvés peuvent téléverser des fichiers.|只有已获批准的账号才能上传文件。
+Open a preview without downloading a local copy.|Consultez l’aperçu sans enregistrer de copie locale.|无需保存本地副本即可查看预览。
+Open document|Ouvrir le document|打开文档
+Open request|Ouvrir la demande|打开文件收集
+Opening document…|Ouverture du document…|正在打开文档…
+Opening your station…|Ouverture de votre station…|正在打开您的文件空间…
+Original document|Document original|原始文档
+Original:|Original :|原文件：
+Other uploads have reserved this capacity. Retry after they finish.|D’autres téléversements ont réservé cet espace. Réessayez lorsqu’ils seront terminés.|其他上传已预留此容量。请等待其完成后重试。
+PDF page {0}|Page PDF {0}|PDF 第 {0} 页
+PDF zoom|Zoom du PDF|PDF 缩放
+Page|Page|页码
+Parallel connections|Connexions parallèles|并行连接数
+Parent folder|Dossier parent|上级文件夹
+Part length does not match.|La taille du bloc ne correspond pas.|分块长度不匹配。
+Pause|Mettre en pause|暂停
+Pause save|Mettre l’enregistrement en pause|暂停保存
+Pause when you need to. Resume when you’re ready. After a refresh, reselect the original file to resume an upload.|Faites une pause au besoin et reprenez quand vous le souhaitez. Après une actualisation, sélectionnez de nouveau le fichier original pour reprendre un téléversement.|需要时暂停，准备好后继续。刷新页面后，重新选择原文件即可恢复上传。
+Pause {0}|Mettre {0} en pause|暂停 {0}
+Pause. Resume. Keep going.|Pause. Reprise. On continue.|暂停，继续，轻松完成。
+Personal workspace|Espace personnel|个人工作空间
+Pick the storage that fits. Each destination has its own capacity and retention policy.|Choisissez le stockage qui vous convient. Chaque destination a sa propre capacité et politique de rétention.|选择适合的存储服务。每个存储位置均有独立的容量和保留策略。
+Playback depends on browser codec support. Use the controls to pause or seek.|La lecture dépend des codecs du navigateur. Utilisez les commandes pour mettre en pause ou avancer.|播放取决于浏览器支持的编解码器。可通过控件暂停或跳转播放位置。
+Please wait…|Veuillez patienter…|请稍候…
+Preparing document preview…|Préparation de l’aperçu du document…|正在准备文档预览…
+Preparing uploads…|Préparation des téléversements…|正在准备上传…
+Preview isn’t available for this format. Download the file to open it.|L’aperçu n’est pas offert pour ce format. Téléchargez le fichier pour l’ouvrir.|此格式不支持预览。请下载文件以打开。
+Preview of {0}|Aperçu de {0}|预览 {0}
+Previous page|Page précédente|上一页
+Private by default. Thoughtfully shared.|Privé par défaut. Partagé avec soin.|默认私密，用心分享。
+Provider|Fournisseur|服务商
+R2 destinations use separate prefixes in the app’s Cloudflare bucket. No storage keys are needed.|Les destinations R2 utilisent des préfixes distincts dans le compartiment Cloudflare de l’application. Aucune clé de stockage n’est requise.|R2 存储位置在应用的 Cloudflare 存储桶中使用独立前缀，无需填写存储密钥。
+Re-upload your edited document|Téléverser le document modifié|重新上传修改后的文档
+Read page text|Lire le texte de la page|查看页面文本
+Read-only document preview|Aperçu du document en lecture seule|只读文档预览
+Read-only preview. Complex Word layouts may appear differently.|Aperçu en lecture seule. Les mises en page Word complexes peuvent différer.|只读预览。复杂的 Word 排版可能有所不同。
+Ready|Prêt|就绪
+Ready to share|Prêt à partager|准备共享
+Recent activity|Activité récente|最近操作
+Recipient email addresses|Adresses courriel des destinataires|接收人邮箱地址
+Refresh files|Actualiser les fichiers|刷新文件列表
+Refresh token|Jeton d’actualisation|刷新令牌
+Region|Région|区域
+Remove {0}|Retirer {0}|移除 {0}
+Rendering PDF…|Affichage du PDF…|正在渲染 PDF…
+Replace the namespace and region placeholders with your Oracle account values. Example: {0}|Remplacez l’espace de noms et la région par les valeurs de votre compte Oracle. Exemple : {0}|请将命名空间和区域占位符替换为您 Oracle 账号的实际值。示例：{0}
+Request documents.|Demandez des documents.|收集文档。
+Request is too large.|La requête est trop volumineuse.|请求过大。
+Request origin is not allowed.|L’origine de la requête n’est pas autorisée.|不允许此请求来源。
+Requires Microsoft Graph application permissions and tenant administrator consent. Sites.ReadWrite.All enables the full connector with tenant-wide access. For restricted access, use Sites.Selected with a write grant on your storage site and enter its Drive ID manually. Delegated permissions do not apply to this sign-in method.|Les autorisations d’application Microsoft Graph et le consentement administrateur sont requis. Sites.ReadWrite.All active le connecteur à l’échelle du locataire. Pour limiter l’accès, utilisez Sites.Selected avec un droit d’écriture sur le site de stockage et entrez l’ID du lecteur manuellement. Les autorisations déléguées ne s’appliquent pas à ce mode de connexion.|需要 Microsoft Graph 应用程序权限及租户管理员同意。Sites.ReadWrite.All 可为完整连接器提供租户范围的访问。如需限制访问，请使用 Sites.Selected，授予存储站点写入权限，并手动输入云盘 ID。委派权限不适用于此登录方式。
+Reserved for uploads|Réservé aux téléversements|上传预留空间
+Resumable download|Téléchargement avec reprise|可恢复下载
+Resumable downloads need a browser with private file storage (current Chrome, Edge, Firefox, or Safari) and a secure connection. Use the direct download instead.|Les téléchargements avec reprise nécessitent un navigateur offrant le stockage privé (Chrome, Edge, Firefox ou Safari à jour) et une connexion sécurisée. Sinon, utilisez le téléchargement direct.|可恢复下载需要支持私有文件存储的浏览器（新版 Chrome、Edge、Firefox 或 Safari）及安全连接。否则请使用直接下载。
+Resume|Reprendre|继续
+Resume save|Reprendre l’enregistrement|继续保存
+Resume {0}|Reprendre {0}|继续 {0}
+Retention in days|Rétention en jours|保留天数
+Retention must be 1–3650 days, or blank for no time limit.|La rétention doit être de 1 à 3650 jours. Laissez vide pour une durée illimitée.|保留期限须为 1 至 3650 天，或留空表示无时间限制。
+Retention service|Service de rétention|保留策略服务
+Retry preview|Réessayer l’aperçu|重新加载预览
+Review the proposed document|Réviser le document proposé|审阅拟定文档
+Reviewed-document.docx|Document-révisé.docx|已审阅文档.docx
+Revoke|Révoquer|撤销
+Revoke this invitation? Its recipients will lose access.|Révoquer cette invitation? Les destinataires perdront leur accès.|撤销此邀请？接收人将失去访问权限。
+Revoked|Révoqué|已撤销
+Role|Rôle|角色
+Room for your ideas|De la place pour vos idées|为灵感预留空间
+S3 HTTPS endpoint|Point de terminaison HTTPS S3|S3 HTTPS 端点
+S3 compatible (R2, B2, Storj…)|Compatible S3 (R2, B2, Storj…)|兼容 S3（R2、B2、Storj…）
+S3 could not cancel the upload. Cleanup will retry.|S3 n’a pas pu annuler le téléversement. Le nettoyage réessaiera.|S3 无法取消上传，清理过程将重试。
+S3 could not complete the upload. Retry completion.|S3 n’a pas pu terminer le téléversement. Réessayez de le finaliser.|S3 无法完成上传。请重试完成操作。
+S3 could not delete the file. Cleanup will retry.|S3 n’a pas pu supprimer le fichier. Le nettoyage réessaiera.|S3 无法删除文件，清理过程将重试。
+S3 credentials are incomplete. Re-enter both Customer Secret Key fields.|Les identifiants S3 sont incomplets. Remplissez les deux champs Customer Secret Key.|S3 凭据不完整。请重新填写 Customer Secret Key 的两个字段。
+S3 credentials are not configured.|Les identifiants S3 ne sont pas configurés.|尚未配置 S3 凭据。
+S3 did not return the requested file range.|S3 n’a pas renvoyé la plage de fichier demandée.|S3 未返回所请求的文件范围。
+S3 returned an invalid multipart session.|S3 a renvoyé une session multipartie non valide.|S3 返回的分块上传会话无效。
+S3 returned an unexpected file range.|S3 a renvoyé une plage de fichier inattendue.|S3 返回的文件范围不符合预期。
+S3 returned an unexpected file size.|S3 a renvoyé une taille de fichier inattendue.|S3 返回的文件大小不符合预期。
+S3 storage could not save the part. You can retry it.|Le stockage S3 n’a pas pu enregistrer le bloc. Réessayez.|S3 存储无法保存此分块。请重试。
+S3 storage could not start the upload (HTTP {0}{1}). {2}|Le stockage S3 n’a pas pu démarrer le téléversement (HTTP {0}{1}). {2}|S3 存储无法启动上传（HTTP {0}{1}）。{2}
+S3-compatible object storage|Stockage d’objets compatible S3|兼容 S3 的对象存储
+SIZE|TAILLE|大小
+STORAGE|STOCKAGE|存储
+Save again|Enregistrer de nouveau|再次保存
+Save connector|Enregistrer le connecteur|保存连接器
+Save domains|Enregistrer les domaines|保存域名
+Save download again|Enregistrer de nouveau le téléchargement|再次保存下载文件
+Save share address|Enregistrer l’adresse de partage|保存共享地址
+Save submitted files to|Enregistrer les fichiers soumis dans|提交文件的保存位置
+Save working copy|Enregistrer la copie de travail|保存工作副本
+Saved|Enregistré|已保存
+Saving working copy…|Enregistrement de la copie de travail…|正在保存工作副本…
+Saving…|Enregistrement…|正在保存…
+Search files|Rechercher des fichiers|搜索文件
+Search your files…|Recherchez vos fichiers…|搜索您的文件…
+Secret access key|Clé d’accès secrète|秘密访问密钥
+Select original file|Sélectionner le fichier original|选择原文件
+Select the original file to resume this upload.|Sélectionnez le fichier original pour reprendre ce téléversement.|请选择原文件以恢复此次上传。
+Selected:|Sélection :|已选择：
+Send this link and code to the invited recipients.|Envoyez ce lien et ce code aux destinataires invités.|请将此链接和访问码发送给受邀接收人。
+Separate addresses with commas. Up to 20 recipients.|Séparez les adresses par des virgules. Maximum de 20 destinataires.|多个地址请用逗号分隔，最多 20 位接收人。
+Set the ground rules.|Établissez les règles.|设置使用规则。
+Setup needed|Configuration requise|需要配置
+Share expires in|Expiration du partage|共享有效期
+Share file|Partager le fichier|共享文件
+Share for collaboration instead|Partager plutôt pour collaborer|改为协作共享
+Share for collaboration.|Partagez pour collaborer.|共享文档，开展协作。
+Share lifetime must be between 1 and 365 days.|La durée du partage doit être de 1 à 365 jours.|共享有效期须为 1 至 365 天。
+Share link|Lien de partage|共享链接
+Share link address|Adresse des liens de partage|共享链接地址
+Share not found.|Partage introuvable.|找不到共享。
+Share {0}|Partager {0}|共享 {0}
+Show invitations from all users|Afficher les invitations de tous les utilisateurs|显示所有用户的邀请
+Show preview|Afficher l’aperçu|显示预览
+Showing|Affichage de|当前显示
+Sign in|Se connecter|登录
+Sign in or create an account with your email. No password to remember.|Connectez-vous ou créez un compte avec votre courriel. Aucun mot de passe à retenir.|通过邮箱登录或创建账号，无需记忆密码。
+Sign in to continue.|Connectez-vous pour continuer.|请登录以继续。
+Sign in to upload|Se connecter pour téléverser|登录以上传
+Sign out|Se déconnecter|退出登录
+Some files could not be deleted. The account is deactivated; retry deletion to finish cleanup.|Certains fichiers n’ont pas pu être supprimés. Le compte est désactivé; réessayez la suppression pour terminer le nettoyage.|部分文件未能删除。账号已停用，请重试删除以完成清理。
+Someone saved a newer working copy. Your upload has not replaced it. Download the latest document and merge your edits.|Une copie de travail plus récente a été enregistrée. Votre téléversement ne l’a pas remplacée. Téléchargez le dernier document et fusionnez vos modifications.|其他人已保存更新的工作副本。您的上传未覆盖它。请下载最新文档并合并修改。
+Source file not found.|Fichier source introuvable.|找不到源文件。
+Start resumable download|Démarrer le téléchargement avec reprise|开始可恢复下载
+Status|État|状态
+Storage cleanup failed|Échec du nettoyage du stockage|存储清理失败
+Storage connector not found.|Connecteur de stockage introuvable.|找不到存储连接器。
+Storage could not cancel the upload. Cleanup will retry.|Le stockage n’a pas pu annuler le téléversement. Le nettoyage réessaiera.|存储服务无法取消上传，清理过程将重试。
+Storage destination|Destination de stockage|存储位置
+Storage is awaiting cleanup. Retry later.|Le stockage est en attente de nettoyage. Réessayez plus tard.|存储空间正在等待清理。请稍后重试。
+Storage limits apply to File Station’s own files. Capacity eviction removes the oldest files permanently.|Les limites de stockage s’appliquent aux fichiers de File Station. Lorsque la capacité est atteinte, les plus anciens sont supprimés définitivement.|容量限制仅适用于 File Station 的文件。容量不足时会永久删除最早上传的文件。
+Storage returned an invalid URL.|Le stockage a renvoyé une URL non valide.|存储服务返回的地址无效。
+Storage returned an unexpected file size.|Le stockage a renvoyé une taille de fichier inattendue.|存储服务返回的文件大小不符合预期。
+Storage returned an untrusted URL.|Le stockage a renvoyé une URL non fiable.|存储服务返回了不受信任的地址。
+Storage root folder ID|ID du dossier racine de stockage|存储根文件夹 ID
+Stored S3 credentials could not be decrypted. Re-enter both S3 keys in this connector. Keep the connector encryption key stable.|Les identifiants S3 enregistrés n’ont pas pu être déchiffrés. Entrez de nouveau les deux clés S3. Conservez la même clé de chiffrement des connecteurs.|无法解密已保存的 S3 凭据。请在此连接器中重新输入两个 S3 密钥，并保持连接器加密密钥不变。
+Submission invitations do not allow browsing or downloading other submissions.|Les invitations de soumission ne permettent pas de parcourir ni de télécharger d’autres soumissions.|文件提交邀请不允许浏览或下载其他人的提交。
+Submissions|Soumissions|已提交文件
+Synology WebDAV (Cloudflare)|WebDAV Synology (Cloudflare)|Synology WebDAV（Cloudflare）
+Synology · WebDAV through Cloudflare|Synology · WebDAV par Cloudflare|Synology · 通过 Cloudflare 访问 WebDAV
+Target filename|Nom du fichier cible|目标文件名
+Team storage|Stockage d’équipe|团队存储
+Tenant ID|ID du locataire|租户 ID
+The DOCX preview could not be opened. Download the document to view it.|L’aperçu DOCX n’a pas pu être ouvert. Téléchargez le document pour le consulter.|无法打开 DOCX 预览。请下载文档后查看。
+The OneDrive file changed outside File Station.|Le fichier OneDrive a été modifié en dehors de File Station.|此 OneDrive 文件已在 File Station 之外被修改。
+The OneDrive upload session expired. Start a new upload.|La session de téléversement OneDrive a expiré. Démarrez un nouveau téléversement.|OneDrive 上传会话已过期。请重新上传。
+The Oracle region must match the endpoint: {0}.|La région Oracle doit correspondre au point de terminaison : {0}.|Oracle 区域必须与端点一致：{0}。
+The S3 endpoint could not be reached over HTTPS. Check the endpoint and try again.|Le point de terminaison S3 est inaccessible par HTTPS. Vérifiez l’adresse et réessayez.|无法通过 HTTPS 连接到 S3 端点。请检查端点后重试。
+The S3 endpoint redirected the request. Use the bucket’s regional S3 Compatibility endpoint.|Le point de terminaison S3 a redirigé la requête. Utilisez le point de terminaison compatible S3 régional du compartiment.|S3 端点重定向了请求。请使用存储桶所在区域的 S3 兼容端点。
+The S3 request could not be signed. Check the Customer Secret Key pair and region.|La requête S3 n’a pas pu être signée. Vérifiez la paire Customer Secret Key et la région.|无法为 S3 请求签名。请检查 Customer Secret Key 密钥对和区域。
+The WebDAV file manifest does not match this file.|Le manifeste WebDAV ne correspond pas à ce fichier.|WebDAV 文件清单与此文件不匹配。
+The WebDAV file manifest is unavailable.|Le manifeste du fichier WebDAV n’est pas disponible.|WebDAV 文件清单不可用。
+The WebDAV upload path is not an accessible collection.|Le chemin de téléversement WebDAV n’est pas un dossier accessible.|WebDAV 上传路径不是可访问的集合文件夹。
+The document changed. Download the latest working copy before saving your edits.|Le document a changé. Téléchargez la dernière copie de travail avant d’enregistrer vos modifications.|文档已发生变化。保存修改前，请先下载最新工作副本。
+The email provider could not deliver the message. Please try again.|Le fournisseur de courriel n’a pas pu livrer le message. Réessayez.|邮件服务商无法投递邮件。请重试。
+The email sender is not configured correctly.|L’expéditeur des courriels n’est pas configuré correctement.|邮件发件人配置不正确。
+The email server closed the connection.|Le serveur de courriel a fermé la connexion.|邮件服务器关闭了连接。
+The email server rejected the message. Check SMTP credentials and verified sender.|Le serveur de courriel a refusé le message. Vérifiez les identifiants SMTP et l’expéditeur vérifié.|邮件服务器拒绝了邮件。请检查 SMTP 凭据和已验证的发件人。
+The email server timed out.|Le délai de réponse du serveur de courriel a expiré.|邮件服务器连接超时。
+The file limit must be 1–100.|La limite doit être de 1 à 100 fichiers.|文件数量限制须为 1 至 100。
+The new limit must cover current files and reserved uploads. Delete files first.|La nouvelle limite doit couvrir les fichiers actuels et les téléversements réservés. Supprimez des fichiers d’abord.|新容量限制必须覆盖现有文件和已预留的上传空间。请先删除部分文件。
+The original is preserved. Online edits and re-uploads replace one working copy using this target filename. No version history is kept.|L’original est conservé. Les modifications en ligne et les nouveaux téléversements remplacent une seule copie de travail portant ce nom. Aucun historique des versions n’est conservé.|原文件将保留。在线编辑和重新上传会替换使用此目标文件名的工作副本，不保留版本历史。
+The original is preserved. Saved edits and re-uploads replace this working copy.|L’original est conservé. Les modifications enregistrées et les nouveaux téléversements remplacent cette copie de travail.|原文件将保留。保存的修改和重新上传会替换此工作副本。
+The people at your station.|Les gens de votre station.|您站内的用户。
+The request failed.|La requête a échoué.|请求失败。
+The saved download is invalid. Restart it.|Le téléchargement enregistré n’est pas valide. Redémarrez-le.|已保存的下载无效。请重新开始下载。
+The selected OneDrive folder could not be found in this drive. Storage root folder ID must be Microsoft's item ID, not a folder name or path. Choose Browse drive root, then open the intended folder, or enter root to use the drive root.|Le dossier OneDrive sélectionné est introuvable dans ce lecteur. L’ID du dossier racine doit être l’ID Microsoft, et non un nom ou un chemin. Choisissez Parcourir la racine du lecteur, puis ouvrez le dossier voulu, ou entrez root pour la racine.|在此云盘中找不到所选的 OneDrive 文件夹。存储根文件夹 ID 必须是 Microsoft 项目 ID，而不是名称或路径。请选择“浏览云盘根目录”后打开所需文件夹，或输入 root 使用根目录。
+The selected OneDrive item must be a folder.|L’élément OneDrive sélectionné doit être un dossier.|所选 OneDrive 项目必须是文件夹。
+The server returned an unexpected byte range.|Le serveur a renvoyé une plage d’octets inattendue.|服务器返回的字节范围不符合预期。
+The target filename must keep the original file extension.|Le nom cible doit conserver l’extension du fichier original.|目标文件名必须保留原文件扩展名。
+The upload owner is no longer approved.|Le propriétaire du téléversement n’est plus approuvé.|此上传所属用户已不再获准使用。
+The working copy changed. Refresh to preview the latest document.|La copie de travail a changé. Actualisez pour voir le dernier document.|工作副本已更改。请刷新以预览最新文档。
+The working copy changed. Start a new download for the latest file.|La copie de travail a changé. Démarrez un nouveau téléchargement pour obtenir le dernier fichier.|工作副本已更改。请重新开始下载以获取最新文件。
+This access code does not authorize this file.|Ce code d’accès n’autorise pas ce fichier.|此访问码无权访问该文件。
+This access code is invalid or the file is no longer available.|Ce code d’accès n’est pas valide ou le fichier n’est plus disponible.|此访问码无效，或文件已不可用。
+This account is deactivated. Contact an administrator.|Ce compte est désactivé. Communiquez avec un administrateur.|此账号已停用。请联系管理员。
+This browser cannot write resumable downloads to disk. Use the direct browser download.|Ce navigateur ne peut pas enregistrer les téléchargements avec reprise sur disque. Utilisez le téléchargement direct.|此浏览器无法将可恢复下载写入磁盘。请使用浏览器直接下载。
+This connector is disabled.|Ce connecteur est désactivé.|此连接器已停用。
+This deactivates {0}, permanently deletes all their files, and invalidates their shares.|Cette action désactive {0}, supprime définitivement tous ses fichiers et invalide ses partages.|此操作会停用 {0}，永久删除其所有文件，并使其共享全部失效。
+This document could not be previewed. Download it to open it in your usual app.|L’aperçu de ce document n’a pas pu être affiché. Téléchargez-le pour l’ouvrir dans votre application habituelle.|无法预览此文档。请下载后使用常用应用打开。
+This email is not invited.|Cette adresse courriel n’est pas invitée.|此邮箱未受邀。
+This file exceeds the invitation’s per-file limit.|Ce fichier dépasse la limite par fichier de l’invitation.|此文件超过邀请规定的单文件大小限制。
+This file is larger than the connector limit.|Ce fichier dépasse la limite du connecteur.|此文件超过连接器的容量限制。
+This file is no longer available.|Ce fichier n’est plus disponible.|此文件已不可用。
+This file is too large for an in-browser preview. Use the download option.|Ce fichier est trop volumineux pour l’aperçu dans le navigateur. Téléchargez-le.|此文件过大，无法在浏览器中预览。请使用下载功能。
+This invitation does not allow the selected destination.|Cette invitation ne permet pas la destination choisie.|此邀请不允许使用所选存储位置。
+This invitation expired, was revoked, or its file is no longer available.|Cette invitation a expiré, a été révoquée ou son fichier n’est plus disponible.|此邀请已过期、被撤销，或其文件已不可用。
+This invitation has reached its file limit.|Cette invitation a atteint sa limite de fichiers.|此邀请已达到文件数量上限。
+This recipient is no longer authorized.|Ce destinataire n’est plus autorisé.|此接收人已不再获得授权。
+This recipient is no longer invited.|Ce destinataire n’est plus invité.|此接收人已不再受邀。
+This share expired or the file was deleted.|Ce partage a expiré ou le fichier a été supprimé.|此共享已过期，或文件已被删除。
+This upload is no longer available.|Ce téléversement n’est plus disponible.|此上传已不可用。
+This upload was deleted or expired.|Ce téléversement a été supprimé ou a expiré.|此上传已被删除或已过期。
+This verification code has already been used.|Ce code de vérification a déjà été utilisé.|此验证码已被使用。
+Time retention|Durée de rétention|保留期限
+Toggle navigation|Afficher ou masquer la navigation|展开或收起导航
+Too many attempts. Please try again later.|Trop de tentatives. Réessayez plus tard.|尝试次数过多。请稍后重试。
+Try another name or storage destination.|Essayez un autre nom ou une autre destination de stockage.|请尝试其他名称或存储位置。
+Turn off to copy the link and send it yourself.|Désactivez cette option pour copier le lien et l’envoyer vous-même.|关闭后可复制链接并自行发送。
+Unexpected Microsoft pagination URL.|URL de pagination Microsoft inattendue.|Microsoft 返回的分页地址不符合预期。
+Unexpected email server response.|Réponse inattendue du serveur de courriel.|邮件服务器返回的响应不符合预期。
+Unsaved edits|Modifications non enregistrées|未保存的修改
+Upload a file, choose a destination, and send it to the right people.|Téléversez un fichier, choisissez une destination et envoyez-le aux bonnes personnes.|上传文件，选择存储位置，然后发送给需要的人。
+Upload all parts before completing this file.|Téléversez tous les blocs avant de finaliser ce fichier.|请上传所有分块后再完成此文件。
+Upload files|Téléverser des fichiers|上传文件
+Upload in progress|Téléversement en cours|正在上传
+Upload not found.|Téléversement introuvable.|找不到上传。
+Upload your first file|Téléverser votre premier fichier|上传您的第一个文件
+Uploading|Téléversement|正在上传
+Uploads and downloads will appear here, with pause and resume controls.|Vos téléversements et téléchargements s’afficheront ici, avec des commandes de pause et de reprise.|上传和下载将在此显示，并提供暂停和继续控件。
+Upload{0}|Téléverser{0}|上传{0}
+Use Oracle's namespace-based S3 Compatibility endpoint, rather than the native Object Storage or virtual-hosted endpoint. Example: {0}|Utilisez le point de terminaison compatible S3 d’Oracle basé sur l’espace de noms, plutôt que l’adresse Object Storage native ou l’hôte virtuel. Exemple : {0}|请使用 Oracle 基于命名空间的 S3 兼容端点，而非原生 Object Storage 或虚拟主机端点。示例：{0}
+Use a dedicated private folder or service account with restricted native permissions. OneDrive owners and tenant administrators retain their normal access. The selected location is locked after the first file is stored.|Utilisez un dossier privé dédié ou un compte de service aux autorisations limitées. Les propriétaires OneDrive et administrateurs du locataire conservent leur accès habituel. L’emplacement est verrouillé après le premier fichier stocké.|请使用专用私密文件夹或原生权限受限的服务账号。OneDrive 所有者及租户管理员仍保留其正常访问权限。存储第一个文件后将锁定所选位置。
+Use a public HTTPS WebDAV hostname through Cloudflare, with no port, embedded credentials, query or fragment.|Utilisez un nom d’hôte HTTPS WebDAV public par Cloudflare, sans port, identifiants intégrés, paramètres ni fragment.|请使用通过 Cloudflare 访问的公开 HTTPS WebDAV 主机名，不要包含端口、内嵌凭据、查询参数或片段。
+Use a root HTTPS S3 endpoint for R2, AWS, B2, Storj, DigitalOcean, Wasabi, or Oracle. Enter the bucket separately; omit credentials, query strings and object paths.|Utilisez un point de terminaison HTTPS S3 racine pour R2, AWS, B2, Storj, DigitalOcean, Wasabi ou Oracle. Entrez le compartiment séparément, sans identifiants, paramètres ni chemin d’objet.|请使用 R2、AWS、B2、Storj、DigitalOcean、Wasabi 或 Oracle 的根 HTTPS S3 端点。存储桶请单独填写，不要包含凭据、查询字符串或对象路径。
+Use another code or email|Utiliser un autre code ou courriel|使用其他访问码或邮箱
+Use another email or request a new code|Utiliser un autre courriel ou demander un nouveau code|使用其他邮箱或请求新验证码
+Use resumable download for files this size on this storage.|Utilisez le téléchargement avec reprise pour les fichiers de cette taille sur ce stockage.|此存储中此大小的文件请使用可恢复下载。
+Use the WebDAV folder URL, with write and delete access. A DSM login page is not a WebDAV endpoint. Transfers use 8 MiB parts; storage contains chunk folders, while File Station downloads the original file.|Utilisez l’URL du dossier WebDAV avec accès en écriture et en suppression. La page DSM n’est pas un point de terminaison WebDAV. Les transferts utilisent des blocs de 8 Mio; le stockage contient des dossiers de blocs, et File Station restitue le fichier original.|请使用具有写入和删除权限的 WebDAV 文件夹地址。DSM 登录页不是 WebDAV 端点。传输使用 8 MiB 分块；存储中保存分块文件夹，File Station 会还原下载原文件。
+Use the current website address|Utiliser l’adresse du site actuel|使用当前网站地址
+Use the exact bucket name, including capitalization.|Utilisez le nom exact du compartiment, en respectant la casse.|请使用准确的存储桶名称，区分大小写。
+Use the official AliPan Open API application credentials. Existing credentials stay unchanged when these fields are blank.|Utilisez les identifiants de l’application Open API officielle d’AliPan. Laissez les champs vides pour conserver les identifiants actuels.|请使用阿里云盘官方 Open API 应用凭据。字段留空时会保留现有凭据。
+Use the resumable download for this file. Each download request may span at most 32 parts.|Utilisez le téléchargement avec reprise pour ce fichier. Chaque requête peut couvrir au plus 32 blocs.|请对此文件使用可恢复下载。每个下载请求最多可跨越 32 个分块。
+Use your access code|Utiliser votre code d’accès|使用您的访问码
+User|Utilisateur|用户
+User not found.|Utilisateur introuvable.|找不到用户。
+Verification PIN|NIP de vérification|验证码
+Verify and continue|Vérifier et continuer|验证并继续
+Verify your email to download this file.|Vérifiez votre courriel pour télécharger ce fichier.|请验证邮箱后下载此文件。
+Verifying…|Vérification…|正在验证…
+Video preview: {0}|Aperçu vidéo : {0}|视频预览：{0}
+View storage|Voir le stockage|查看存储
+WELL CONNECTED|BIEN CONNECTÉ|连接畅通
+WORKING TOGETHER|TRAVAILLER ENSEMBLE|携手协作
+We sent a six-digit code to {0}. It expires in 10 minutes.|Un code à six chiffres a été envoyé à {0}. Il expire dans 10 minutes.|我们已向 {0} 发送六位数字验证码，有效期为 10 分钟。
+WebDAV (AliPan and other drives)|WebDAV (AliPan et autres lecteurs)|WebDAV（阿里云盘等云盘）
+WebDAV HTTPS folder URL|URL HTTPS du dossier WebDAV|WebDAV 文件夹 HTTPS 地址
+WebDAV could not commit the file. Retry completion.|WebDAV n’a pas pu finaliser le fichier. Réessayez.|WebDAV 无法提交文件。请重试完成操作。
+WebDAV could not create the upload folder. Check folder permissions and Cloudflare Access service authentication.|WebDAV n’a pas pu créer le dossier de téléversement. Vérifiez les autorisations et l’authentification du service Cloudflare Access.|WebDAV 无法创建上传文件夹。请检查文件夹权限及 Cloudflare Access 服务身份验证。
+WebDAV could not delete every file part. Cleanup will retry.|WebDAV n’a pas pu supprimer tous les blocs. Le nettoyage réessaiera.|WebDAV 未能删除所有文件分块，清理过程将重试。
+WebDAV could not save the part. Check write permissions and retry.|WebDAV n’a pas pu enregistrer le bloc. Vérifiez les droits d’écriture et réessayez.|WebDAV 无法保存分块。请检查写入权限后重试。
+WebDAV credentials are not configured.|Les identifiants WebDAV ne sont pas configurés.|尚未配置 WebDAV 凭据。
+WebDAV did not return the requested file range.|WebDAV n’a pas renvoyé la plage de fichier demandée.|WebDAV 未返回所请求的文件范围。
+WebDAV password|Mot de passe WebDAV|WebDAV 密码
+WebDAV redirected the request. Check the WebDAV folder URL and Cloudflare Access service authentication.|WebDAV a redirigé la requête. Vérifiez l’URL du dossier et l’authentification du service Cloudflare Access.|WebDAV 重定向了请求。请检查 WebDAV 文件夹地址及 Cloudflare Access 服务身份验证。
+WebDAV returned an unexpected file range.|WebDAV a renvoyé une plage de fichier inattendue.|WebDAV 返回的文件范围不符合预期。
+WebDAV returned an unexpected part size.|WebDAV a renvoyé une taille de bloc inattendue.|WebDAV 返回的分块大小不符合预期。
+WebDAV sent an incomplete file part.|WebDAV a envoyé un bloc de fichier incomplet.|WebDAV 返回的文件分块不完整。
+WebDAV sent too many bytes.|WebDAV a envoyé trop d’octets.|WebDAV 返回的字节数过多。
+WebDAV username|Nom d’utilisateur WebDAV|WebDAV 用户名
+WebDAV usernames cannot contain colons or newlines.|Les noms d’utilisateur WebDAV ne peuvent pas contenir de deux-points ni de sauts de ligne.|WebDAV 用户名不得包含冒号或换行符。
+WebDAV · AliPan and other drives|WebDAV · AliPan et autres lecteurs|WebDAV · 阿里云盘等云盘
+Website address|Adresse du site|网站地址
+Welcome to your station|Bienvenue à votre station|欢迎来到您的文件空间
+We’ll take it from here.|On s’occupe de la suite.|接下来，交给我们。
+Working copy|Copie de travail|工作副本
+Working copy:|Copie de travail :|工作副本：
+Working files|Documents de travail|工作文件
+Working…|Traitement…|正在处理…
+Workspace|Espace de travail|工作空间
+YOUR STORAGE NETWORK|VOTRE RÉSEAU DE STOCKAGE|您的存储网络
+YOUR WORKSPACE|VOTRE ESPACE DE TRAVAIL|您的工作空间
+You|Vous|您
+You're on the list.|Vous êtes sur la liste.|您已加入名单。
+Your account is awaiting administrator approval.|Votre compte est en attente d’approbation par un administrateur.|您的账号正在等待管理员审批。
+Your account is no longer approved for uploads.|Votre compte n’est plus autorisé à téléverser des fichiers.|您的账号已不再允许上传文件。
+Your choice of storage|Le stockage de votre choix|存储，由您选择
+Your download session expired. Verify your email again.|Votre session de téléchargement a expiré. Vérifiez de nouveau votre courriel.|您的下载会话已过期。请重新验证邮箱。
+Your email is verified. An administrator needs to approve your account before you can upload or manage files.|Votre courriel est vérifié. Un administrateur doit approuver votre compte avant que vous puissiez téléverser ou gérer des fichiers.|您的邮箱已验证。管理员批准账号后，您才能上传或管理文件。
+Your file is shared.|Votre fichier est partagé.|您的文件已共享。
+Your files take up|Vos fichiers occupent|您的文件占用
+Your files, right at home.|Vos fichiers, chez vous.|您的文件，妥善安放。
+Your invitation is ready.|Votre invitation est prête.|您的邀请已就绪。
+Your invitation session expired. Verify your email again.|Votre session d’invitation a expiré. Vérifiez de nouveau votre courriel.|您的邀请访问会话已过期。请重新验证邮箱。
+Your invitations will appear here.|Vos invitations s’afficheront ici.|您的邀请将显示在此处。
+Your next handoff starts here.|Votre prochain partage commence ici.|您的下一次分享，从这里开始。
+Your recipient email|Votre adresse courriel de destinataire|您的接收邮箱
+Your recipient email has been verified.|Votre adresse courriel de destinataire a été vérifiée.|您的接收邮箱已通过验证。
+Your session has ended. Please sign in again.|Votre session est terminée. Connectez-vous de nouveau.|您的会话已结束。请重新登录。
+Your submissions|Vos soumissions|您的提交
+Your submitted files are available to the requester. Other invited partners cannot see them.|Vos fichiers soumis sont accessibles au demandeur. Les autres partenaires invités ne peuvent pas les voir.|您提交的文件仅供发起人查看，其他受邀合作伙伴无法看到。
+Zoom|Zoom|缩放
+auto for R2|auto pour R2|R2 填写 auto
+available|disponible|可用
+awaiting approval|en attente d’approbation|等待审批
+drive|lecteur|云盘
+file|fichier|文件
+files|fichiers|个文件
+files.bychx.com|files.bychx.com|files.bychx.com
+international.gc.ca|international.gc.ca|international.gc.ca
+limit, its oldest files are deleted to make room. Deleted files and their shares cannot be recovered.|, les fichiers les plus anciens sont supprimés pour libérer de l’espace. Les fichiers et leurs partages supprimés ne peuvent pas être récupérés.|上限时，会删除最早上传的文件以腾出空间。已删除的文件及其共享无法恢复。
+of|sur|/
+per file.|par fichier.|每个文件。
+root folder|dossier racine|根文件夹
+s|s|
+shares|partages|个共享
+used|utilisés|已使用
+utils.bychx.com/files|utils.bychx.com/files|utils.bychx.com/files
+{0} active share{1}|{0} partage{1} actif{1}|{0} 个有效共享{1}
+{0} days|{0} jours|{0} 天
+{0} file{1} selected|{0} fichier{1} sélectionné{1}|已选择 {0} 个文件{1}
+· Latest 500 files|· 500 fichiers les plus récents|· 最近的 500 个文件
+· Up to|· Jusqu’à|· 最大
+· setup needed|· configuration requise|· 需要配置
+· {0} connection{1}|· {0} connexion{1}|· {0} 个连接{1}
+“{0}” will be permanently removed from storage. Every access code for this file will become invalid.|« {0} » sera supprimé définitivement du stockage. Tous les codes d’accès à ce fichier seront invalidés.|将从存储中永久删除“{0}”。此文件的所有访问码都会失效。
+Account and files deleted.|Compte et fichiers supprimés.|账号及其文件已删除。
+All files|Tous les fichiers|所有文件
+Automatic approval domains saved.|Domaines d’approbation automatique enregistrés.|自动审批域名已保存。
+Choose at least one file.|Choisissez au moins un fichier.|请至少选择一个文件。
+Collaborations|Collaborations|协作
+Copy is unavailable. Select the link manually.|La copie n’est pas disponible. Sélectionnez le lien manuellement.|无法自动复制。请手动选择链接。
+Download started. Open Transfers to pause or resume.|Le téléchargement a démarré. Ouvrez Transferts pour le mettre en pause ou le reprendre.|下载已开始。打开“传输”可暂停或继续。
+File deleted and all its shares invalidated.|Fichier supprimé et tous ses partages invalidés.|文件已删除，其所有共享已失效。
+File requests|Demandes de fichiers|文件收集
+Invitation link copied.|Lien d’invitation copié.|邀请链接已复制。
+Invitation revoked.|Invitation révoquée.|邀请已撤销。
+Language|Langue|语言
+My files|Mes fichiers|我的文件
+Select and copy the link above.|Sélectionnez et copiez le lien ci-dessus.|请选择并复制上方链接。
+Settings & activity|Paramètres et activité|设置与操作记录
+Share link address saved.|Adresse des liens de partage enregistrée.|共享链接地址已保存。
+Shared by me|Mes partages|我的共享
+Storage|Stockage|存储
+The document changed. Close and reopen it to see the latest copy.|Le document a changé. Fermez-le et rouvrez-le pour voir la dernière copie.|文档已更改。请关闭并重新打开以查看最新副本。
+The document download was incomplete.|Le téléchargement du document est incomplet.|文档下载不完整。
+The document editor is not ready.|L’éditeur de documents n’est pas prêt.|文档编辑器尚未就绪。
+The document must contain at least one byte.|Le document doit contenir au moins un octet.|文档至少需要包含一个字节。
+The file exceeds this invitation’s size limit.|Le fichier dépasse la limite de taille de cette invitation.|文件超过此邀请的大小限制。
+The preview download was incomplete. Please retry.|Le téléchargement de l’aperçu est incomplet. Réessayez.|预览下载不完整。请重试。
+The working copy changed. Close and reopen it.|La copie de travail a changé. Fermez-la et rouvrez-la.|工作副本已更改。请关闭并重新打开。
+This preview is unavailable or the browser does not support its format or codec. You can still use the download option. If access expired, verify your email again.|L’aperçu n’est pas disponible ou le navigateur ne prend pas en charge le format ou le codec. Vous pouvez télécharger le fichier. Si l’accès a expiré, vérifiez de nouveau votre courriel.|预览不可用，或浏览器不支持此格式或编解码器。您仍可下载文件。如果访问已过期，请重新验证邮箱。
+Transfers|Transferts|传输
+Use an access code|Utiliser un code d’accès|使用访问码
+Use desktop editing for documents larger than 20 MiB.|Modifiez sur votre ordinateur les documents de plus de 20 Mio.|超过 20 MiB 的文档请在电脑上编辑。
+User management|Gestion des utilisateurs|用户管理
+active|actif|已启用
+admin|administrateur|管理员
+complete|terminé|已完成
+deleted|supprimé|已删除
+error|erreur|错误
+inactive|inactif|已停用
+paused|en pause|已暂停
+pending|en attente|待审批
+ready|prêt|就绪
+running|en cours|进行中
+uploading|téléversement|正在上传
+user|utilisateur|用户
+This PDF could not be previewed. It may be password-protected or damaged. Download it to open it.|L’aperçu de ce PDF n’a pas pu être affiché. Il peut être protégé par mot de passe ou endommagé. Téléchargez-le pour l’ouvrir.|无法预览此 PDF，可能受密码保护或已损坏。请下载后打开。
+This PDF page could not be rendered. Download the document to open it.|Cette page PDF n’a pas pu être affichée. Téléchargez le document pour l’ouvrir.|无法渲染此 PDF 页面。请下载文档后打开。
+WELCOME TO YOUR STATION|BIENVENUE À VOTRE STATION|欢迎来到您的文件空间
+A FILE IS WAITING FOR YOU|UN FICHIER VOUS ATTEND|有一个文件等待您查看
+Your sign-in code.|Votre code de connexion.|您的登录验证码。
+Verify your email.|Vérifiez votre courriel.|验证您的邮箱。
+Enter this code in File Station to sign in to your account.|Entrez ce code dans File Station pour vous connecter à votre compte.|在 File Station 中输入此验证码以登录您的账号。
+Enter this code in File Station to open the file shared with your email address.|Entrez ce code dans File Station pour ouvrir le fichier partagé avec votre adresse courriel.|在 File Station 中输入此验证码，打开与您的邮箱共享的文件。
+This code expires in 10 minutes and can be used once. Keep it private.|Ce code expire dans 10 minutes et ne peut être utilisé qu’une fois. Gardez-le confidentiel.|此验证码 10 分钟内有效，仅可使用一次。请妥善保管。
+If you did not request this code, you can safely ignore this email.|Si vous n’avez pas demandé ce code, vous pouvez ignorer ce courriel.|如果您未请求此验证码，请忽略本邮件。
+FROM THEIR STATION TO YOURS|DE LEUR STATION À LA VÔTRE|从对方的文件空间，抵达您这里
+YOUR VERIFICATION CODE|VOTRE CODE DE VÉRIFICATION|您的验证码
+YOUR FILE ACCESS CODE|VOTRE CODE D’ACCÈS AU FICHIER|您的文件访问码
+YOUR ACCESS CODE|VOTRE CODE D’ACCÈS|您的访问码
+Open File Station|Ouvrir File Station|打开 File Station
+Or copy this link:|Ou copiez ce lien :|或复制此链接：
+Good files. Great Mission. Easy sharing.|De bons fichiers. Une grande mission. Le partage en toute simplicité.|好文件。大使命。轻松分享。
+{0} shared {1} with you.|{0} a partagé {1} avec vous.|{0} 与您共享了 {1}。
+Retrieve your file|Récupérer votre fichier|获取您的文件
+Verify your recipient email address to download. You can pause and resume your transfer.|Vérifiez votre adresse courriel de destinataire pour télécharger. Vous pouvez mettre le transfert en pause et le reprendre.|验证接收邮箱后即可下载。您可以暂停和恢复传输。
+This share expires {0}. It may expire earlier if the owner deletes the file or storage retention removes it.|Ce partage expire le {0}. Il peut expirer avant si le propriétaire ou la politique de rétention supprime le fichier.|此共享将于 {0} 到期。如果所有者删除文件，或保留策略清理了文件，共享可能提前失效。
+This invitation is for the recipient email address. No approved File Station account is needed.|Cette invitation est destinée à l’adresse courriel du destinataire. Aucun compte File Station approuvé n’est requis.|此邀请仅供接收邮箱使用，无需已获审批的 File Station 账号。
+Your File Station sign-in code|Votre code de connexion File Station|您的 File Station 登录验证码
+Your File Station access code|Votre code d’accès File Station|您的 File Station 访问验证码
+Your verification code is {0}.|Votre code de vérification est {0}.|您的验证码为 {0}。
+It expires in 10 minutes. If you did not request it, ignore this email.|Il expire dans 10 minutes. Si vous ne l’avez pas demandé, ignorez ce courriel.|验证码 10 分钟内有效。如果您未请求验证码，请忽略本邮件。
+{0} shared a file with you|{0} a partagé un fichier avec vous|{0} 与您共享了一个文件
+Open File Station: {0}|Ouvrir File Station : {0}|打开 File Station：{0}
+Access code: {0}|Code d’accès : {0}|访问码：{0}
+Submit your documents|Soumettre vos documents|提交您的文档
+Collaborate on a document|Collaborer à un document|协作文档
+{0} invited you to submit documents: {1}.|{0} vous invite à soumettre des documents : {1}.|{0} 邀请您提交文档：{1}。
+{0} invited you to edit {1}: {2}.|{0} vous invite à modifier {1} : {2}.|{0} 邀请您编辑 {1}：{2}。
+Verify your recipient email. Expires {0}.|Vérifiez votre adresse courriel de destinataire. Expire le {0}.|请验证受邀邮箱。到期时间：{0}。
+The original is kept. Edits and re-uploads replace the working copy; there is no version history.|L’original est conservé. Les modifications et les nouveaux téléversements remplacent la copie de travail, sans historique des versions.|原文件将保留。编辑和重新上传会替换工作副本，不保留版本历史。
+Your submissions are visible to the requester, not other recipients.|Vos soumissions sont visibles au demandeur, et non aux autres destinataires.|您提交的文件仅供发起人查看，其他接收人不可见。
+YOU ARE INVITED|VOUS AVEZ UNE INVITATION|您收到了邀请
+Sent by File Station.|Envoyé par File Station.|由 File Station 发送。
+file uploaded|fichier téléversé|文件已上传
+file manual|fichier supprimé manuellement|文件已手动删除
+file expired|fichier expiré|文件已过期
+file capacity|fichier supprimé : capacité atteinte|文件因容量限制被删除
+file abandoned|téléversement abandonné supprimé|已清理未完成的上传
+file cancelled|téléversement annulé|上传已取消
+file superseded|copie de travail remplacée|工作副本已替换
+file user deleted|fichier d’un compte supprimé|已删除用户的文件
+share created|partage créé|共享已创建
+share revoked|partage révoqué|共享已撤销
+invitation submission created|demande de fichiers créée|文件收集已创建
+invitation collaboration created|collaboration créée|协作已创建
+invitation revoked|invitation révoquée|邀请已撤销
+invitation submission published|soumission enregistrée|提交已保存
+invitation collaboration published|copie de travail enregistrée|工作副本已保存
+user active|utilisateur approuvé|用户已获批准
+user inactive|utilisateur désactivé|用户已停用
+user deleted|utilisateur supprimé|用户已删除
+settings updated|paramètres modifiés|设置已更新
+connector configured|connecteur configuré|连接器已配置
+No expiry|Aucune expiration|无到期时间
+User approved.|Utilisateur approuvé.|用户已获批准。
+User deactivated. Existing sign-in sessions were removed.|Utilisateur désactivé. Ses sessions de connexion ont été fermées.|用户已停用，其已有登录会话已结束。
+The preview could not be opened.|L’aperçu n’a pas pu être ouvert.|无法打开预览。
+The document could not be opened.|Le document n’a pas pu être ouvert.|无法打开文档。
+The document could not be saved. Download your local edits before closing.|Le document n’a pas pu être enregistré. Téléchargez vos modifications locales avant de fermer.|无法保存文档。关闭前请下载您的本地修改。
+Save failed.|L’enregistrement a échoué.|保存失败。
+Export failed.|L’exportation a échoué.|导出失败。
+Browser disk access failed.|L’accès au disque du navigateur a échoué.|浏览器磁盘访问失败。
+Copy this link:|Copiez ce lien :|复制此链接：
+Select the original file to resume.|Sélectionnez le fichier original pour reprendre.|请选择原文件以继续。
+Transfer failed.|Le transfert a échoué.|传输失败。
+{0} folder is reachable. Upload a test file to verify write, range-download and delete permissions.|Le dossier {0} est accessible. Téléversez un fichier d’essai pour vérifier les droits d’écriture, de téléchargement partiel et de suppression.|可以访问 {0} 文件夹。请上传测试文件，以验证写入、范围下载和删除权限。
+Operation not found.|Opération introuvable.|找不到操作。
+Requested range is outside this file. Use one byte range.|La plage demandée dépasse le fichier. Utilisez une seule plage d’octets.|请求的范围超出此文件。请使用一个字节范围。
+Endpoint not found.|Point de terminaison introuvable.|找不到端点。
+Invitation created, but email delivery failed. Copy the link to send it manually.|L’invitation a été créée, mais l’envoi du courriel a échoué. Copiez le lien pour l’envoyer manuellement.|邀请已创建，但邮件发送失败。请复制链接并手动发送。
+Not found|Introuvable|未找到
+Share created, but email delivery failed. Copy the link to send it manually.|Le partage a été créé, mais l’envoi du courriel a échoué. Copiez le lien pour l’envoyer manuellement.|共享已创建，但邮件发送失败。请复制链接并手动发送。
+Sent securely by File Station.|Envoyé de façon sécuritaire par File Station.|由 File Station 安全发送。
+The operation could not be completed. Please try again.|L’opération n’a pas pu être effectuée. Réessayez.|无法完成操作。请重试。
+invitation submission saved|soumission enregistrée|提交已保存
+invitation collaboration saved|copie de travail enregistrée|工作副本已保存
+file replaced|copie de travail remplacée|工作副本已替换

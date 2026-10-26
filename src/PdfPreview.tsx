@@ -1,3 +1,4 @@
+import { t } from "./i18n";
 import React, { useEffect, useRef, useState } from "react";
 import {
   getDocument,
@@ -8,7 +9,6 @@ import {
 import workerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 import { basePath } from "./App.jsx";
 GlobalWorkerOptions.workerSrc = workerUrl;
-
 export default function PdfPreview({ buffer }: { buffer: ArrayBuffer }) {
   const [document, setDocument] = useState<PDFDocumentProxy | null>(null);
   const [page, setPage] = useState(1),
@@ -65,7 +65,9 @@ export default function PdfPreview({ buffer }: { buffer: ArrayBuffer }) {
       try {
         const pdfPage = await document.getPage(page);
         if (cancelled || !canvas.current) return;
-        const original = pdfPage.getViewport({ scale: 1 });
+        const original = pdfPage.getViewport({
+          scale: 1,
+        });
         const viewport = pdfPage.getViewport({
           scale: Math.min(2, (width - 24) / original.width) * zoom,
         });
@@ -123,27 +125,30 @@ export default function PdfPreview({ buffer }: { buffer: ArrayBuffer }) {
             onClick={() => setPage(page - 1)}
             disabled={page <= 1}
           >
-            Previous page
+            {t("Previous page")}
           </button>
           <span aria-live="polite">
-            Page {page} of {document.numPages}
+            {t("Page ")}
+            {page}
+            {t(" of ")}
+            {document.numPages}
           </span>
           <button
             className="text-button"
             onClick={() => setPage(page + 1)}
             disabled={page >= document.numPages}
           >
-            Next page
+            {t("Next page")}
           </button>
           <label>
-            Zoom{" "}
+            {t("Zoom")}{" "}
             <select
-              aria-label="PDF zoom"
+              aria-label={t("PDF zoom")}
               value={zoom}
               onChange={(event) => setZoom(Number(event.target.value))}
             >
               <option value={0.75}>75%</option>
-              <option value={1}>Fit width</option>
+              <option value={1}>{t("Fit width")}</option>
               <option value={1.5}>150%</option>
               <option value={2}>200%</option>
             </select>
@@ -152,24 +157,26 @@ export default function PdfPreview({ buffer }: { buffer: ArrayBuffer }) {
       )}
       {loading && (
         <p className="preview-note" role="status">
-          Rendering PDF…
+          {t("Rendering PDF\u2026")}
         </p>
       )}
       {error && (
         <p className="preview-note" role="alert">
-          {error}
+          {t(error)}
         </p>
       )}
       <div className="pdf-page">
         <canvas
           ref={canvas}
-          aria-label={`PDF page ${page}`}
+          aria-label={t("PDF page {0}", {
+            "0": page,
+          })}
           hidden={Boolean(error)}
         />
       </div>
       {text && (
         <details className="pdf-text">
-          <summary>Read page text</summary>
+          <summary>{t("Read page text")}</summary>
           <pre>{text}</pre>
         </details>
       )}

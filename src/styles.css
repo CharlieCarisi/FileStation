@@ -2034,3 +2034,82 @@ dd {
   color: #64756b;
   font-size: 11px;
 }
+
+.language-selector {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+.language-selector select {
+  width: auto;
+  max-width: 170px;
+  font: inherit;
+  font-size: 12px;
+  padding: 8px 26px 8px 10px;
+  background: #fffdf8;
+  color: #254d41;
+  border: 1px solid #d9e1d2;
+  border-radius: 8px;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+html[lang="zh-CN"] body {
+  font-family: Arial, "Noto Sans CJK SC", "Microsoft YaHei", sans-serif;
+}
+html[lang="fr-CA"] .sidebar nav button {
+  white-space: normal;
+  line-height: 1.4;
+}
+@media (max-width: 650px) {
+  .public-header {
+    gap: 8px;
+  }
+  .public-header > div:last-child {
+    gap: 8px;
+  }
+  .public-tag {
+    display: none;
+  }
+  .language-selector select {
+    max-width: 140px;
+    padding: 7px;
+    font-size: 11px;
+  }
+  .app-header .account {
+    gap: 8px;
+  }
+  .app-header .breadcrumb strong {
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+@media (max-width: 650px) {
+  .public-header {
+    flex-wrap: wrap;
+  }
+  .public-header > div:last-child {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .app-header .account > .avatar {
+    display: none;
+  }
+  .app-header .breadcrumb {
+    font-size: 0;
+    gap: 4px;
+  }
+  .app-header .breadcrumb strong {
+    font-size: 12px;
+    max-width: 95px;
+  }
+}

@@ -1,3 +1,5 @@
+import { docxLocale } from "./docx-locales";
+import { t, LanguageSelector } from "./i18n";
 import React, {
   useEffect,
   useRef,
@@ -10,7 +12,6 @@ import { setGoogleFontsEnabled } from "@eigenpal/docx-editor-core";
 import { basePath, transfers, ErrorMessage } from "./App.jsx";
 type Row = Record<string, any>;
 setGoogleFontsEnabled(false);
-
 export default function DocumentEditor({
   file,
   invitation,
@@ -56,7 +57,12 @@ export default function DocumentEditor({
         if (bytes.byteLength !== file.size)
           throw Error("The document download was incomplete.");
         if (docx) setBuffer(bytes);
-        else setText(new TextDecoder("utf-8", { fatal: true }).decode(bytes));
+        else
+          setText(
+            new TextDecoder("utf-8", {
+              fatal: true,
+            }).decode(bytes),
+          );
       } catch (e) {
         if (!controller.signal.aborted)
           setError(
@@ -142,7 +148,7 @@ export default function DocumentEditor({
     }
   }
   function close() {
-    if (!saving && (!dirty || confirm("Close without saving these edits?")))
+    if (!saving && (!dirty || confirm(t("Close without saving these edits?"))))
       onClose();
   }
   return (
@@ -150,40 +156,43 @@ export default function DocumentEditor({
       className="document-editor-overlay"
       role="dialog"
       aria-modal="true"
-      aria-label={`Edit ${invitation.target_name}`}
+      aria-label={t("Edit {0}", {
+        "0": invitation.target_name,
+      })}
     >
       <header>
         <div>
           <strong>{invitation.target_name}</strong>
           <small>
             {saving
-              ? "Saving working copy…"
+              ? t("Saving working copy\u2026")
               : dirty
-                ? "Unsaved edits"
-                : "Working copy"}
+                ? t("Unsaved edits")
+                : t("Working copy")}
           </small>
         </div>
         <div className="feature-actions">
+          <LanguageSelector />
           <button
             className="button secondary"
             onClick={downloadLocal}
             disabled={loading}
           >
-            Download my edits
+            {t("Download my edits")}
           </button>
           <button
             className="button primary"
             onClick={() => save()}
             disabled={loading || saving || (!buffer && docx)}
           >
-            {saving ? "Saving…" : "Save working copy"}
+            {saving ? t("Saving\u2026") : t("Save working copy")}
           </button>
           <button
             className="button secondary"
             onClick={close}
             disabled={saving}
           >
-            Close editor
+            {t("Close editor")}
           </button>
         </div>
       </header>
@@ -196,24 +205,25 @@ export default function DocumentEditor({
               className="text-button"
               onClick={() => transfers.pause(transfer.id)}
             >
-              Pause save
+              {t("Pause save")}
             </button>
           ) : transfer.state === "paused" ? (
             <button
               className="text-button"
               onClick={() => transfers.resume(transfer.id)}
             >
-              Resume save
+              {t("Resume save")}
             </button>
           ) : null}
         </div>
       )}
       <div className="document-editor-body">
         {loading ? (
-          <p>Opening document…</p>
+          <p>{t("Opening document\u2026")}</p>
         ) : docx ? (
           buffer && (
             <DocxEditor
+              i18n={docxLocale()}
               ref={editor}
               documentBuffer={buffer}
               documentName={invitation.target_name}
@@ -236,7 +246,7 @@ export default function DocumentEditor({
           )
         ) : (
           <textarea
-            aria-label="Document text"
+            aria-label={t("Document text")}
             className="plain-text-editor"
             value={text}
             disabled={saving}

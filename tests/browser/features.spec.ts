@@ -120,15 +120,22 @@ test("under /files, verify an external submission and edit text and DOCX working
     await page
       .getByRole("button", { name: "Edit online", exact: true })
       .click();
-    const editor = page.getByRole("dialog", {
-      name: `Edit working.${extension}`,
-      exact: true,
-    });
+    const editor = page.locator(".document-editor-overlay");
     if (extension === "txt")
       await editor.getByLabel("Document text").fill("Edited in File Station.");
     else {
       const content = editor.getByText("Original DOCX text.", { exact: true });
       await expect(content).toBeVisible({ timeout: 30000 });
+      await editor.getByTestId("language-selector").selectOption("fr-CA");
+      await expect(
+        editor.getByText("Fichier", { exact: true }).first(),
+      ).toBeVisible();
+      await editor.getByTestId("language-selector").selectOption("zh-CN");
+      await expect(
+        editor.getByText("文件", { exact: true }).first(),
+      ).toBeVisible();
+      await expect(content).toBeVisible();
+      await editor.getByTestId("language-selector").selectOption("en-CA");
       await content.click();
       await page.keyboard.press("Control+End");
       await page.keyboard.type(" Edited in browser.");

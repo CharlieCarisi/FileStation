@@ -27,6 +27,7 @@ import { coordinate } from "./coordinator.js";
 import { fileAccess, shareRoutes } from "./shares.js";
 import { fileResponse } from "./file-response";
 import { uploadConnections } from "./transfer-options";
+import { SHARE_ADDRESSES } from "./share-links";
 async function connectorList(env, admin) {
   const result = await env.DB.prepare(
     `SELECT c.id,c.name,COALESCE(c.storage_adapter,c.adapter,c.kind) AS kind,c.limit_bytes,c.retention_days,c.enabled,c.config,c.encrypted_credentials IS NOT NULL AS credentials_configured,COALESCE(SUM(CASE WHEN f.state IN ('ready','deleting') THEN f.size ELSE 0 END),0) AS used_bytes,COALESCE(SUM(CASE WHEN f.state='uploading' THEN f.size ELSE 0 END),0) AS reserved_bytes,COUNT(CASE WHEN f.state='ready' THEN 1 END) AS file_count FROM connectors c LEFT JOIN files f ON f.connector_id=c.id GROUP BY c.id ORDER BY c.created_at`,
@@ -236,43 +237,76 @@ async function adminRoutes(request, env, path) {
     }
   }
   if (path === "/api/admin/settings" && request.method === "GET") {
-    const s = await env.DB.prepare(
-      "SELECT value FROM settings WHERE key='allowed_domains'",
-    ).first();
-    return json({ allowedDomains: JSON.parse(s?.value || "[]") });
+    const rows = await env.DB.prepare(
+      "SELECT key,value FROM settings WHERE key IN ('allowed_domains','share_base_url')",
+    ).all();
+    const values = Object.fromEntries(
+      rows.results.map((row) => [row.key, row.value]),
+    );
+    return json({
+      allowedDomains: JSON.parse(values.allowed_domains || "[]"),
+      shareBaseUrl: SHARE_ADDRESSES.includes(values.share_base_url)
+        ? values.share_base_url
+        : "current",
+    });
   }
   if (path === "/api/admin/settings" && request.method === "PUT") {
-    const b = await body(request);
-    ensure(
-      Array.isArray(b.allowedDomains) && b.allowedDomains.length <= 50,
-      400,
-      "Enter a list of allowed domains.",
+    const b = await body(request),
+      statements = [];
+    if (Object.hasOwn(b, "allowedDomains")) {
+      ensure(
+        Array.isArray(b.allowedDomains) && b.allowedDomains.length <= 50,
+        400,
+        "Enter a list of allowed domains.",
+      );
+      const domains = [
+        ...new Set(
+          b.allowedDomains.map((value) => {
+            ensure(typeof value === "string", 400, "Invalid domain.");
+            const domain = value.trim().toLowerCase();
+            ensure(
+              domain.length <= 253 &&
+                /^(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,63}$/.test(
+                  domain,
+                ),
+              400,
+              "Enter domains such as international.gc.ca, without @ or a URL.",
+            );
+            return domain;
+          }),
+        ),
+      ];
+      statements.push(
+        env.DB.prepare(
+          "INSERT INTO settings(key,value) VALUES ('allowed_domains',?) ON CONFLICT(key) DO UPDATE SET value=excluded.value",
+        ).bind(JSON.stringify(domains)),
+      );
+    }
+    if (Object.hasOwn(b, "shareBaseUrl")) {
+      ensure(
+        SHARE_ADDRESSES.includes(b.shareBaseUrl),
+        400,
+        "Choose one of the supported File Station website addresses.",
+      );
+      statements.push(
+        env.DB.prepare(
+          "INSERT INTO settings(key,value) VALUES ('share_base_url',?) ON CONFLICT(key) DO UPDATE SET value=excluded.value",
+        ).bind(b.shareBaseUrl),
+      );
+    }
+    ensure(statements.length, 400, "Choose a setting to update.");
+    await env.DB.batch(statements);
+    await audit(
+      env,
+      admin.id,
+      "settings.updated",
+      Object.keys(b)
+        .filter((key) => ["allowedDomains", "shareBaseUrl"].includes(key))
+        .join(","),
     );
-    const domains = [
-      ...new Set(
-        b.allowedDomains.map((v) => {
-          ensure(typeof v === "string", 400, "Invalid domain.");
-          const domain = v.trim().toLowerCase();
-          ensure(
-            domain.length <= 253 &&
-              /^(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,63}$/.test(
-                domain,
-              ),
-            400,
-            "Enter domains such as international.gc.ca, without @ or a URL.",
-          );
-          return domain;
-        }),
-      ),
-    ];
-    await env.DB.prepare(
-      "UPDATE settings SET value=? WHERE key='allowed_domains'",
-    )
-      .bind(JSON.stringify(domains))
-      .run();
-    await audit(env, admin.id, "settings.updated", "allowed_domains");
     return json({ ok: true });
   }
+
   const connectorMatch = path.match(/^\/api\/admin\/connectors(?:\/([^/]+))?$/);
   if (connectorMatch && ["POST", "PUT"].includes(request.method)) {
     const b = await body(request);

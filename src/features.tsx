@@ -1,3 +1,4 @@
+import { t, getLocale } from "./i18n";
 import React, {
   lazy,
   Suspense,
@@ -20,7 +21,6 @@ const DocumentEditor = lazy(() => import("./DocumentEditor"));
 type Row = Record<string, any>;
 const message = (error: unknown) =>
   error instanceof Error ? error.message : "The request failed.";
-
 export function AccessGate({
   initialCode = "",
   onFile,
@@ -41,7 +41,12 @@ export function AccessGate({
     setBusy(true);
     try {
       if (!challenge)
-        setChallenge(await post("/access/request", { code, email }));
+        setChallenge(
+          await post("/access/request", {
+            code,
+            email,
+          }),
+        );
       else {
         const result = await post("/access/verify", {
           challengeId: challenge.challengeId,
@@ -63,10 +68,11 @@ export function AccessGate({
         {challenge ? (
           <>
             <p className="muted">
-              A verification PIN was sent to <strong>{email}</strong>.
+              {t("A verification PIN was sent to ")}
+              <strong>{email}</strong>.
             </p>
             <label>
-              Email verification PIN
+              {t("Email verification PIN")}
               <input
                 required
                 inputMode="numeric"
@@ -78,7 +84,7 @@ export function AccessGate({
             </label>
             {challenge.developmentPin && (
               <p className="development">
-                Local email simulator · PIN:{" "}
+                {t("Local email simulator \xB7 PIN:")}{" "}
                 <strong>{challenge.developmentPin}</strong>
               </p>
             )}
@@ -86,19 +92,19 @@ export function AccessGate({
         ) : (
           <>
             <label>
-              File access code
+              {t("File access code")}
               <input
                 className="code-input"
                 required
                 maxLength={18}
                 autoComplete="off"
-                placeholder="Download, upload or collaboration code"
+                placeholder={t("Download, upload or collaboration code")}
                 value={code}
                 onChange={(e) => setCode(e.target.value.toUpperCase())}
               />
             </label>
             <label>
-              Your recipient email
+              {t("Your recipient email")}
               <input
                 required
                 type="email"
@@ -113,10 +119,10 @@ export function AccessGate({
         <ErrorMessage error={error} />
         <button className="button primary full" disabled={busy}>
           {busy
-            ? "Verifying…"
+            ? t("Verifying\u2026")
             : challenge
-              ? "Verify and continue"
-              : "Continue securely"}
+              ? t("Verify and continue")
+              : t("Continue securely")}
         </button>
         {challenge && (
           <button
@@ -127,12 +133,13 @@ export function AccessGate({
               setPin("");
             }}
           >
-            Use another code or email
+            {t("Use another code or email")}
           </button>
         )}
         <p className="fineprint">
-          One code to download a file, submit documents, or join a
-          collaboration.
+          {t(
+            "One code to download a file, submit documents, or join a collaboration.",
+          )}
         </p>
       </form>
       {workspace && (
@@ -147,7 +154,6 @@ export function AccessGate({
     </>
   );
 }
-
 export function InvitationDialog({
   kind,
   source,
@@ -228,21 +234,21 @@ export function InvitationDialog({
     <Modal
       title={
         result
-          ? "Your invitation is ready."
+          ? t("Your invitation is ready.")
           : kind === "submission"
-            ? "Request documents."
-            : "Share for collaboration."
+            ? t("Request documents.")
+            : t("Share for collaboration.")
       }
       onClose={onClose}
     >
       {result ? (
         <>
           <div className="share-code">
-            <span>ACCESS CODE</span>
+            <span>{t("ACCESS CODE")}</span>
             <strong>{result.code}</strong>
           </div>
           <label>
-            Invitation link
+            {t("Invitation link")}
             <input
               readOnly
               value={result.link}
@@ -257,19 +263,19 @@ export function InvitationDialog({
                 .catch(() => setError("Select and copy the link above."))
             }
           >
-            Copy link
+            {t("Copy link")}
           </button>
           <p>
             {result.emailSent
-              ? "Invitation email sent."
-              : "Send this link and code to the invited recipients."}
+              ? t("Invitation email sent.")
+              : t("Send this link and code to the invited recipients.")}
           </p>
           <ErrorMessage error={result.emailError || error} />
         </>
       ) : (
         <form onSubmit={submit} className="feature-form">
           <label>
-            Invitation title
+            {t("Invitation title")}
             <input
               required
               maxLength={160}
@@ -277,8 +283,8 @@ export function InvitationDialog({
               onChange={(e) => setTitle(e.target.value)}
               placeholder={
                 kind === "submission"
-                  ? "Documents for our next meeting"
-                  : "Review the proposed document"
+                  ? t("Documents for our next meeting")
+                  : t("Review the proposed document")
               }
             />
           </label>
@@ -286,17 +292,18 @@ export function InvitationDialog({
             <>
               {source ? (
                 <p>
-                  Original: <strong>{source.name}</strong>
+                  {t("Original: ")}
+                  <strong>{source.name}</strong>
                 </p>
               ) : (
                 <label>
-                  Original document
+                  {t("Original document")}
                   <select
                     required
                     value={sourceId}
                     onChange={(e) => chooseSource(e.target.value)}
                   >
-                    <option value="">Choose an uploaded document</option>
+                    <option value="">{t("Choose an uploaded document")}</option>
                     {files
                       .filter((f) => f.state === "ready")
                       .map((f) => (
@@ -308,30 +315,30 @@ export function InvitationDialog({
                 </label>
               )}
               <label>
-                Target filename
+                {t("Target filename")}
                 <input
                   required
                   maxLength={255}
                   value={target}
                   onChange={(e) => setTarget(e.target.value)}
-                  placeholder="Reviewed-document.docx"
+                  placeholder={t("Reviewed-document.docx")}
                 />
               </label>
               <p className="fineprint">
-                The original is preserved. Online edits and re-uploads replace
-                one working copy using this target filename. No version history
-                is kept.
+                {t(
+                  "The original is preserved. Online edits and re-uploads replace one working copy using this target filename. No version history is kept.",
+                )}
               </p>
             </>
           )}
           <label>
-            Save submitted files to
+            {t("Save submitted files to")}
             <select
               required
               value={connectorId}
               onChange={(e) => setConnector(e.target.value)}
             >
-              <option value="">Choose storage</option>
+              <option value="">{t("Choose storage")}</option>
               {connectors
                 .filter((c) => c.enabled)
                 .map((c) => (
@@ -342,7 +349,7 @@ export function InvitationDialog({
             </select>
           </label>
           <label>
-            Invited email addresses
+            {t("Invited email addresses")}
             <textarea
               required
               rows={3}
@@ -353,7 +360,7 @@ export function InvitationDialog({
           </label>
           <div className="field-row">
             <label>
-              Expires in days
+              {t("Expires in days")}
               <input
                 required
                 type="number"
@@ -364,7 +371,7 @@ export function InvitationDialog({
               />
             </label>
             <label>
-              Maximum file size (MB)
+              {t("Maximum file size (MB)")}
               <input
                 required
                 type="number"
@@ -377,7 +384,7 @@ export function InvitationDialog({
           </div>
           {kind === "submission" && (
             <label>
-              Maximum submissions across this invitation
+              {t("Maximum submissions across this invitation")}
               <input
                 required
                 type="number"
@@ -394,11 +401,11 @@ export function InvitationDialog({
               checked={send}
               onChange={(e) => setSend(e.target.checked)}
             />
-            Email the invitation automatically
+            {t("Email the invitation automatically")}
           </label>
           <ErrorMessage error={error} />
           <button className="button primary full" disabled={busy}>
-            {busy ? "Creating…" : "Create invitation"}
+            {busy ? t("Creating\u2026") : t("Create invitation")}
           </button>
         </form>
       )}
@@ -411,7 +418,6 @@ function workingName(name: string) {
     ? `${name.slice(0, dot)}-collaboration${name.slice(dot)}`
     : `${name}-collaboration`;
 }
-
 export function InvitationManager({
   kind,
   connectors,
@@ -441,10 +447,12 @@ export function InvitationManager({
     refresh();
   }, [all]);
   async function revoke(row: Row) {
-    if (!confirm("Revoke this invitation? Its recipients will lose access."))
+    if (!confirm(t("Revoke this invitation? Its recipients will lose access.")))
       return;
     try {
-      await api(`/invitations/${row.id}`, { method: "DELETE" });
+      await api(`/invitations/${row.id}`, {
+        method: "DELETE",
+      });
       await refresh();
       onNotice("Invitation revoked.");
     } catch (e) {
@@ -462,20 +470,26 @@ export function InvitationManager({
     <>
       <div className="section-heading">
         <div>
-          <span className="eyebrow">WORKING TOGETHER</span>
+          <span className="eyebrow">{t("WORKING TOGETHER")}</span>
           <h1>
             {kind === "submission"
-              ? "A place to receive."
-              : "Documents, together."}
+              ? t("A place to receive.")
+              : t("Documents, together.")}
           </h1>
           <p className="muted">
             {kind === "submission"
-              ? "Invite external partners to submit documents to storage you choose."
-              : "Keep the original. Share a working copy for online edits or desktop re-uploads."}
+              ? t(
+                  "Invite external partners to submit documents to storage you choose.",
+                )
+              : t(
+                  "Keep the original. Share a working copy for online edits or desktop re-uploads.",
+                )}
           </p>
         </div>
         <button className="button primary" onClick={() => setCreate(true)}>
-          {kind === "submission" ? "New file request" : "New collaboration"}
+          {kind === "submission"
+            ? t("New file request")
+            : t("New collaboration")}
         </button>
       </div>
       {user.role === "admin" && (
@@ -485,7 +499,7 @@ export function InvitationManager({
             checked={all}
             onChange={(e) => setAll(e.target.checked)}
           />
-          Show invitations from all users
+          {t("Show invitations from all users")}
         </label>
       )}
       <ErrorMessage error={error} />
@@ -498,16 +512,21 @@ export function InvitationManager({
               <p className="muted">
                 {row.connector_name} ·{" "}
                 {row.revoked_at
-                  ? "Revoked"
+                  ? t("Revoked")
                   : row.expires_at <= Date.now()
-                    ? "Expired"
-                    : `Expires ${new Date(row.expires_at).toLocaleDateString()}`}
+                    ? t("Expired")
+                    : t("Expires {0}", {
+                        "0": new Date(row.expires_at).toLocaleDateString(
+                          getLocale(),
+                        ),
+                      })}
               </p>
               {all && <p>{row.owner_email}</p>}
               <p>{row.recipients.join(", ")}</p>
               {row.target_name && (
                 <p>
-                  Working copy: <strong>{row.target_name}</strong>
+                  {t("Working copy: ")}
+                  <strong>{row.target_name}</strong>
                 </p>
               )}
               <code>{row.code}</code>
@@ -521,7 +540,7 @@ export function InvitationManager({
                       .catch(() => setError("Copy this link: " + row.link))
                   }
                 >
-                  Copy link
+                  {t("Copy link")}
                 </button>
                 {!row.revoked_at && row.expires_at > Date.now() && (
                   <>
@@ -529,20 +548,24 @@ export function InvitationManager({
                       className="button secondary"
                       onClick={() => open(row)}
                     >
-                      {kind === "submission" ? "Open request" : "Open document"}
+                      {kind === "submission"
+                        ? t("Open request")
+                        : t("Open document")}
                     </button>
                     <button
                       className="text-button danger"
                       onClick={() => revoke(row)}
                     >
-                      Revoke
+                      {t("Revoke")}
                     </button>
                   </>
                 )}
               </div>
               <details>
                 <summary>
-                  {kind === "submission" ? "Submissions" : "Working files"}
+                  {kind === "submission"
+                    ? t("Submissions")
+                    : t("Working files")}
                 </summary>
                 {row.files
                   .filter((f: Row) => f.published_at && f.state === "ready")
@@ -560,7 +583,7 @@ export function InvitationManager({
       </div>
       {!rows.some((r) => r.kind === kind) && (
         <section className="panel">
-          <p className="muted">Your invitations will appear here.</p>
+          <p className="muted">{t("Your invitations will appear here.")}</p>
         </section>
       )}
       {create && (
@@ -587,7 +610,6 @@ export function InvitationManager({
     </>
   );
 }
-
 export function InvitationPortal({ initial }: { initial: Row }) {
   const [data, setData] = useState(initial),
     [error, setError] = useState(""),
@@ -634,16 +656,19 @@ export function InvitationPortal({ initial }: { initial: Row }) {
   return (
     <div className="invitation-portal">
       <p className="muted">
-        Expires {new Date(invitation.expires_at).toLocaleString()} · Up to{" "}
-        {formatBytes(invitation.max_file_bytes)} per file.
+        {t("Expires ")}
+        {new Date(invitation.expires_at).toLocaleString(getLocale())}
+        {t(" \xB7 Up to")} {formatBytes(invitation.max_file_bytes)}
+        {t(" per file.")}
       </p>
       <ErrorMessage error={error} />
       {invitation.kind === "collaboration" ? (
         <>
           <h3>{invitation.target_name}</h3>
           <p>
-            The original is preserved. Saved edits and re-uploads replace this
-            working copy.
+            {t(
+              "The original is preserved. Saved edits and re-uploads replace this working copy.",
+            )}
           </p>
           <FilePreview
             key={data.file.id}
@@ -660,7 +685,7 @@ export function InvitationPortal({ initial }: { initial: Row }) {
                 ) || data.file.size > 20 * 1024 * 1024
               }
             >
-              Edit online
+              {t("Edit online")}
             </button>
             <button
               className="button secondary"
@@ -670,27 +695,29 @@ export function InvitationPortal({ initial }: { initial: Row }) {
                   .catch((e: Error) => setError(e.message))
               }
             >
-              Resumable download
+              {t("Resumable download")}
             </button>
             <a className="text-button" href={`${basePath}/api${path}`}>
-              Direct download
+              {t("Direct download")}
             </a>
           </div>
           <p className="fineprint">
-            Online editing supports DOCX and plain text up to 20 MiB. For other
-            files, download, edit on your computer, and re-upload below.
+            {t(
+              "Online editing supports DOCX and plain text up to 20 MiB. For other files, download, edit on your computer, and re-upload below.",
+            )}
           </p>
         </>
       ) : (
         <p>
-          Your submitted files are available to the requester. Other invited
-          partners cannot see them.
+          {t(
+            "Your submitted files are available to the requester. Other invited partners cannot see them.",
+          )}
         </p>
       )}
       <label className="submission-drop">
         {invitation.kind === "collaboration"
-          ? "Re-upload your edited document"
-          : "Choose documents to submit"}
+          ? t("Re-upload your edited document")
+          : t("Choose documents to submit")}
         <input
           type="file"
           disabled={busy}
@@ -710,19 +737,19 @@ export function InvitationPortal({ initial }: { initial: Row }) {
         />
       </label>
       <TransfersPanel onError={setError} />
-      <h3>Your submissions</h3>
+      <h3>{t("Your submissions")}</h3>
       {data.submitted.map((f: Row) => (
         <p key={f.id}>
           {f.name} · {formatBytes(f.size)} ·{" "}
           {f.published_at
-            ? "Saved"
+            ? t("Saved")
             : f.state === "uploading"
-              ? "In progress"
-              : "Awaiting save"}
+              ? t("In progress")
+              : t("Awaiting save")}
         </p>
       ))}
       {editing && (
-        <Suspense fallback={<p>Loading document editor…</p>}>
+        <Suspense fallback={<p>{t("Loading document editor\u2026")}</p>}>
           <DocumentEditor
             file={data.file}
             invitation={invitation}
@@ -738,7 +765,6 @@ export function InvitationPortal({ initial }: { initial: Row }) {
     </div>
   );
 }
-
 export function OneDriveDialog({
   connector,
   onClose,
@@ -792,7 +818,10 @@ export function OneDriveDialog({
       setFolder(result.folder.id);
       setListing(
         append && listing
-          ? { ...result, folders: [...listing.folders, ...result.folders] }
+          ? {
+              ...result,
+              folders: [...listing.folders, ...result.folders],
+            }
           : result,
       );
     } catch (e) {
@@ -827,7 +856,11 @@ export function OneDriveDialog({
         name: folderName,
       });
       setFolder(result.folder.id);
-      setListing({ folder: result.folder, folders: [], next: "" });
+      setListing({
+        folder: result.folder,
+        folders: [],
+        next: "",
+      });
       setFolderName("");
     } catch (error) {
       setError(message(error));
@@ -852,7 +885,13 @@ export function OneDriveDialog({
           limitBytes: Math.round(capacity * 1e9),
           retentionDays: retention ? Number(retention) : null,
           enabled,
-          ...(secret ? { credentials: { clientSecret: secret } } : {}),
+          ...(secret
+            ? {
+                credentials: {
+                  clientSecret: secret,
+                },
+              }
+            : {}),
         }),
       });
       onSaved();
@@ -863,14 +902,15 @@ export function OneDriveDialog({
     }
   }
   return (
-    <Modal title="OneDrive for Business" onClose={onClose}>
+    <Modal title={t("OneDrive for Business")} onClose={onClose}>
       <form onSubmit={save} className="feature-form">
         <p className="muted">
-          Connect an enterprise application. Files stay in your selected folder;
-          File Station handles invitations without OneDrive sharing links.
+          {t(
+            "Connect an enterprise application. Files stay in your selected folder; File Station handles invitations without OneDrive sharing links.",
+          )}
         </p>
         <label>
-          Name
+          {t("Name")}
           <input
             required
             value={name}
@@ -878,7 +918,7 @@ export function OneDriveDialog({
           />
         </label>
         <label>
-          Tenant ID
+          {t("Tenant ID")}
           <input
             required
             value={tenantId}
@@ -886,7 +926,7 @@ export function OneDriveDialog({
           />
         </label>
         <label>
-          Application (client) ID
+          {t("Application (client) ID")}
           <input
             required
             value={clientId}
@@ -894,28 +934,26 @@ export function OneDriveDialog({
           />
         </label>
         <label>
-          Client secret value
+          {t("Client secret value")}
           <input
             type="password"
             autoComplete="new-password"
             required={!connector}
             value={secret}
             placeholder={
-              connector ? "Leave blank to keep the saved secret" : ""
+              connector ? t("Leave blank to keep the saved secret") : ""
             }
             onChange={(e) => setSecret(e.target.value)}
           />
         </label>
         <p className="fineprint">
-          Requires Microsoft Graph application permissions and tenant
-          administrator consent. Sites.ReadWrite.All enables the full connector
-          with tenant-wide access. For restricted access, use Sites.Selected
-          with a write grant on your storage site and enter its Drive ID
-          manually. Delegated permissions do not apply to this sign-in method.
+          {t(
+            "Requires Microsoft Graph application permissions and tenant administrator consent. Sites.ReadWrite.All enables the full connector with tenant-wide access. For restricted access, use Sites.Selected with a write grant on your storage site and enter its Drive ID manually. Delegated permissions do not apply to this sign-in method.",
+          )}
         </p>
         <div className="feature-actions">
           <label>
-            OneDrive owner email
+            {t("OneDrive owner email")}
             <input
               type="email"
               value={userEmail}
@@ -929,11 +967,11 @@ export function OneDriveDialog({
             disabled={busy || !userEmail}
             onClick={resolve}
           >
-            Find drive
+            {t("Find drive")}
           </button>
         </div>
         <label>
-          Drive ID
+          {t("Drive ID")}
           <input
             required
             value={driveId}
@@ -944,7 +982,7 @@ export function OneDriveDialog({
           />
         </label>
         <label>
-          Storage root folder ID
+          {t("Storage root folder ID")}
           <input
             required
             aria-describedby="onedrive-folder-hint"
@@ -956,9 +994,9 @@ export function OneDriveDialog({
           />
         </label>
         <p className="fineprint" id="onedrive-folder-hint">
-          Enter Microsoft’s folder item ID, or use the folder picker. A folder
-          name such as FileStation is not an ID. Enter root to use the drive
-          root. The folder is checked when you save a new storage location.
+          {t(
+            "Enter Microsoft\u2019s folder item ID, or use the folder picker. A folder name such as FileStation is not an ID. Enter root to use the drive root. The folder is checked when you save a new storage location.",
+          )}
         </p>
         <div className="feature-actions">
           <button
@@ -967,7 +1005,7 @@ export function OneDriveDialog({
             disabled={busy || !driveId}
             onClick={() => browse()}
           >
-            Browse folders
+            {t("Browse folders")}
           </button>
           <button
             type="button"
@@ -975,15 +1013,19 @@ export function OneDriveDialog({
             disabled={busy || !driveId}
             onClick={() => browse("root")}
           >
-            Browse drive root
+            {t("Browse drive root")}
           </button>
         </div>
         {listing && (
           <div className="folder-picker">
-            <strong>Selected: {listing.folder.name}</strong>
+            <strong>
+              {t("Selected: ")}
+              {listing.folder.name}
+            </strong>
             <p className="fineprint">
-              Documents will be stored in this folder. Open a folder below to
-              select it.
+              {t(
+                "Documents will be stored in this folder. Open a folder below to select it.",
+              )}
             </p>
             <div className="feature-actions">
               <button
@@ -992,7 +1034,7 @@ export function OneDriveDialog({
                 disabled={busy}
                 onClick={() => browse("root")}
               >
-                Drive root
+                {t("Drive root")}
               </button>
               {listing.folder.parentId && (
                 <button
@@ -1001,7 +1043,7 @@ export function OneDriveDialog({
                   disabled={busy}
                   onClick={() => browse(listing.folder.parentId)}
                 >
-                  Parent folder
+                  {t("Parent folder")}
                 </button>
               )}
             </div>
@@ -1022,17 +1064,17 @@ export function OneDriveDialog({
                 className="text-button"
                 onClick={() => browse(folderId, true)}
               >
-                More folders
+                {t("More folders")}
               </button>
             )}
             <div className="feature-actions">
               <label>
-                New folder name
+                {t("New folder name")}
                 <input
                   value={folderName}
                   maxLength={128}
                   onChange={(event) => setFolderName(event.target.value)}
-                  placeholder="FileStation"
+                  placeholder={t("FileStation")}
                 />
               </label>
               <button
@@ -1041,20 +1083,19 @@ export function OneDriveDialog({
                 disabled={busy || !folderName.trim()}
                 onClick={createFolder}
               >
-                Create folder here
+                {t("Create folder here")}
               </button>
             </div>
           </div>
         )}
         <p className="fineprint">
-          Use a dedicated private folder or service account with restricted
-          native permissions. OneDrive owners and tenant administrators retain
-          their normal access. The selected location is locked after the first
-          file is stored.
+          {t(
+            "Use a dedicated private folder or service account with restricted native permissions. OneDrive owners and tenant administrators retain their normal access. The selected location is locked after the first file is stored.",
+          )}
         </p>
         <div className="field-row">
           <label>
-            Capacity (GB)
+            {t("Capacity (GB)")}
             <input
               required
               type="number"
@@ -1066,14 +1107,14 @@ export function OneDriveDialog({
             />
           </label>
           <label>
-            Retention in days
+            {t("Retention in days")}
             <input
               type="number"
               min={1}
               max={3650}
               value={retention}
               onChange={(e) => setRetention(e.target.value)}
-              placeholder="No time limit"
+              placeholder={t("No time limit")}
             />
           </label>
         </div>
@@ -1083,15 +1124,15 @@ export function OneDriveDialog({
             checked={enabled}
             onChange={(e) => setEnabled(e.target.checked)}
           />
-          Enabled
+          {t("Enabled")}
         </label>
         <ErrorMessage error={error} />
         <button className="button primary full" disabled={busy}>
-          {busy ? "Working…" : "Save connector"}
+          {busy ? t("Working\u2026") : t("Save connector")}
         </button>
         {!connector && (
           <button type="button" className="text-button" onClick={onBack}>
-            Choose another provider
+            {t("Choose another provider")}
           </button>
         )}
       </form>

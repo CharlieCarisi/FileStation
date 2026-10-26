@@ -1,3 +1,4 @@
+import { t, getLocale, useLanguage, LanguageSelector } from "./i18n";
 import {
   AccessGate,
   InvitationManager,
@@ -5,6 +6,7 @@ import {
   OneDriveDialog,
 } from "./features";
 import FilePreview from "./FilePreview";
+import ShareAddressSettings from "./ShareAddressSettings";
 // Restored from the published browser application; see docs/recovery.md.
 import * as D from "react";
 import * as c from "react/jsx-runtime";
@@ -53,19 +55,19 @@ const canDirectDownload = (file) =>
   !["synology", "webdav"].includes(file.storage_kind || "") ||
   file.size <= 256 * 1024 * 1024;
 function formatBytes(S) {
-  if (S === 0) return "0 B";
+  if (S === 0) return getLocale() === "fr-CA" ? "0 o" : "0 B";
   const v = ["B", "KB", "MB", "GB", "TB"],
     T = Math.min(Math.floor(Math.log(S) / Math.log(1e3)), 4);
-  return `${(S / 1e3 ** T).toFixed(T > 1 ? 1 : 0)} ${v[T]}`;
+  return `${new Intl.NumberFormat(getLocale(), { minimumFractionDigits: T > 1 ? 1 : 0, maximumFractionDigits: T > 1 ? 1 : 0 }).format(S / 1e3 ** T)} ${(getLocale() === "fr-CA" ? ["o", "ko", "Mo", "Go", "To"] : v)[T]}`;
 }
 const formatDate = (S) =>
   S
-    ? new Date(S).toLocaleDateString(void 0, {
+    ? new Date(S).toLocaleDateString(getLocale(), {
         month: "short",
         day: "numeric",
         year: "numeric",
       })
-    : "No expiry";
+    : t("No expiry");
 function Modal({
   title: S,
   subtitle: v = undefined,
@@ -84,11 +86,19 @@ function Modal({
         c.jsx("button", {
           className: "icon-button modal-close",
           onClick: T,
-          "aria-label": "Close",
-          children: c.jsx(Lf, { size: 20 }),
+          "aria-label": t("Close"),
+          children: c.jsx(Lf, {
+            size: 20,
+          }),
         }),
-        c.jsx("h2", { children: S }),
-        v && c.jsx("p", { className: "muted", children: v }),
+        c.jsx("h2", {
+          children: S,
+        }),
+        v &&
+          c.jsx("p", {
+            className: "muted",
+            children: v,
+          }),
         o,
       ],
     }),
@@ -99,7 +109,12 @@ function ErrorMessage({ error: S }) {
     ? c.jsxs("p", {
         role: "alert",
         className: "error",
-        children: [c.jsx(n1, { size: 16 }), S],
+        children: [
+          c.jsx(n1, {
+            size: 16,
+          }),
+          t(S),
+        ],
       })
     : null;
 }
@@ -114,10 +129,15 @@ function LoginDialog({ onClose: S, onLogin: v }) {
     (G.preventDefault(), j(!0), k(""));
     try {
       if (B) {
-        const $ = await post("/auth/verify", { challengeId: B, pin: _ });
+        const $ = await post("/auth/verify", {
+          challengeId: B,
+          pin: _,
+        });
         v($.user);
       } else {
-        const $ = await post("/auth/request", { email: T });
+        const $ = await post("/auth/request", {
+          email: T,
+        });
         (M($.challengeId), J($.developmentPin || ""));
       }
     } catch ($) {
@@ -127,22 +147,28 @@ function LoginDialog({ onClose: S, onLogin: v }) {
     }
   }
   return c.jsxs(Modal, {
-    title: B ? "Check your inbox" : "Welcome to your station",
+    title: B ? t("Check your inbox") : t("Welcome to your station"),
     subtitle: B
-      ? `We sent a six-digit code to ${T}. It expires in 10 minutes.`
-      : "Sign in or create an account with your email. No password to remember.",
+      ? t("We sent a six-digit code to {0}. It expires in 10 minutes.", {
+          0: T,
+        })
+      : t(
+          "Sign in or create an account with your email. No password to remember.",
+        ),
     onClose: S,
     children: [
       c.jsx("div", {
         className: "dialog-symbol",
-        children: c.jsx(Gm, { size: 26 }),
+        children: c.jsx(Gm, {
+          size: 26,
+        }),
       }),
       c.jsxs("form", {
         onSubmit: xe,
         children: [
           c.jsxs("label", {
             children: [
-              B ? "Verification PIN" : "Email address",
+              B ? t("Verification PIN") : t("Email address"),
               c.jsx("input", {
                 type: B ? "text" : "email",
                 inputMode: B ? "numeric" : "email",
@@ -160,18 +186,28 @@ function LoginDialog({ onClose: S, onLogin: v }) {
             c.jsxs("p", {
               className: "development",
               children: [
-                "Local email simulator · PIN: ",
-                c.jsx("strong", { children: R }),
+                t("Local email simulator \xB7 PIN: "),
+                c.jsx("strong", {
+                  children: R,
+                }),
               ],
             }),
-          c.jsx(ErrorMessage, { error: N }),
+          c.jsx(ErrorMessage, {
+            error: N,
+          }),
           c.jsxs("button", {
             type: "submit",
             className: "button primary full",
             disabled: A,
             children: [
-              A ? "Please wait…" : B ? "Sign in" : "Email me a sign-in code",
-              c.jsx($i, { size: 17 }),
+              A
+                ? t("Please wait\u2026")
+                : B
+                  ? t("Sign in")
+                  : t("Email me a sign-in code"),
+              c.jsx($i, {
+                size: 17,
+              }),
             ],
           }),
         ],
@@ -182,20 +218,25 @@ function LoginDialog({ onClose: S, onLogin: v }) {
           onClick: () => {
             (M(""), C(""), J(""), k(""));
           },
-          children: "Use another email or request a new code",
+          children: t("Use another email or request a new code"),
         }),
       c.jsxs("p", {
         className: "fineprint",
         children: [
-          c.jsx(yu, { size: 14 }),
-          " Only approved accounts can upload files.",
+          c.jsx(yu, {
+            size: 14,
+          }),
+          t(" Only approved accounts can upload files."),
         ],
       }),
     ],
   });
 }
 function AccessForm({ initialCode, onFile }) {
-  return c.jsx(AccessGate, { initialCode, onFile });
+  return c.jsx(AccessGate, {
+    initialCode,
+    onFile,
+  });
 }
 function UploadDialog({ connectors: S, onClose: v, onUploaded: T }) {
   const [o, _] = D.useState([]),
@@ -220,9 +261,10 @@ function UploadDialog({ connectors: S, onClose: v, onUploaded: T }) {
     }
   }
   return c.jsx(Modal, {
-    title: "Bring your files aboard",
-    subtitle:
+    title: t("Bring your files aboard"),
+    subtitle: t(
       "Choose a destination. You can pause a transfer and pick up where you left off.",
+    ),
     onClose: () => {
       M || v();
     },
@@ -239,28 +281,33 @@ function UploadDialog({ connectors: S, onClose: v, onUploaded: T }) {
             (G.preventDefault(), N(!1), _(Array.from(G.dataTransfer.files)));
           },
           children: [
-            c.jsx(u1, { size: 34 }),
+            c.jsx(u1, {
+              size: 34,
+            }),
             c.jsx("strong", {
               children: o.length
-                ? `${o.length} file${o.length > 1 ? "s" : ""} selected`
-                : "Drop files here, or browse",
+                ? t("{0} file{1} selected", {
+                    0: o.length,
+                    1: o.length > 1 ? t("s") : "",
+                  })
+                : t("Drop files here, or browse"),
             }),
             c.jsx("span", {
               children: o.length
                 ? o.map((G) => G.name).join(", ")
-                : "All file types welcome",
+                : t("All file types welcome"),
             }),
             c.jsx("input", {
               type: "file",
               multiple: !0,
               onChange: (G) => _(Array.from(G.target.files || [])),
-              "aria-label": "Choose files",
+              "aria-label": t("Choose files"),
             }),
           ],
         }),
         c.jsxs("label", {
           children: [
-            "Storage destination",
+            t("Storage destination"),
             c.jsxs("select", {
               value: C,
               onChange: (G) => B(G.target.value),
@@ -269,7 +316,7 @@ function UploadDialog({ connectors: S, onClose: v, onUploaded: T }) {
                 c.jsx("option", {
                   value: "",
                   disabled: !0,
-                  children: "Choose a connector",
+                  children: t("Choose a connector"),
                 }),
                 S.filter((G) => G.enabled).map((G) =>
                   c.jsxs(
@@ -279,7 +326,7 @@ function UploadDialog({ connectors: S, onClose: v, onUploaded: T }) {
                       disabled: G.kind !== "r2" && !G.credentials_configured,
                       children: [
                         G.name,
-                        " · ",
+                        " \xB7 ",
                         formatBytes(
                           Math.max(
                             0,
@@ -287,9 +334,9 @@ function UploadDialog({ connectors: S, onClose: v, onUploaded: T }) {
                           ),
                         ),
                         " ",
-                        "available",
+                        t("available"),
                         G.kind !== "r2" && !G.credentials_configured
-                          ? " · setup needed"
+                          ? t(" \xB7 setup needed")
                           : "",
                       ],
                     },
@@ -304,29 +351,43 @@ function UploadDialog({ connectors: S, onClose: v, onUploaded: T }) {
           c.jsxs("div", {
             className: "info",
             children: [
-              c.jsx(vu, { size: 18 }),
+              c.jsx(vu, {
+                size: 18,
+              }),
               c.jsxs("span", {
                 children: [
                   k.retention_days
-                    ? `Files are kept for ${k.retention_days} days. `
-                    : "No time-based expiry. ",
-                  "If this storage reaches its ",
+                    ? t("Files are kept for {0} days. ", {
+                        0: k.retention_days,
+                      })
+                    : t("No time-based expiry. "),
+                  t("If this storage reaches its "),
                   formatBytes(k.limit_bytes),
-                  " limit, its oldest files are deleted to make room. Deleted files and their shares cannot be recovered.",
+                  t(
+                    " limit, its oldest files are deleted to make room. Deleted files and their shares cannot be recovered.",
+                  ),
                 ],
               }),
             ],
           }),
-        c.jsx(ErrorMessage, { error: J }),
+        c.jsx(ErrorMessage, {
+          error: J,
+        }),
         c.jsxs("button", {
           type: "submit",
           className: "button primary full",
           disabled: M || !C || !o.length,
           children: [
             M
-              ? "Preparing uploads…"
-              : `Upload${o.length ? " " + formatBytes(o.reduce((G, $) => G + $.size, 0)) : ""}`,
-            c.jsx($i, { size: 17 }),
+              ? t("Preparing uploads\u2026")
+              : t("Upload{0}", {
+                  0: o.length
+                    ? " " + formatBytes(o.reduce((G, $) => G + $.size, 0))
+                    : "",
+                }),
+            c.jsx($i, {
+              size: 17,
+            }),
           ],
         }),
       ],
@@ -368,7 +429,11 @@ function ShareDialog({ file: S, onClose: v, onChanged: T }) {
   }
   async function W(V) {
     try {
-      (await api(`/shares/${V}`, { method: "DELETE" }), await Ae(), T());
+      (await api(`/shares/${V}`, {
+        method: "DELETE",
+      }),
+        await Ae(),
+        T());
     } catch (Me) {
       N(Me.message);
     }
@@ -381,7 +446,7 @@ function ShareDialog({ file: S, onClose: v, onChanged: T }) {
       onSaved: T,
     });
   return c.jsxs(Modal, {
-    title: k ? "Ready to share" : "A file. The right people.",
+    title: k ? t("Ready to share") : t("A file. The right people."),
     subtitle: S.name,
     onClose: v,
     children: [
@@ -390,7 +455,7 @@ function ShareDialog({ file: S, onClose: v, onChanged: T }) {
           type: "button",
           className: "button secondary full",
           onClick: () => setCollaboration(true),
-          children: "Share for collaboration instead",
+          children: t("Share for collaboration instead"),
         }),
       k
         ? c.jsxs(c.Fragment, {
@@ -398,25 +463,30 @@ function ShareDialog({ file: S, onClose: v, onChanged: T }) {
               c.jsxs("div", {
                 className: "share-code",
                 children: [
-                  c.jsx("span", { children: "FILE ACCESS CODE" }),
+                  c.jsx("span", {
+                    children: t("FILE ACCESS CODE"),
+                  }),
                   c.jsx("strong", {
                     children: k.code.match(/.{1,4}/g)?.join(" "),
                   }),
                   c.jsxs("small", {
-                    children: ["Expires ", formatDate(k.expiresAt)],
+                    children: [t("Expires "), formatDate(k.expiresAt)],
                   }),
                 ],
               }),
               c.jsxs("label", {
                 children: [
-                  "Share link",
+                  t("Share link"),
                   c.jsxs("div", {
                     className: "copy-field",
                     children: [
-                      c.jsx("input", { readOnly: !0, value: k.link }),
+                      c.jsx("input", {
+                        readOnly: !0,
+                        value: k.link,
+                      }),
                       c.jsx("button", {
                         className: "icon-button",
-                        "aria-label": "Copy share link",
+                        "aria-label": t("Copy share link"),
                         onClick: () => {
                           navigator.clipboard
                             .writeText(
@@ -431,8 +501,12 @@ Access code: ${k.code}`,
                             );
                         },
                         children: G
-                          ? c.jsx(ki, { size: 18 })
-                          : c.jsx(i1, { size: 18 }),
+                          ? c.jsx(ki, {
+                              size: 18,
+                            })
+                          : c.jsx(i1, {
+                              size: 18,
+                            }),
                       }),
                     ],
                   }),
@@ -441,19 +515,25 @@ Access code: ${k.code}`,
               c.jsxs("p", {
                 className: "info",
                 children: [
-                  c.jsx(Gm, { size: 18 }),
+                  c.jsx(Gm, {
+                    size: 18,
+                  }),
                   k.emailError ||
                     (k.developmentEmail
-                      ? "Email simulated locally. Copy the link for testing."
+                      ? t("Email simulated locally. Copy the link for testing.")
                       : k.emailSent
-                        ? "Email sent to your recipients. They’ll verify their address before downloading."
-                        : "Copy this link and send it to your recipients. They’ll verify their address before downloading."),
+                        ? t(
+                            "Email sent to your recipients. They\u2019ll verify their address before downloading.",
+                          )
+                        : t(
+                            "Copy this link and send it to your recipients. They\u2019ll verify their address before downloading.",
+                          )),
                 ],
               }),
               c.jsx("button", {
                 className: "button primary full",
                 onClick: v,
-                children: "Done",
+                children: t("Done"),
               }),
             ],
           })
@@ -462,7 +542,7 @@ Access code: ${k.code}`,
             children: [
               c.jsxs("label", {
                 children: [
-                  "Recipient email addresses",
+                  t("Recipient email addresses"),
                   c.jsx("textarea", {
                     required: !0,
                     rows: 3,
@@ -471,22 +551,35 @@ Access code: ${k.code}`,
                     placeholder: "alex@company.com, sam@company.com",
                   }),
                   c.jsx("small", {
-                    children:
+                    children: t(
                       "Separate addresses with commas. Up to 20 recipients.",
+                    ),
                   }),
                 ],
               }),
               c.jsxs("label", {
                 children: [
-                  "Share expires in",
+                  t("Share expires in"),
                   c.jsxs("select", {
                     value: C,
                     onChange: (V) => B(Number(V.target.value)),
                     children: [
-                      c.jsx("option", { value: 1, children: "1 day" }),
-                      c.jsx("option", { value: 7, children: "7 days" }),
-                      c.jsx("option", { value: 30, children: "30 days" }),
-                      c.jsx("option", { value: 90, children: "90 days" }),
+                      c.jsx("option", {
+                        value: 1,
+                        children: t("1 day"),
+                      }),
+                      c.jsx("option", {
+                        value: 7,
+                        children: t("7 days"),
+                      }),
+                      c.jsx("option", {
+                        value: 30,
+                        children: t("30 days"),
+                      }),
+                      c.jsx("option", {
+                        value: 90,
+                        children: t("90 days"),
+                      }),
                     ],
                   }),
                 ],
@@ -502,11 +595,12 @@ Access code: ${k.code}`,
                   c.jsxs("span", {
                     children: [
                       c.jsx("strong", {
-                        children: "Email the link automatically",
+                        children: t("Email the link automatically"),
                       }),
                       c.jsx("small", {
-                        children:
+                        children: t(
                           "Turn off to copy the link and send it yourself.",
+                        ),
                       }),
                     ],
                   }),
@@ -517,18 +611,23 @@ Access code: ${k.code}`,
                 className: "button primary full",
                 disabled: J,
                 children: [
-                  J ? "Creating share…" : "Create share",
-                  c.jsx(Fi, { size: 17 }),
+                  J ? t("Creating share\u2026") : t("Create share"),
+                  c.jsx(Fi, {
+                    size: 17,
+                  }),
                 ],
               }),
               c.jsx("p", {
                 className: "fineprint",
-                children:
+                children: t(
                   "File deletion or storage retention invalidates this code immediately.",
+                ),
               }),
             ],
           }),
-      c.jsx(ErrorMessage, { error: j }),
+      c.jsx(ErrorMessage, {
+        error: j,
+      }),
       c.jsxs("div", {
         className: "existing-shares",
         children: [
@@ -537,7 +636,7 @@ Access code: ${k.code}`,
             onClick: () => {
               Ae();
             },
-            children: "Manage existing shares",
+            children: t("Manage existing shares"),
           }),
           sl &&
             (ye.length
@@ -554,8 +653,10 @@ Access code: ${k.code}`,
                             }),
                             c.jsx("small", {
                               children: V.revoked_at
-                                ? "Revoked"
-                                : `Expires ${formatDate(V.expires_at)}`,
+                                ? t("Revoked")
+                                : t("Expires {0}", {
+                                    0: formatDate(V.expires_at),
+                                  }),
                             }),
                           ],
                         }),
@@ -565,7 +666,7 @@ Access code: ${k.code}`,
                             onClick: () => {
                               W(V.id);
                             },
-                            children: "Revoke",
+                            children: t("Revoke"),
                           }),
                       ],
                     },
@@ -574,7 +675,7 @@ Access code: ${k.code}`,
                 )
               : c.jsx("p", {
                   className: "muted",
-                  children: "No existing shares.",
+                  children: t("No existing shares."),
                 })),
         ],
       }),
@@ -591,7 +692,9 @@ function ConfirmDialog({ title: S, message: v, onClose: T, onConfirm: o }) {
       _ || T();
     },
     children: [
-      c.jsx(ErrorMessage, { error: B }),
+      c.jsx(ErrorMessage, {
+        error: B,
+      }),
       c.jsxs("div", {
         className: "actions",
         children: [
@@ -599,7 +702,7 @@ function ConfirmDialog({ title: S, message: v, onClose: T, onConfirm: o }) {
             className: "button secondary",
             onClick: T,
             disabled: _,
-            children: "Cancel",
+            children: t("Cancel"),
           }),
           c.jsx("button", {
             className: "button destructive",
@@ -614,7 +717,7 @@ function ConfirmDialog({ title: S, message: v, onClose: T, onConfirm: o }) {
                 C(!1);
               }
             },
-            children: _ ? "Working…" : "Confirm",
+            children: _ ? t("Working\u2026") : t("Confirm"),
           }),
         ],
       }),
@@ -628,10 +731,24 @@ function StoragePanel({ connectors: S, isAdmin: v, onChanged: T }) {
   async function J(A) {
     B(A.id);
     try {
-      const j = await api(`/admin/connectors/${A.id}/test`, { method: "POST" });
-      R((N) => ({ ...N, [A.id]: { ok: !0, message: j.message } }));
+      const j = await api(`/admin/connectors/${A.id}/test`, {
+        method: "POST",
+      });
+      R((N) => ({
+        ...N,
+        [A.id]: {
+          ok: !0,
+          message: j.message,
+        },
+      }));
     } catch (j) {
-      R((N) => ({ ...N, [A.id]: { ok: !1, message: j.message } }));
+      R((N) => ({
+        ...N,
+        [A.id]: {
+          ok: !1,
+          message: j.message,
+        },
+      }));
     } finally {
       B("");
     }
@@ -645,13 +762,16 @@ function StoragePanel({ connectors: S, isAdmin: v, onChanged: T }) {
             children: [
               c.jsx("span", {
                 className: "eyebrow",
-                children: "YOUR STORAGE NETWORK",
+                children: t("YOUR STORAGE NETWORK"),
               }),
-              c.jsx("h1", { children: "A place for every file." }),
+              c.jsx("h1", {
+                children: t("A place for every file."),
+              }),
               c.jsx("p", {
                 className: "muted",
-                children:
+                children: t(
                   "Pick the storage that fits. Each destination has its own capacity and retention policy.",
+                ),
               }),
             ],
           }),
@@ -659,7 +779,12 @@ function StoragePanel({ connectors: S, isAdmin: v, onChanged: T }) {
             c.jsxs("button", {
               className: "button primary",
               onClick: () => _(null),
-              children: [c.jsx(Qf, { size: 17 }), "Add connector"],
+              children: [
+                c.jsx(Qf, {
+                  size: 17,
+                }),
+                t("Add connector"),
+              ],
             }),
         ],
       }),
@@ -678,36 +803,44 @@ function StoragePanel({ connectors: S, isAdmin: v, onChanged: T }) {
                       className: `storage-symbol ${A.kind}`,
                       children:
                         A.kind === "synology" || A.kind === "webdav"
-                          ? c.jsx(Ym, { size: 26 })
-                          : c.jsx(vu, { size: 26 }),
+                          ? c.jsx(Ym, {
+                              size: 26,
+                            })
+                          : c.jsx(vu, {
+                              size: 26,
+                            }),
                     }),
                     c.jsx("span", {
                       className: `pill ${A.enabled ? "green" : "gray"}`,
                       children: A.enabled
                         ? A.kind !== "r2" && !A.credentials_configured
-                          ? "Setup needed"
+                          ? t("Setup needed")
                           : A.kind === "r2"
-                            ? "Ready"
-                            : "Configured"
-                        : "Disabled",
+                            ? t("Ready")
+                            : t("Configured")
+                        : t("Disabled"),
                     }),
                   ],
                 }),
-                c.jsx("h2", { children: A.name }),
+                c.jsx("h2", {
+                  children: A.name,
+                }),
                 c.jsx("p", {
                   className: "muted",
                   children:
                     A.kind === "onedrive"
-                      ? "OneDrive for Business · private application storage"
+                      ? t(
+                          "OneDrive for Business \xB7 private application storage",
+                        )
                       : A.kind === "r2"
-                        ? "Cloudflare R2 object storage"
+                        ? t("Cloudflare R2 object storage")
                         : A.kind === "s3"
-                          ? "S3-compatible object storage"
+                          ? t("S3-compatible object storage")
                           : A.kind === "synology"
-                            ? "Synology · WebDAV through Cloudflare"
+                            ? t("Synology \xB7 WebDAV through Cloudflare")
                             : A.kind === "webdav"
-                              ? "WebDAV · AliPan and other drives"
-                              : "AliPan · 阿里云盘",
+                              ? t("WebDAV \xB7 AliPan and other drives")
+                              : t("AliPan \xB7 \u963F\u91CC\u4E91\u76D8"),
                 }),
                 c.jsxs("div", {
                   className: "capacity-number",
@@ -716,7 +849,7 @@ function StoragePanel({ connectors: S, isAdmin: v, onChanged: T }) {
                       children: formatBytes(A.used_bytes + A.reserved_bytes),
                     }),
                     c.jsxs("span", {
-                      children: ["of ", formatBytes(A.limit_bytes)],
+                      children: [t("of "), formatBytes(A.limit_bytes)],
                     }),
                   ],
                 }),
@@ -732,13 +865,19 @@ function StoragePanel({ connectors: S, isAdmin: v, onChanged: T }) {
                   children: [
                     c.jsxs("div", {
                       children: [
-                        c.jsx("dt", { children: "Files stored" }),
-                        c.jsx("dd", { children: A.file_count }),
+                        c.jsx("dt", {
+                          children: t("Files stored"),
+                        }),
+                        c.jsx("dd", {
+                          children: A.file_count,
+                        }),
                       ],
                     }),
                     c.jsxs("div", {
                       children: [
-                        c.jsx("dt", { children: "Reserved for uploads" }),
+                        c.jsx("dt", {
+                          children: t("Reserved for uploads"),
+                        }),
                         c.jsx("dd", {
                           children: formatBytes(A.reserved_bytes),
                         }),
@@ -746,18 +885,26 @@ function StoragePanel({ connectors: S, isAdmin: v, onChanged: T }) {
                     }),
                     c.jsxs("div", {
                       children: [
-                        c.jsx("dt", { children: "Time retention" }),
+                        c.jsx("dt", {
+                          children: t("Time retention"),
+                        }),
                         c.jsx("dd", {
                           children: A.retention_days
-                            ? `${A.retention_days} days`
-                            : "No time limit",
+                            ? t("{0} days", {
+                                0: A.retention_days,
+                              })
+                            : t("No time limit"),
                         }),
                       ],
                     }),
                     c.jsxs("div", {
                       children: [
-                        c.jsx("dt", { children: "At capacity" }),
-                        c.jsx("dd", { children: "Oldest files deleted first" }),
+                        c.jsx("dt", {
+                          children: t("At capacity"),
+                        }),
+                        c.jsx("dd", {
+                          children: t("Oldest files deleted first"),
+                        }),
                       ],
                     }),
                   ],
@@ -766,7 +913,12 @@ function StoragePanel({ connectors: S, isAdmin: v, onChanged: T }) {
                   c.jsxs("button", {
                     className: "button secondary full",
                     onClick: () => _(A),
-                    children: [c.jsx(Vm, { size: 16 }), "Manage connector"],
+                    children: [
+                      c.jsx(Vm, {
+                        size: 16,
+                      }),
+                      t("Manage connector"),
+                    ],
                   }),
                 v &&
                   (A.kind === "webdav" || A.kind === "synology") &&
@@ -776,7 +928,10 @@ function StoragePanel({ connectors: S, isAdmin: v, onChanged: T }) {
                         className: "button secondary full",
                         disabled: !!C || !A.credentials_configured,
                         onClick: () => J(A),
-                        children: C === A.id ? "Checking…" : "Check connection",
+                        children:
+                          C === A.id
+                            ? t("Checking\u2026")
+                            : t("Check connection"),
                       }),
                       M[A.id] &&
                         c.jsx("p", {
@@ -844,7 +999,12 @@ function ConnectorDialog({ connector: S, onClose: v, onSaved: T }) {
           region: Ae,
           confirmSameStorage: O,
           ...(C === "s3" && (W || Me)
-            ? { credentials: { accessKeyId: W, secretAccessKey: Me } }
+            ? {
+                credentials: {
+                  accessKeyId: W,
+                  secretAccessKey: Me,
+                },
+              }
             : {}),
           ...(C === "alipan" && (Le || il || _e)
             ? {
@@ -882,21 +1042,22 @@ function ConnectorDialog({ connector: S, onClose: v, onSaved: T }) {
       onBack: () => B("r2"),
     });
   return c.jsx(Modal, {
-    title: S ? "Manage storage" : "Connect a destination",
-    subtitle:
-      "Storage limits apply to File Station’s own files. Capacity eviction removes the oldest files permanently.",
+    title: S ? t("Manage storage") : t("Connect a destination"),
+    subtitle: t(
+      "Storage limits apply to File Station\u2019s own files. Capacity eviction removes the oldest files permanently.",
+    ),
     onClose: v,
     children: c.jsxs("form", {
       onSubmit: Q,
       children: [
         c.jsxs("label", {
           children: [
-            "Name",
+            t("Name"),
             c.jsx("input", {
               required: !0,
               value: o,
               onChange: (U) => _(U.target.value),
-              placeholder: "Team storage",
+              placeholder: t("Team storage"),
             }),
           ],
         }),
@@ -905,33 +1066,36 @@ function ConnectorDialog({ connector: S, onClose: v, onSaved: T }) {
           children: [
             c.jsxs("label", {
               children: [
-                "Provider",
+                t("Provider"),
                 c.jsxs("select", {
-                  "aria-label": "Provider",
+                  "aria-label": t("Provider"),
                   disabled: !!S,
                   value: C,
                   onChange: (U) => B(U.target.value),
                   children: [
                     c.jsx("option", {
                       value: "onedrive",
-                      children: "OneDrive for Business",
+                      children: t("OneDrive for Business"),
                     }),
-                    c.jsx("option", { value: "r2", children: "Cloudflare R2" }),
+                    c.jsx("option", {
+                      value: "r2",
+                      children: t("Cloudflare R2"),
+                    }),
                     c.jsx("option", {
                       value: "alipan",
-                      children: "AliPan / 阿里云盘",
+                      children: t("AliPan / \u963F\u91CC\u4E91\u76D8"),
                     }),
                     c.jsx("option", {
                       value: "s3",
-                      children: "S3 compatible (R2, B2, Storj…)",
+                      children: t("S3 compatible (R2, B2, Storj\u2026)"),
                     }),
                     c.jsx("option", {
                       value: "synology",
-                      children: "Synology WebDAV (Cloudflare)",
+                      children: t("Synology WebDAV (Cloudflare)"),
                     }),
                     c.jsx("option", {
                       value: "webdav",
-                      children: "WebDAV (AliPan and other drives)",
+                      children: t("WebDAV (AliPan and other drives)"),
                     }),
                   ],
                 }),
@@ -939,7 +1103,7 @@ function ConnectorDialog({ connector: S, onClose: v, onSaved: T }) {
             }),
             c.jsxs("label", {
               children: [
-                "Capacity (GB)",
+                t("Capacity (GB)"),
                 c.jsx("input", {
                   type: "number",
                   min: "0.001",
@@ -955,14 +1119,14 @@ function ConnectorDialog({ connector: S, onClose: v, onSaved: T }) {
         }),
         c.jsxs("label", {
           children: [
-            "Retention in days",
+            t("Retention in days"),
             c.jsx("input", {
               type: "number",
               min: "1",
               max: "3650",
               value: J,
               onChange: (U) => A(U.target.value),
-              placeholder: "Leave blank for no time limit",
+              placeholder: t("Leave blank for no time limit"),
             }),
           ],
         }),
@@ -974,7 +1138,7 @@ function ConnectorDialog({ connector: S, onClose: v, onSaved: T }) {
                 children: [
                   c.jsxs("label", {
                     children: [
-                      "Drive ID",
+                      t("Drive ID"),
                       c.jsx("input", {
                         required: !0,
                         value: k,
@@ -984,7 +1148,7 @@ function ConnectorDialog({ connector: S, onClose: v, onSaved: T }) {
                   }),
                   c.jsxs("label", {
                     children: [
-                      "Folder ID",
+                      t("Folder ID"),
                       c.jsx("input", {
                         value: G,
                         onChange: (U) => $(U.target.value),
@@ -995,12 +1159,13 @@ function ConnectorDialog({ connector: S, onClose: v, onSaved: T }) {
               }),
               c.jsx("p", {
                 className: "fineprint",
-                children:
+                children: t(
                   "Use the official AliPan Open API application credentials. Existing credentials stay unchanged when these fields are blank.",
+                ),
               }),
               c.jsxs("label", {
                 children: [
-                  "Client ID",
+                  t("Client ID"),
                   c.jsx("input", {
                     autoComplete: "off",
                     value: Le,
@@ -1010,7 +1175,7 @@ function ConnectorDialog({ connector: S, onClose: v, onSaved: T }) {
               }),
               c.jsxs("label", {
                 children: [
-                  "Client secret",
+                  t("Client secret"),
                   c.jsx("input", {
                     type: "password",
                     autoComplete: "new-password",
@@ -1021,7 +1186,7 @@ function ConnectorDialog({ connector: S, onClose: v, onSaved: T }) {
               }),
               c.jsxs("label", {
                 children: [
-                  "Refresh token",
+                  t("Refresh token"),
                   c.jsx("input", {
                     type: "password",
                     autoComplete: "new-password",
@@ -1037,7 +1202,7 @@ function ConnectorDialog({ connector: S, onClose: v, onSaved: T }) {
             children: [
               c.jsxs("label", {
                 children: [
-                  "S3 HTTPS endpoint",
+                  t("S3 HTTPS endpoint"),
                   c.jsx("input", {
                     required: !0,
                     value: ye,
@@ -1049,7 +1214,7 @@ function ConnectorDialog({ connector: S, onClose: v, onSaved: T }) {
               c.jsxs("p", {
                 className: "fineprint",
                 children: [
-                  "A hostname without https:// is accepted. For Oracle, use",
+                  t("A hostname without https:// is accepted. For Oracle, use"),
                   " ",
                   "https://YOUR_NAMESPACE.compat.objectstorage.YOUR_REGION.oraclecloud.com or the equivalent .oci.customer-oci.com endpoint. Replace both placeholders with your account values and enter the bucket separately. An Oracle region set to auto is read from its endpoint.",
                 ],
@@ -1059,7 +1224,7 @@ function ConnectorDialog({ connector: S, onClose: v, onSaved: T }) {
                 children: [
                   c.jsxs("label", {
                     children: [
-                      "Bucket",
+                      t("Bucket"),
                       c.jsx("input", {
                         required: !0,
                         value: sl,
@@ -1067,19 +1232,20 @@ function ConnectorDialog({ connector: S, onClose: v, onSaved: T }) {
                       }),
                       c.jsx("span", {
                         className: "fineprint",
-                        children:
+                        children: t(
                           "Use the exact bucket name, including capitalization.",
+                        ),
                       }),
                     ],
                   }),
                   c.jsxs("label", {
                     children: [
-                      "Region",
+                      t("Region"),
                       c.jsx("input", {
                         required: !0,
                         value: Ae,
                         onChange: (U) => De(U.target.value),
-                        placeholder: "auto for R2",
+                        placeholder: t("auto for R2"),
                       }),
                     ],
                   }),
@@ -1087,7 +1253,7 @@ function ConnectorDialog({ connector: S, onClose: v, onSaved: T }) {
               }),
               c.jsxs("label", {
                 children: [
-                  "Access key ID",
+                  t("Access key ID"),
                   c.jsx("input", {
                     autoComplete: "off",
                     value: W,
@@ -1097,7 +1263,7 @@ function ConnectorDialog({ connector: S, onClose: v, onSaved: T }) {
               }),
               c.jsxs("label", {
                 children: [
-                  "Secret access key",
+                  t("Secret access key"),
                   c.jsx("input", {
                     type: "password",
                     autoComplete: "new-password",
@@ -1108,23 +1274,25 @@ function ConnectorDialog({ connector: S, onClose: v, onSaved: T }) {
               }),
               c.jsx("p", {
                 className: "fineprint",
-                children:
+                children: t(
                   "Keys are encrypted on the server. Blank fields preserve existing credentials. Use a dedicated File Station bucket; each connector has its own file prefix.",
+                ),
               }),
             ],
           }),
         C === "r2" &&
           c.jsx("p", {
             className: "info",
-            children:
-              "R2 destinations use separate prefixes in the app’s Cloudflare bucket. No storage keys are needed.",
+            children: t(
+              "R2 destinations use separate prefixes in the app\u2019s Cloudflare bucket. No storage keys are needed.",
+            ),
           }),
         (C === "synology" || C === "webdav") &&
           c.jsxs(c.Fragment, {
             children: [
               c.jsxs("label", {
                 children: [
-                  "WebDAV HTTPS folder URL",
+                  t("WebDAV HTTPS folder URL"),
                   c.jsx("input", {
                     required: !0,
                     type: "url",
@@ -1139,12 +1307,13 @@ function ConnectorDialog({ connector: S, onClose: v, onSaved: T }) {
               }),
               c.jsx("p", {
                 className: "fineprint",
-                children:
+                children: t(
                   "Use the WebDAV folder URL, with write and delete access. A DSM login page is not a WebDAV endpoint. Transfers use 8 MiB parts; storage contains chunk folders, while File Station downloads the original file.",
+                ),
               }),
               c.jsxs("label", {
                 children: [
-                  "WebDAV username",
+                  t("WebDAV username"),
                   c.jsx("input", {
                     autoComplete: "off",
                     value: K,
@@ -1154,7 +1323,7 @@ function ConnectorDialog({ connector: S, onClose: v, onSaved: T }) {
               }),
               c.jsxs("label", {
                 children: [
-                  "WebDAV password",
+                  t("WebDAV password"),
                   c.jsx("input", {
                     type: "password",
                     autoComplete: "new-password",
@@ -1165,12 +1334,13 @@ function ConnectorDialog({ connector: S, onClose: v, onSaved: T }) {
               }),
               c.jsx("p", {
                 className: "fineprint",
-                children:
+                children: t(
                   "For Cloudflare Access, create a service token and a Service Auth policy. Enter both fields below; browser login policies alone will block the Worker.",
+                ),
               }),
               c.jsxs("label", {
                 children: [
-                  "Access service token client ID",
+                  t("Access service token client ID"),
                   c.jsx("input", {
                     autoComplete: "off",
                     value: $e,
@@ -1180,7 +1350,7 @@ function ConnectorDialog({ connector: S, onClose: v, onSaved: T }) {
               }),
               c.jsxs("label", {
                 children: [
-                  "Access service token client secret",
+                  t("Access service token client secret"),
                   c.jsx("input", {
                     type: "password",
                     autoComplete: "new-password",
@@ -1191,8 +1361,9 @@ function ConnectorDialog({ connector: S, onClose: v, onSaved: T }) {
               }),
               c.jsx("p", {
                 className: "fineprint",
-                children:
+                children: t(
                   "Credentials are encrypted. Leave all four fields blank to preserve them; enter the complete set to replace them.",
+                ),
               }),
               S &&
                 c.jsxs("label", {
@@ -1203,7 +1374,9 @@ function ConnectorDialog({ connector: S, onClose: v, onSaved: T }) {
                       checked: O,
                       onChange: (U) => x(U.target.checked),
                     }),
-                    "I confirm a changed hostname points to the same WebDAV folder, with the same files.",
+                    t(
+                      "I confirm a changed hostname points to the same WebDAV folder, with the same files.",
+                    ),
                   ],
                 }),
             ],
@@ -1216,15 +1389,22 @@ function ConnectorDialog({ connector: S, onClose: v, onSaved: T }) {
               checked: j,
               onChange: (U) => N(U.target.checked),
             }),
-            "Allow new uploads to this connector",
+            t("Allow new uploads to this connector"),
           ],
         }),
-        c.jsx(ErrorMessage, { error: re }),
+        c.jsx(ErrorMessage, {
+          error: re,
+        }),
         c.jsxs("button", {
           type: "submit",
           className: "button primary full",
           disabled: q,
-          children: [c.jsx(Qm, { size: 17 }), q ? "Saving…" : "Save connector"],
+          children: [
+            c.jsx(Qm, {
+              size: 17,
+            }),
+            q ? t("Saving\u2026") : t("Save connector"),
+          ],
         }),
       ],
     }),
@@ -1250,7 +1430,9 @@ function UsersPanel({ current: S, onNotice: v }) {
     try {
       (await api(`/admin/users/${N.id}`, {
         method: "PATCH",
-        body: JSON.stringify({ status: k }),
+        body: JSON.stringify({
+          status: k,
+        }),
       }),
         await A(),
         v(
@@ -1273,12 +1455,14 @@ function UsersPanel({ current: S, onNotice: v }) {
             children: [
               c.jsx("span", {
                 className: "eyebrow",
-                children: "ADMINISTRATION",
+                children: t("ADMINISTRATION"),
               }),
-              c.jsx("h1", { children: "The people at your station." }),
+              c.jsx("h1", {
+                children: t("The people at your station."),
+              }),
               c.jsx("p", {
                 className: "muted",
-                children: "Approve new accounts and manage access.",
+                children: t("Approve new accounts and manage access."),
               }),
             ],
           }),
@@ -1288,12 +1472,16 @@ function UsersPanel({ current: S, onNotice: v }) {
               c.jsx("strong", {
                 children: T.filter((N) => N.status === "pending").length,
               }),
-              c.jsx("span", { children: "awaiting approval" }),
+              c.jsx("span", {
+                children: t("awaiting approval"),
+              }),
             ],
           }),
         ],
       }),
-      c.jsx(ErrorMessage, { error: _ }),
+      c.jsx(ErrorMessage, {
+        error: _,
+      }),
       c.jsx("div", {
         className: "table-shell",
         children: c.jsxs("table", {
@@ -1301,11 +1489,21 @@ function UsersPanel({ current: S, onNotice: v }) {
             c.jsx("thead", {
               children: c.jsxs("tr", {
                 children: [
-                  c.jsx("th", { children: "User" }),
-                  c.jsx("th", { children: "Role" }),
-                  c.jsx("th", { children: "Status" }),
-                  c.jsx("th", { children: "Joined" }),
-                  c.jsx("th", { children: "Actions" }),
+                  c.jsx("th", {
+                    children: t("User"),
+                  }),
+                  c.jsx("th", {
+                    children: t("Role"),
+                  }),
+                  c.jsx("th", {
+                    children: t("Status"),
+                  }),
+                  c.jsx("th", {
+                    children: t("Joined"),
+                  }),
+                  c.jsx("th", {
+                    children: t("Actions"),
+                  }),
                 ],
               }),
             }),
@@ -1323,20 +1521,28 @@ function UsersPanel({ current: S, onNotice: v }) {
                               className: "avatar",
                               children: N.email.slice(0, 2).toUpperCase(),
                             }),
-                            c.jsx("strong", { children: N.email }),
+                            c.jsx("strong", {
+                              children: N.email,
+                            }),
                             N.id === S.id &&
-                              c.jsx("small", { children: "You" }),
+                              c.jsx("small", {
+                                children: t("You"),
+                              }),
                           ],
                         }),
                       }),
-                      c.jsx("td", { children: N.role }),
+                      c.jsx("td", {
+                        children: t(N.role),
+                      }),
                       c.jsx("td", {
                         children: c.jsx("span", {
                           className: `pill ${N.status === "active" ? "green" : N.status === "pending" ? "amber" : "gray"}`,
-                          children: N.status,
+                          children: t(N.status),
                         }),
                       }),
-                      c.jsx("td", { children: formatDate(N.created_at) }),
+                      c.jsx("td", {
+                        children: formatDate(N.created_at),
+                      }),
                       c.jsx("td", {
                         children:
                           N.role !== "admin" &&
@@ -1348,12 +1554,16 @@ function UsersPanel({ current: S, onNotice: v }) {
                                 disabled: R === N.id,
                                 title:
                                   N.status === "active"
-                                    ? "Deactivate"
-                                    : "Approve / reactivate",
+                                    ? t("Deactivate")
+                                    : t("Approve / reactivate"),
                                 "aria-label":
                                   N.status === "active"
-                                    ? "Deactivate " + N.email
-                                    : "Approve " + N.email,
+                                    ? t("Deactivate {0}", {
+                                        0: N.email,
+                                      })
+                                    : t("Approve {0}", {
+                                        0: N.email,
+                                      }),
                                 onClick: () => {
                                   j(
                                     N,
@@ -1364,15 +1574,23 @@ function UsersPanel({ current: S, onNotice: v }) {
                                 },
                                 children:
                                   N.status === "active"
-                                    ? c.jsx(g1, { size: 17 })
-                                    : c.jsx(y1, { size: 17 }),
+                                    ? c.jsx(g1, {
+                                        size: 17,
+                                      })
+                                    : c.jsx(y1, {
+                                        size: 17,
+                                      }),
                               }),
                               c.jsx("button", {
                                 className: "icon-button danger",
-                                title: "Delete user and files",
-                                "aria-label": "Delete " + N.email,
+                                title: t("Delete user and files"),
+                                "aria-label": t("Delete {0}", {
+                                  0: N.email,
+                                }),
                                 onClick: () => M(N),
-                                children: c.jsx(Lm, { size: 17 }),
+                                children: c.jsx(Lm, {
+                                  size: 17,
+                                }),
                               }),
                             ],
                           }),
@@ -1388,11 +1606,18 @@ function UsersPanel({ current: S, onNotice: v }) {
       }),
       B &&
         c.jsx(ConfirmDialog, {
-          title: "Delete this account?",
-          message: `This deactivates ${B.email}, permanently deletes all their files, and invalidates their shares.`,
+          title: t("Delete this account?"),
+          message: t(
+            "This deactivates {0}, permanently deletes all their files, and invalidates their shares.",
+            {
+              0: B.email,
+            },
+          ),
           onClose: () => M(void 0),
           onConfirm: async () => {
-            (await api(`/admin/users/${B.id}`, { method: "DELETE" }),
+            (await api(`/admin/users/${B.id}`, {
+              method: "DELETE",
+            }),
               await A(),
               v("Account and files deleted."));
           },
@@ -1442,11 +1667,16 @@ function SettingsPanel({ onNotice: S }) {
         className: "section-heading",
         children: c.jsxs("div", {
           children: [
-            c.jsx("span", { className: "eyebrow", children: "ADMINISTRATION" }),
-            c.jsx("h1", { children: "Set the ground rules." }),
+            c.jsx("span", {
+              className: "eyebrow",
+              children: t("ADMINISTRATION"),
+            }),
+            c.jsx("h1", {
+              children: t("Set the ground rules."),
+            }),
             c.jsx("p", {
               className: "muted",
-              children: "Account approval and a record of activity.",
+              children: t("Account approval and a record of activity."),
             }),
           ],
         }),
@@ -1454,46 +1684,59 @@ function SettingsPanel({ onNotice: S }) {
       c.jsxs("div", {
         className: "settings-grid",
         children: [
+          c.jsx(ShareAddressSettings, {
+            onNotice: S,
+          }),
           c.jsxs("section", {
             className: "panel",
             children: [
               c.jsx("div", {
                 className: "panel-icon",
-                children: c.jsx(yu, { size: 23 }),
+                children: c.jsx(yu, {
+                  size: 23,
+                }),
               }),
-              c.jsx("h2", { children: "Automatic approval" }),
+              c.jsx("h2", {
+                children: t("Automatic approval"),
+              }),
               c.jsx("p", {
                 className: "muted",
-                children:
+                children: t(
                   "New users with a verified email at these exact domains are approved automatically. Other users wait for an administrator.",
+                ),
               }),
               c.jsxs("form", {
                 onSubmit: j,
                 children: [
                   c.jsxs("label", {
                     children: [
-                      "Allowed email domains",
+                      t("Allowed email domains"),
                       c.jsx("textarea", {
                         rows: 5,
                         value: v,
                         onChange: (N) => T(N.target.value),
-                        placeholder: "international.gc.ca",
+                        placeholder: t("international.gc.ca"),
                         disabled: !M,
                       }),
                       c.jsx("small", {
-                        children:
+                        children: t(
                           "One domain per line. Subdomains are not automatically included. Existing accounts are unchanged.",
+                        ),
                       }),
                     ],
                   }),
-                  c.jsx(ErrorMessage, { error: C }),
+                  c.jsx(ErrorMessage, {
+                    error: C,
+                  }),
                   c.jsxs("button", {
                     type: "submit",
                     className: "button primary",
                     disabled: o || !M,
                     children: [
-                      c.jsx(Qm, { size: 17 }),
-                      o ? "Saving…" : "Save domains",
+                      c.jsx(Qm, {
+                        size: 17,
+                      }),
+                      o ? t("Saving\u2026") : t("Save domains"),
                     ],
                   }),
                 ],
@@ -1503,7 +1746,9 @@ function SettingsPanel({ onNotice: S }) {
           c.jsxs("section", {
             className: "panel",
             children: [
-              c.jsx("h2", { children: "Recent activity" }),
+              c.jsx("h2", {
+                children: t("Recent activity"),
+              }),
               c.jsx("div", {
                 className: "audit-list",
                 children: J.length
@@ -1512,16 +1757,18 @@ function SettingsPanel({ onNotice: S }) {
                         "div",
                         {
                           children: [
-                            c.jsx("span", { className: "audit-dot" }),
+                            c.jsx("span", {
+                              className: "audit-dot",
+                            }),
                             c.jsxs("div", {
                               children: [
                                 c.jsx("strong", {
-                                  children: N.action.replace(/[._]/g, " "),
+                                  children: t(N.action.replace(/[._]/g, " ")),
                                 }),
                                 c.jsxs("small", {
                                   children: [
-                                    N.actor_email || "Retention service",
-                                    " · ",
+                                    N.actor_email || t("Retention service"),
+                                    " \xB7 ",
                                     formatDate(N.created_at),
                                   ],
                                 }),
@@ -1534,8 +1781,9 @@ function SettingsPanel({ onNotice: S }) {
                     )
                   : c.jsx("p", {
                       className: "muted",
-                      children:
+                      children: t(
                         "Activity will appear here as people use File Station.",
+                      ),
                     }),
               }),
             ],
@@ -1546,18 +1794,58 @@ function SettingsPanel({ onNotice: S }) {
   });
 }
 const userNavigation = [
-    { page: "files", label: "My files", icon: Xf },
-    { page: "shared", label: "Shared by me", icon: Fi },
-    { page: "access", label: "Use an access code", icon: Fi },
-    { page: "requests", label: "File requests", icon: v1 },
-    { page: "collaborations", label: "Collaborations", icon: qm },
-    { page: "transfers", label: "Transfers", icon: gn },
-    { page: "storage", label: "Storage", icon: Ym },
+    {
+      page: "files",
+      label: "My files",
+      icon: Xf,
+    },
+    {
+      page: "shared",
+      label: "Shared by me",
+      icon: Fi,
+    },
+    {
+      page: "access",
+      label: "Use an access code",
+      icon: Fi,
+    },
+    {
+      page: "requests",
+      label: "File requests",
+      icon: v1,
+    },
+    {
+      page: "collaborations",
+      label: "Collaborations",
+      icon: qm,
+    },
+    {
+      page: "transfers",
+      label: "Transfers",
+      icon: gn,
+    },
+    {
+      page: "storage",
+      label: "Storage",
+      icon: Ym,
+    },
   ],
   adminNavigation = [
-    { page: "users", label: "User management", icon: S1 },
-    { page: "allfiles", label: "All files", icon: Bm },
-    { page: "settings", label: "Settings & activity", icon: Vm },
+    {
+      page: "users",
+      label: "User management",
+      icon: S1,
+    },
+    {
+      page: "allfiles",
+      label: "All files",
+      icon: Bm,
+    },
+    {
+      page: "settings",
+      label: "Settings & activity",
+      icon: Vm,
+    },
   ];
 function Brand() {
   return c.jsxs("div", {
@@ -1565,12 +1853,17 @@ function Brand() {
     children: [
       c.jsx("span", {
         className: "brand-mark",
-        children: c.jsx(Bm, { size: 23 }),
+        children: c.jsx(Bm, {
+          size: 23,
+        }),
       }),
       c.jsxs("span", {
         children: [
-          "File Station",
-          c.jsx("span", { className: "brand-dot", children: "." }),
+          t("File Station"),
+          c.jsx("span", {
+            className: "brand-dot",
+            children: ".",
+          }),
         ],
       }),
     ],
@@ -1587,10 +1880,13 @@ function FileIcon({ name: S }) {
           : f1;
   return c.jsx("span", {
     className: `file-icon ${v === "pdf" ? "red" : ["png", "jpg", "jpeg"].includes(v || "") ? "purple" : ""}`,
-    children: c.jsx(T, { size: 22 }),
+    children: c.jsx(T, {
+      size: 22,
+    }),
   });
 }
 function App() {
+  useLanguage();
   const [codeOpen, setCodeOpen] = D.useState(
     new URLSearchParams(location.hash.slice(1)).has("share"),
   );
@@ -1684,23 +1980,35 @@ function App() {
             c.jsxs("div", {
               className: "search-field",
               children: [
-                c.jsx(m1, { size: 17 }),
+                c.jsx(m1, {
+                  size: 17,
+                }),
                 c.jsx("input", {
-                  placeholder: "Search your files…",
-                  "aria-label": "Search files",
+                  placeholder: t("Search your files\u2026"),
+                  "aria-label": t("Search files"),
                   value: V,
                   onChange: (x) => Me(x.target.value),
                 }),
               ],
             }),
             c.jsxs("select", {
-              "aria-label": "Filter by storage",
+              "aria-label": t("Filter by storage"),
               value: Ve,
               onChange: (x) => Le(x.target.value),
               children: [
-                c.jsx("option", { value: "all", children: "All storage" }),
+                c.jsx("option", {
+                  value: "all",
+                  children: t("All storage"),
+                }),
                 A.map((x) =>
-                  c.jsx("option", { value: x.id, children: x.name }, x.id),
+                  c.jsx(
+                    "option",
+                    {
+                      value: x.id,
+                      children: x.name,
+                    },
+                    x.id,
+                  ),
                 ),
               ],
             }),
@@ -1709,8 +2017,10 @@ function App() {
               onClick: () => {
                 Z();
               },
-              "aria-label": "Refresh files",
-              children: c.jsx(h1, { size: 17 }),
+              "aria-label": t("Refresh files"),
+              children: c.jsx(h1, {
+                size: 17,
+              }),
             }),
           ],
         }),
@@ -1724,15 +2034,28 @@ function App() {
                   children: c.jsxs("tr", {
                     children: [
                       c.jsxs("th", {
-                        children: ["NAME ", c.jsx(Gf, { size: 12 })],
+                        children: [
+                          t("NAME "),
+                          c.jsx(Gf, {
+                            size: 12,
+                          }),
+                        ],
                       }),
-                      c.jsx("th", { children: "STORAGE" }),
-                      c.jsx("th", { children: "SIZE" }),
                       c.jsx("th", {
-                        children: R === "allfiles" ? "OWNER" : "ADDED",
+                        children: t("STORAGE"),
                       }),
-                      c.jsx("th", { children: "KEEP UNTIL" }),
-                      c.jsx("th", { "aria-label": "Actions" }),
+                      c.jsx("th", {
+                        children: t("SIZE"),
+                      }),
+                      c.jsx("th", {
+                        children: R === "allfiles" ? t("OWNER") : t("ADDED"),
+                      }),
+                      c.jsx("th", {
+                        children: t("KEEP UNTIL"),
+                      }),
+                      c.jsx("th", {
+                        "aria-label": t("Actions"),
+                      }),
                     ],
                   }),
                 }),
@@ -1746,7 +2069,9 @@ function App() {
                             children: c.jsxs("div", {
                               className: "file-name",
                               children: [
-                                c.jsx(FileIcon, { name: x.name }),
+                                c.jsx(FileIcon, {
+                                  name: x.name,
+                                }),
                                 c.jsxs("div", {
                                   children: [
                                     c.jsx("strong", {
@@ -1756,10 +2081,16 @@ function App() {
                                     c.jsx("small", {
                                       children:
                                         x.state === "uploading"
-                                          ? "Upload in progress"
+                                          ? t("Upload in progress")
                                           : x.share_count
-                                            ? `${x.share_count} active share${x.share_count > 1 ? "s" : ""}`
-                                            : x.mime || "File",
+                                            ? t("{0} active share{1}", {
+                                                0: x.share_count,
+                                                1:
+                                                  x.share_count > 1
+                                                    ? t("s")
+                                                    : "",
+                                              })
+                                            : x.mime || t("File"),
                                     }),
                                   ],
                                 }),
@@ -1777,7 +2108,9 @@ function App() {
                               ],
                             }),
                           }),
-                          c.jsx("td", { children: formatBytes(x.size) }),
+                          c.jsx("td", {
+                            children: formatBytes(x.size),
+                          }),
                           c.jsx("td", {
                             children:
                               R === "allfiles"
@@ -1787,7 +2120,7 @@ function App() {
                           c.jsx("td", {
                             children:
                               x.state === "uploading"
-                                ? "—"
+                                ? "\u2014"
                                 : formatDate(x.expires_at),
                           }),
                           c.jsx("td", {
@@ -1799,45 +2132,64 @@ function App() {
                                       children: [
                                         c.jsx("button", {
                                           className: "icon-button",
-                                          "aria-label": "Download " + x.name,
-                                          title: "Resumable download",
+                                          "aria-label": t("Download {0}", {
+                                            0: x.name,
+                                          }),
+                                          title: t("Resumable download"),
                                           onClick: () => {
                                             fe(x);
                                           },
-                                          children: c.jsx(gn, { size: 17 }),
+                                          children: c.jsx(gn, {
+                                            size: 17,
+                                          }),
                                         }),
                                         canDirectDownload(x) &&
                                           c.jsx("a", {
                                             className: "icon-button",
-                                            "aria-label":
-                                              "Direct browser download " +
-                                              x.name,
-                                            title: "Direct browser download",
+                                            "aria-label": t(
+                                              "Direct browser download {0}",
+                                              {
+                                                0: x.name,
+                                              },
+                                            ),
+                                            title: t("Direct browser download"),
                                             href: `${basePath}/api/files/${x.id}/download`,
-                                            children: c.jsx(Gf, { size: 17 }),
+                                            children: c.jsx(Gf, {
+                                              size: 17,
+                                            }),
                                           }),
                                         c.jsx("button", {
                                           className: "icon-button",
-                                          "aria-label": "Share " + x.name,
-                                          title: "Share file",
+                                          "aria-label": t("Share {0}", {
+                                            0: x.name,
+                                          }),
+                                          title: t("Share file"),
                                           onClick: () => G(x),
-                                          children: c.jsx(Fi, { size: 17 }),
+                                          children: c.jsx(Fi, {
+                                            size: 17,
+                                          }),
                                         }),
                                       ],
                                     })
                                   : c.jsx("button", {
                                       className: "icon-button",
-                                      title: "Go to transfers",
-                                      "aria-label": "Go to transfers",
+                                      title: t("Go to transfers"),
+                                      "aria-label": t("Go to transfers"),
                                       onClick: () => J("transfers"),
-                                      children: c.jsx(v1, { size: 17 }),
+                                      children: c.jsx(v1, {
+                                        size: 17,
+                                      }),
                                     }),
                                 c.jsx("button", {
                                   className: "icon-button danger",
-                                  "aria-label": "Delete " + x.name,
-                                  title: "Delete file",
+                                  "aria-label": t("Delete {0}", {
+                                    0: x.name,
+                                  }),
+                                  title: t("Delete file"),
                                   onClick: () => ye(x),
-                                  children: c.jsx(Lm, { size: 16 }),
+                                  children: c.jsx(Lm, {
+                                    size: 16,
+                                  }),
                                 }),
                               ],
                             }),
@@ -1856,21 +2208,25 @@ function App() {
                 children: [
                   c.jsx("div", {
                     className: "empty-icon",
-                    children: c.jsx(Xf, { size: 34 }),
+                    children: c.jsx(Xf, {
+                      size: 34,
+                    }),
                   }),
                   c.jsx("h3", {
                     children: V
-                      ? "No matching files"
+                      ? t("No matching files")
                       : R === "shared"
-                        ? "Your next handoff starts here."
-                        : "Make yourself at home.",
+                        ? t("Your next handoff starts here.")
+                        : t("Make yourself at home."),
                   }),
                   c.jsx("p", {
                     children: V
-                      ? "Try another name or storage destination."
+                      ? t("Try another name or storage destination.")
                       : R === "shared"
-                        ? "Create a share from any uploaded file."
-                        : "Upload a file, choose a destination, and send it to the right people.",
+                        ? t("Create a share from any uploaded file.")
+                        : t(
+                            "Upload a file, choose a destination, and send it to the right people.",
+                          ),
                   }),
                   !V &&
                     R !== "shared" &&
@@ -1878,8 +2234,10 @@ function App() {
                       className: "button primary",
                       onClick: () => M(!0),
                       children: [
-                        c.jsx(Qf, { size: 16 }),
-                        "Upload your first file",
+                        c.jsx(Qf, {
+                          size: 16,
+                        }),
+                        t("Upload your first file"),
                       ],
                     }),
                 ],
@@ -1889,15 +2247,17 @@ function App() {
         c.jsxs("p", {
           className: "table-foot",
           children: [
-            "Showing ",
+            t("Showing "),
             d.length,
-            " file",
-            d.length !== 1 ? "s" : "",
-            N.length === 500 ? " · Latest 500 files" : "",
+            t(" file"),
+            d.length !== 1 ? t("s") : "",
+            N.length === 500 ? t(" \xB7 Latest 500 files") : "",
             c.jsxs("span", {
               children: [
-                c.jsx(yu, { size: 14 }),
-                " Files stay private until you share them",
+                c.jsx(yu, {
+                  size: 14,
+                }),
+                t(" Files stay private until you share them"),
               ],
             }),
           ],
@@ -1917,7 +2277,7 @@ function App() {
                     c.jsx(Brand, {}),
                     c.jsx("div", {
                       className: "workspace-label",
-                      children: "YOUR WORKSPACE",
+                      children: t("YOUR WORKSPACE"),
                     }),
                     c.jsxs("nav", {
                       children: [
@@ -1930,8 +2290,10 @@ function App() {
                                 (J(x.page), il(!1));
                               },
                               children: [
-                                c.jsx(x.icon, { size: 18 }),
-                                x.label,
+                                c.jsx(x.icon, {
+                                  size: 18,
+                                }),
+                                t(x.label),
                                 x.page === "transfers" &&
                                   K > 0 &&
                                   c.jsx("span", {
@@ -1948,7 +2310,7 @@ function App() {
                             children: [
                               c.jsx("div", {
                                 className: "workspace-label admin-label",
-                                children: "ADMINISTRATION",
+                                children: t("ADMINISTRATION"),
                               }),
                               adminNavigation.map((x) =>
                                 c.jsxs(
@@ -1959,8 +2321,10 @@ function App() {
                                       (J(x.page), il(!1));
                                     },
                                     children: [
-                                      c.jsx(x.icon, { size: 18 }),
-                                      x.label,
+                                      c.jsx(x.icon, {
+                                        size: 18,
+                                      }),
+                                      t(x.label),
                                     ],
                                   },
                                   x.page,
@@ -1978,9 +2342,11 @@ function App() {
                           children: [
                             c.jsxs("div", {
                               children: [
-                                c.jsx(vu, { size: 16 }),
+                                c.jsx(vu, {
+                                  size: 16,
+                                }),
                                 c.jsx("strong", {
-                                  children: "Room for your ideas",
+                                  children: t("Room for your ideas"),
                                 }),
                               ],
                             }),
@@ -1995,17 +2361,19 @@ function App() {
                             c.jsxs("small", {
                               children: [
                                 formatBytes(ml),
-                                " of ",
+                                t(" of "),
                                 formatBytes(fl),
-                                " used",
+                                t(" used"),
                               ],
                             }),
                             c.jsxs("button", {
                               className: "text-button",
                               onClick: () => J("storage"),
                               children: [
-                                "View storage",
-                                c.jsx(Am, { size: 14 }),
+                                t("View storage"),
+                                c.jsx(Am, {
+                                  size: 14,
+                                }),
                               ],
                             }),
                           ],
@@ -2013,8 +2381,10 @@ function App() {
                         c.jsxs("div", {
                           className: "sidebar-footer",
                           children: [
-                            c.jsx("span", { className: "tiny-dot" }),
-                            " WELL CONNECTED",
+                            c.jsx("span", {
+                              className: "tiny-dot",
+                            }),
+                            t(" WELL CONNECTED"),
                           ],
                         }),
                       ],
@@ -2032,19 +2402,25 @@ function App() {
                             c.jsx("button", {
                               className: "icon-button mobile-menu",
                               onClick: () => il(!Ze),
-                              "aria-label": "Toggle navigation",
-                              children: c.jsx(r1, { size: 20 }),
+                              "aria-label": t("Toggle navigation"),
+                              children: c.jsx(r1, {
+                                size: 20,
+                              }),
                             }),
                             c.jsxs("span", {
                               className: "breadcrumb",
                               children: [
-                                "Workspace",
-                                c.jsx(Am, { size: 14 }),
+                                t("Workspace"),
+                                c.jsx(Am, {
+                                  size: 14,
+                                }),
                                 c.jsx("strong", {
-                                  children: [
-                                    ...userNavigation,
-                                    ...adminNavigation,
-                                  ].find((x) => x.page === R)?.label,
+                                  children: t(
+                                    [
+                                      ...userNavigation,
+                                      ...adminNavigation,
+                                    ].find((x) => x.page === R)?.label || "",
+                                  ),
                                 }),
                               ],
                             }),
@@ -2053,6 +2429,7 @@ function App() {
                         c.jsxs("div", {
                           className: "account",
                           children: [
+                            c.jsx(LanguageSelector, {}),
                             c.jsxs("span", {
                               className: "account-text",
                               children: [
@@ -2060,8 +2437,8 @@ function App() {
                                 c.jsx("small", {
                                   children:
                                     S.role === "admin"
-                                      ? "Administrator"
-                                      : "Personal workspace",
+                                      ? t("Administrator")
+                                      : t("Personal workspace"),
                                 }),
                               ],
                             }),
@@ -2074,9 +2451,11 @@ function App() {
                               onClick: () => {
                                 $e();
                               },
-                              title: "Sign out",
-                              "aria-label": "Sign out",
-                              children: c.jsx(o1, { size: 17 }),
+                              title: t("Sign out"),
+                              "aria-label": t("Sign out"),
+                              children: c.jsx(o1, {
+                                size: 17,
+                              }),
                             }),
                           ],
                         }),
@@ -2085,18 +2464,23 @@ function App() {
                     c.jsxs("main", {
                       className: "workspace",
                       children: [
-                        c.jsx(ErrorMessage, { error: Qe }),
+                        c.jsx(ErrorMessage, {
+                          error: Qe,
+                        }),
                         S.status !== "active"
                           ? c.jsxs("section", {
                               className: "pending panel",
                               children: [
-                                c.jsx(yu, { size: 42 }),
+                                c.jsx(yu, {
+                                  size: 42,
+                                }),
                                 c.jsx("h1", {
-                                  children: "You're on the list.",
+                                  children: t("You're on the list."),
                                 }),
                                 c.jsx("p", {
-                                  children:
+                                  children: t(
                                     "Your email is verified. An administrator needs to approve your account before you can upload or manage files.",
+                                  ),
                                 }),
                                 c.jsx("button", {
                                   className: "button secondary",
@@ -2105,7 +2489,7 @@ function App() {
                                       .then((x) => v(x.user))
                                       .catch((x) => Ae(x.message));
                                   },
-                                  children: "Check approval status",
+                                  children: t("Check approval status"),
                                 }),
                               ],
                             })
@@ -2123,25 +2507,39 @@ function App() {
                                                 className: "eyebrow",
                                                 children:
                                                   R === "allfiles"
-                                                    ? "ADMINISTRATION"
-                                                    : "A LITTLE ORDER. A LOT OF POSSIBILITY.",
+                                                    ? t("ADMINISTRATION")
+                                                    : t(
+                                                        "A LITTLE ORDER. A LOT OF POSSIBILITY.",
+                                                      ),
                                               }),
                                               c.jsx("h1", {
                                                 children:
                                                   R === "shared"
-                                                    ? "Good things, passed along."
+                                                    ? t(
+                                                        "Good things, passed along.",
+                                                      )
                                                     : R === "allfiles"
-                                                      ? "Every file at your station."
-                                                      : "Your files, right at home.",
+                                                      ? t(
+                                                          "Every file at your station.",
+                                                        )
+                                                      : t(
+                                                          "Your files, right at home.",
+                                                        ),
                                               }),
                                               c.jsx("p", {
                                                 className: "muted",
                                                 children:
                                                   R === "shared"
-                                                    ? "Manage the files you’ve shared and the people who can access them."
+                                                    ? t(
+                                                        "Manage the files you\u2019ve shared and the people who can access them.",
+                                                      )
                                                     : R === "allfiles"
-                                                      ? "Manage all users’ files and sharing permissions."
-                                                      : "Everything you’ve uploaded, with room for what’s next.",
+                                                      ? t(
+                                                          "Manage all users\u2019 files and sharing permissions.",
+                                                        )
+                                                      : t(
+                                                          "Everything you\u2019ve uploaded, with room for what\u2019s next.",
+                                                        ),
                                               }),
                                             ],
                                           }),
@@ -2149,8 +2547,10 @@ function App() {
                                             className: "button primary",
                                             onClick: () => M(!0),
                                             children: [
-                                              c.jsx(Qf, { size: 18 }),
-                                              "Upload files",
+                                              c.jsx(Qf, {
+                                                size: 18,
+                                              }),
+                                              t("Upload files"),
                                             ],
                                           }),
                                         ],
@@ -2171,8 +2571,9 @@ function App() {
                                                 c.jsxs("div", {
                                                   children: [
                                                     c.jsx("span", {
-                                                      children:
+                                                      children: t(
                                                         "Files in your station",
+                                                      ),
                                                     }),
                                                     c.jsxs("strong", {
                                                       children: [
@@ -2181,7 +2582,7 @@ function App() {
                                                             x.state === "ready",
                                                         ).length,
                                                         c.jsx("small", {
-                                                          children: "files",
+                                                          children: t("files"),
                                                         }),
                                                       ],
                                                     }),
@@ -2203,7 +2604,7 @@ function App() {
                                                   children: [
                                                     c.jsx("span", {
                                                       children:
-                                                        "Active handoffs",
+                                                        t("Active handoffs"),
                                                     }),
                                                     c.jsxs("strong", {
                                                       children: [
@@ -2213,7 +2614,7 @@ function App() {
                                                           0,
                                                         ),
                                                         c.jsx("small", {
-                                                          children: "shares",
+                                                          children: t("shares"),
                                                         }),
                                                       ],
                                                     }),
@@ -2235,7 +2636,7 @@ function App() {
                                                   children: [
                                                     c.jsx("span", {
                                                       children:
-                                                        "Your files take up",
+                                                        t("Your files take up"),
                                                     }),
                                                     c.jsx("strong", {
                                                       children: formatBytes(
@@ -2257,7 +2658,9 @@ function App() {
                                 R === "access" &&
                                   c.jsx("section", {
                                     className: "panel",
-                                    children: c.jsx(AccessForm, { onFile: sl }),
+                                    children: c.jsx(AccessForm, {
+                                      onFile: sl,
+                                    }),
                                   }),
                                 ["requests", "collaborations"].includes(R) &&
                                   c.jsx(InvitationManager, {
@@ -2286,7 +2689,9 @@ function App() {
                                   }),
                                 " ",
                                 R === "settings" &&
-                                  c.jsx(SettingsPanel, { onNotice: ne }),
+                                  c.jsx(SettingsPanel, {
+                                    onNotice: ne,
+                                  }),
                                 " ",
                                 R === "transfers" &&
                                   c.jsxs(c.Fragment, {
@@ -2297,16 +2702,18 @@ function App() {
                                           children: [
                                             c.jsx("span", {
                                               className: "eyebrow",
-                                              children: "AT YOUR OWN PACE",
+                                              children: t("AT YOUR OWN PACE"),
                                             }),
                                             c.jsx("h1", {
-                                              children:
+                                              children: t(
                                                 "Every byte gets there.",
+                                              ),
                                             }),
                                             c.jsx("p", {
                                               className: "muted",
-                                              children:
-                                                "Pause when you need to. Resume when you’re ready. After a refresh, reselect the original file to resume an upload.",
+                                              children: t(
+                                                "Pause when you need to. Resume when you\u2019re ready. After a refresh, reselect the original file to resume an upload.",
+                                              ),
                                             }),
                                           ],
                                         }),
@@ -2324,8 +2731,10 @@ function App() {
                     c.jsxs("footer", {
                       className: "app-footer",
                       children: [
-                        "A safe landing for every file.",
-                        c.jsx("span", { children: "FILE STATION" }),
+                        t("A safe landing for every file."),
+                        c.jsx("span", {
+                          children: t("FILE STATION"),
+                        }),
                       ],
                     }),
                   ],
@@ -2341,14 +2750,20 @@ function App() {
                     c.jsx(Brand, {}),
                     c.jsxs("div", {
                       children: [
+                        c.jsx(LanguageSelector, {}),
                         c.jsx("span", {
                           className: "public-tag",
-                          children: "A simpler way to send.",
+                          children: t("A simpler way to send."),
                         }),
                         c.jsxs("button", {
                           className: "button secondary",
                           onClick: () => C(!0),
-                          children: ["Sign in", c.jsx(zm, { size: 16 })],
+                          children: [
+                            t("Sign in"),
+                            c.jsx(zm, {
+                              size: 16,
+                            }),
+                          ],
                         }),
                       ],
                     }),
@@ -2363,29 +2778,36 @@ function App() {
                         c.jsxs("span", {
                           className: "eyebrow",
                           children: [
-                            c.jsx("span", { className: "tiny-dot" }),
-                            " FROM HERE TO THERE",
+                            c.jsx("span", {
+                              className: "tiny-dot",
+                            }),
+                            t(" FROM HERE TO THERE"),
                           ],
                         }),
                         c.jsxs("h1", {
                           children: [
-                            "Good files.",
+                            t("Good files."),
                             c.jsx("br", {}),
-                            "Great Mission.",
+                            t("Great Mission."),
                             c.jsx("br", {}),
-                            c.jsx("em", { children: "Easy sharing." }),
+                            c.jsx("em", {
+                              children: t("Easy sharing."),
+                            }),
                           ],
                         }),
                         c.jsx("p", {
-                          children:
+                          children: t(
                             "A little station for your big ideas. Send files to the people who need them, with your storage and your rules.",
+                          ),
                         }),
                         c.jsxs("button", {
                           className: "button primary hero-cta",
                           onClick: () => C(!0),
                           children: [
-                            "Sign in to upload",
-                            c.jsx($i, { size: 19 }),
+                            t("Sign in to upload"),
+                            c.jsx($i, {
+                              size: 19,
+                            }),
                           ],
                         }),
                         c.jsxs("div", {
@@ -2394,26 +2816,30 @@ function App() {
                             c.jsxs("div", {
                               children: [
                                 c.jsx("span", {
-                                  children: c.jsx(vu, { size: 20 }),
+                                  children: c.jsx(vu, {
+                                    size: 20,
+                                  }),
                                 }),
                                 c.jsx("strong", {
-                                  children: "Your choice of storage",
+                                  children: t("Your choice of storage"),
                                 }),
                                 c.jsx("small", {
-                                  children: "Cloud drives and your NAS.",
+                                  children: t("Cloud drives and your NAS."),
                                 }),
                               ],
                             }),
                             c.jsxs("div", {
                               children: [
                                 c.jsx("span", {
-                                  children: c.jsx(Xm, { size: 20 }),
+                                  children: c.jsx(Xm, {
+                                    size: 20,
+                                  }),
                                 }),
                                 c.jsx("strong", {
-                                  children: "Go at your own pace",
+                                  children: t("Go at your own pace"),
                                 }),
                                 c.jsx("small", {
-                                  children: "Pause. Resume. Keep going.",
+                                  children: t("Pause. Resume. Keep going."),
                                 }),
                               ],
                             }),
@@ -2423,25 +2849,33 @@ function App() {
                           className: "hero-art",
                           "aria-hidden": "true",
                           children: [
-                            c.jsx("span", { className: "art-line" }),
+                            c.jsx("span", {
+                              className: "art-line",
+                            }),
                             c.jsxs("div", {
                               className: "art-file",
                               children: [
-                                c.jsx(qm, { size: 27 }),
+                                c.jsx(qm, {
+                                  size: 27,
+                                }),
                                 c.jsx("span", {
-                                  children: "Your file is shared.",
+                                  children: t("Your file is shared."),
                                 }),
                                 c.jsx("span", {
                                   className: "art-check",
-                                  children: c.jsx(ki, { size: 16 }),
+                                  children: c.jsx(ki, {
+                                    size: 16,
+                                  }),
                                 }),
                               ],
                             }),
                             c.jsxs("div", {
                               className: "art-caption",
                               children: [
-                                c.jsx("span", { className: "tiny-dot" }),
-                                " A SAFE LANDING FOR EVERY FILE",
+                                c.jsx("span", {
+                                  className: "tiny-dot",
+                                }),
+                                t(" A SAFE LANDING FOR EVERY FILE"),
                               ],
                             }),
                           ],
@@ -2456,28 +2890,36 @@ function App() {
                           children: [
                             c.jsx("span", {
                               className: "receive-symbol",
-                              children: c.jsx(gn, { size: 25 }),
+                              children: c.jsx(gn, {
+                                size: 25,
+                              }),
                             }),
                             c.jsx("span", {
                               className: "pill green",
-                              children: "FOR RECIPIENTS",
+                              children: t("FOR RECIPIENTS"),
                             }),
                           ],
                         }),
-                        c.jsx("h2", { children: "Have an access code?" }),
+                        c.jsx("h2", {
+                          children: t("Have an access code?"),
+                        }),
                         c.jsxs("p", {
                           className: "muted",
                           children: [
-                            "Enter the access code you received.",
+                            t("Enter the access code you received."),
                             c.jsx("br", {}),
-                            "We’ll take it from here.",
+                            t("We\u2019ll take it from here."),
                           ],
                         }),
-                        c.jsx(AccessForm, { initialCode: xl, onFile: sl }),
+                        c.jsx(AccessForm, {
+                          initialCode: xl,
+                          onFile: sl,
+                        }),
                         c.jsx("div", {
                           className: "receive-footer",
-                          children:
+                          children: t(
                             "No account needed. Just your code and email.",
+                          ),
                         }),
                       ],
                     }),
@@ -2487,10 +2929,12 @@ function App() {
                   className: "public-footer",
                   children: [
                     c.jsx("span", {
-                      children: "File Station · Your files, well connected.",
+                      children: t(
+                        "File Station \xB7 Your files, well connected.",
+                      ),
                     }),
                     c.jsx("span", {
-                      children: "Private by default. Thoughtfully shared.",
+                      children: t("Private by default. Thoughtfully shared."),
                     }),
                   ],
                 }),
@@ -2500,7 +2944,9 @@ function App() {
             className: "loading",
             children: [
               c.jsx(Brand, {}),
-              c.jsx("p", { children: "Opening your station…" }),
+              c.jsx("p", {
+                children: t("Opening your station\u2026"),
+              }),
             ],
           }),
       _ &&
@@ -2521,7 +2967,7 @@ function App() {
       S &&
         codeOpen &&
         c.jsx(Modal, {
-          title: "Use your access code",
+          title: t("Use your access code"),
           onClose: () => setCodeOpen(false),
           children: c.jsx(AccessForm, {
             initialCode: xl,
@@ -2542,33 +2988,44 @@ function App() {
       " ",
       $ &&
         c.jsx(ConfirmDialog, {
-          title: "Delete this file?",
-          message: `“${$.name}” will be permanently removed from storage. Every access code for this file will become invalid.`,
+          title: t("Delete this file?"),
+          message: t(
+            "\u201C{0}\u201D will be permanently removed from storage. Every access code for this file will become invalid.",
+            {
+              0: $.name,
+            },
+          ),
           onClose: () => ye(void 0),
           onConfirm: async () => {
-            (await api(`/files/${$.id}`, { method: "DELETE" }),
+            (await api(`/files/${$.id}`, {
+              method: "DELETE",
+            }),
               await Z(),
               ne("File deleted and all its shares invalidated."));
           },
         }),
       oe &&
         c.jsxs(Modal, {
-          title: "A file for you.",
+          title: t("A file for you."),
           wide: true,
-          subtitle: "Your recipient email has been verified.",
+          subtitle: t("Your recipient email has been verified."),
           onClose: () => sl(void 0),
           children: [
             c.jsxs("div", {
               className: "received-file",
               children: [
-                c.jsx(FileIcon, { name: oe.name }),
+                c.jsx(FileIcon, {
+                  name: oe.name,
+                }),
                 c.jsxs("div", {
                   children: [
-                    c.jsx("strong", { children: oe.name }),
+                    c.jsx("strong", {
+                      children: oe.name,
+                    }),
                     c.jsxs("small", {
                       children: [
                         formatBytes(oe.size),
-                        " · ",
+                        " \xB7 ",
                         formatDate(oe.expires_at),
                       ],
                     }),
@@ -2576,29 +3033,46 @@ function App() {
                 }),
               ],
             }),
-            c.jsx(FilePreview, { file: oe }, oe.id),
+            c.jsx(
+              FilePreview,
+              {
+                file: oe,
+              },
+              oe.id,
+            ),
             c.jsxs("button", {
               className: "button primary full",
               onClick: () => {
                 fe(oe);
               },
-              children: [c.jsx(gn, { size: 18 }), "Start resumable download"],
+              children: [
+                c.jsx(gn, {
+                  size: 18,
+                }),
+                t("Start resumable download"),
+              ],
             }),
             canDirectDownload(oe)
               ? c.jsxs("a", {
                   className: "text-button direct-download",
                   href: `${basePath}/api/files/${oe.id}/download`,
                   children: [
-                    "Direct browser download",
-                    c.jsx(zm, { size: 14 }),
+                    t("Direct browser download"),
+                    c.jsx(zm, {
+                      size: 14,
+                    }),
                   ],
                 })
               : c.jsx("p", {
                   className: "fineprint",
-                  children:
+                  children: t(
                     "Use resumable download for files this size on this storage.",
+                  ),
                 }),
-            c.jsx(TransfersPanel, { version: _e, onError: Ae }),
+            c.jsx(TransfersPanel, {
+              version: _e,
+              onError: Ae,
+            }),
           ],
         }),
       De &&
@@ -2606,13 +3080,17 @@ function App() {
           role: "status",
           className: "toast",
           children: [
-            c.jsx(ki, { size: 18 }),
-            De,
+            c.jsx(ki, {
+              size: 18,
+            }),
+            t(De),
             c.jsx("button", {
               className: "icon-button",
-              "aria-label": "Dismiss notification",
+              "aria-label": t("Dismiss notification"),
               onClick: () => W(""),
-              children: c.jsx(Lf, { size: 16 }),
+              children: c.jsx(Lf, {
+                size: 16,
+              }),
             }),
           ],
         }),
@@ -2620,7 +3098,9 @@ function App() {
         Qe &&
         c.jsx("div", {
           className: "public-error",
-          children: c.jsx(ErrorMessage, { error: Qe }),
+          children: c.jsx(ErrorMessage, {
+            error: Qe,
+          }),
         }),
     ],
   });
@@ -2644,21 +3124,29 @@ function TransfersPanel({ _version: S = 0, version: v = 0, onError: T }) {
         children: [
           c.jsxs("label", {
             children: [
-              "Parallel connections",
+              t("Parallel connections"),
               c.jsx("select", {
-                "aria-label": "Parallel connections",
+                "aria-label": t("Parallel connections"),
                 value: transfers.concurrency,
                 onChange: (event) =>
                   transfers.setConcurrency(event.target.value),
                 children: [1, 2, 3].map((value) =>
-                  c.jsx("option", { value, children: String(value) }, value),
+                  c.jsx(
+                    "option",
+                    {
+                      value,
+                      children: String(value),
+                    },
+                    value,
+                  ),
                 ),
               }),
             ],
           }),
           c.jsx("small", {
-            children:
+            children: t(
               "Applies to new or resumed transfers. OneDrive uploads use one connection.",
+            ),
           }),
         ],
       }),
@@ -2685,26 +3173,35 @@ function TransfersPanel({ _version: S = 0, version: v = 0, onError: T }) {
                         className: `transfer-direction ${M.direction}`,
                         children:
                           M.direction === "upload"
-                            ? c.jsx(a1, { size: 20 })
-                            : c.jsx(Gf, { size: 20 }),
+                            ? c.jsx(a1, {
+                                size: 20,
+                              })
+                            : c.jsx(Gf, {
+                                size: 20,
+                              }),
                       }),
                       c.jsxs("div", {
                         children: [
-                          c.jsx("strong", { children: M.name }),
+                          c.jsx("strong", {
+                            children: M.name,
+                          }),
                           c.jsxs("small", {
                             children: [
                               M.direction === "upload"
-                                ? "Uploading"
-                                : "Downloading",
-                              " · ",
+                                ? t("Uploading")
+                                : t("Downloading"),
+                              " \xB7 ",
                               formatBytes(M.done),
-                              " of",
+                              t(" of"),
                               " ",
                               formatBytes(M.size),
-                              " · ",
-                              M.state,
+                              " \xB7 ",
+                              t(M.state),
                               M.connections
-                                ? ` · ${M.connections} connection${M.connections === 1 ? "" : "s"}`
+                                ? t(" \xB7 {0} connection{1}", {
+                                    0: M.connections,
+                                    1: M.connections === 1 ? "" : t("s"),
+                                  })
                                 : "",
                             ],
                           }),
@@ -2716,22 +3213,30 @@ function TransfersPanel({ _version: S = 0, version: v = 0, onError: T }) {
                           M.state === "running"
                             ? c.jsx("button", {
                                 className: "icon-button",
-                                title: "Pause",
-                                "aria-label": "Pause " + M.name,
+                                title: t("Pause"),
+                                "aria-label": t("Pause {0}", {
+                                  0: M.name,
+                                }),
                                 onClick: () => transfers.pause(M.id),
-                                children: c.jsx(Xm, { size: 18 }),
+                                children: c.jsx(Xm, {
+                                  size: 18,
+                                }),
                               })
                             : M.state !== "complete"
                               ? c.jsxs(c.Fragment, {
                                   children: [
                                     c.jsx("button", {
                                       className: "icon-button",
-                                      title: "Resume",
-                                      "aria-label": "Resume " + M.name,
+                                      title: t("Resume"),
+                                      "aria-label": t("Resume {0}", {
+                                        0: M.name,
+                                      }),
                                       onClick: () => {
                                         transfers.resume(M.id);
                                       },
-                                      children: c.jsx(d1, { size: 18 }),
+                                      children: c.jsx(d1, {
+                                        size: 18,
+                                      }),
                                     }),
                                     M.direction === "upload" &&
                                       c.jsx("button", {
@@ -2739,35 +3244,43 @@ function TransfersPanel({ _version: S = 0, version: v = 0, onError: T }) {
                                         onClick: () => {
                                           (C(M.id), o.current?.click());
                                         },
-                                        children: "Select original file",
+                                        children: t("Select original file"),
                                       }),
                                   ],
                                 })
                               : M.direction === "download"
                                 ? c.jsx("button", {
                                     className: "icon-button",
-                                    title: "Save again",
-                                    "aria-label": "Save download again",
+                                    title: t("Save again"),
+                                    "aria-label": t("Save download again"),
                                     onClick: () => {
                                       transfers
                                         .saveDownload(M)
                                         .catch((R) => T(R.message));
                                     },
-                                    children: c.jsx(gn, { size: 18 }),
+                                    children: c.jsx(gn, {
+                                      size: 18,
+                                    }),
                                   })
-                                : c.jsx(ki, { size: 18 }),
+                                : c.jsx(ki, {
+                                    size: 18,
+                                  }),
                           c.jsx("button", {
                             className: "icon-button",
                             title:
                               M.state === "complete"
-                                ? "Dismiss"
-                                : "Cancel and remove transfer",
-                            "aria-label": "Remove " + M.name,
+                                ? t("Dismiss")
+                                : t("Cancel and remove transfer"),
+                            "aria-label": t("Remove {0}", {
+                              0: M.name,
+                            }),
                             onClick: () =>
                               M.state === "complete"
                                 ? transfers.dismiss(M.id)
                                 : void B(M),
-                            children: c.jsx(Lf, { size: 17 }),
+                            children: c.jsx(Lf, {
+                              size: 17,
+                            }),
                           }),
                         ],
                       }),
@@ -2781,7 +3294,10 @@ function TransfersPanel({ _version: S = 0, version: v = 0, onError: T }) {
                       },
                     }),
                   }),
-                  M.error && c.jsx(ErrorMessage, { error: M.error }),
+                  M.error &&
+                    c.jsx(ErrorMessage, {
+                      error: M.error,
+                    }),
                 ],
               },
               M.id,
@@ -2792,19 +3308,23 @@ function TransfersPanel({ _version: S = 0, version: v = 0, onError: T }) {
             children: [
               c.jsx("div", {
                 className: "empty-icon",
-                children: c.jsx(gn, { size: 32 }),
+                children: c.jsx(gn, {
+                  size: 32,
+                }),
               }),
-              c.jsx("h3", { children: "A clear track." }),
+              c.jsx("h3", {
+                children: t("A clear track."),
+              }),
               c.jsx("p", {
-                children:
+                children: t(
                   "Uploads and downloads will appear here, with pause and resume controls.",
+                ),
               }),
             ],
           }),
     ],
   });
 }
-
 export {
   App,
   api,

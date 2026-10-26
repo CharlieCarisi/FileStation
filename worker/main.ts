@@ -3,6 +3,7 @@ import { invitationRoutes } from "./invitations";
 import { oneDriveAdminRoutes } from "./onedrive-admin";
 import { checkOrigin, errorResponse } from "./util.js";
 import type { Env } from "./model";
+import { localeFor } from "../shared/i18n";
 export { StorageCoordinator } from "./coordinator.js";
 
 export default {
@@ -18,7 +19,11 @@ export default {
       url.pathname = "/files/";
       return Response.redirect(url.href, 308);
     }
-    const env = { ...bindings, BASE_PATH: prefixed ? "/files" : "" };
+    const env = {
+      ...bindings,
+      BASE_PATH: prefixed ? "/files" : "",
+      LANGUAGE: localeFor(incoming.headers.get("X-FileStation-Language")),
+    };
     if (prefixed) url.pathname = url.pathname.slice(6) || "/";
     const request = new Request(url.href, incoming);
     let response: Response;

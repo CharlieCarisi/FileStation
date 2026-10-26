@@ -1,6 +1,7 @@
 // Restored from the deployed Worker on 2026-10-22; see docs/recovery.md.
 import { __name } from "./runtime.js";
 import { verificationEmail } from "./email.js";
+import { translate, localeFor } from "../shared/i18n";
 import {
   ensure,
   json,
@@ -59,15 +60,23 @@ async function createChallenge(env, address, purpose, shareId, ip) {
       now() + 10 * 6e4,
     )
     .run();
+  const language = localeFor(env.LANGUAGE),
+    text = (key, values) => translate(key, language, values);
   try {
     await mail(
       env,
       [address],
-      `Your File Station ${purpose === "login" ? "sign-in" : "access"} code`,
-      `Your verification code is ${code}.
-
-It expires in 10 minutes. If you did not request it, ignore this email.`,
-      verificationEmail(code, purpose),
+      text(
+        purpose === "login"
+          ? "Your File Station sign-in code"
+          : "Your File Station access code",
+      ),
+      text("Your verification code is {0}.", { 0: code }) +
+        "\n\n" +
+        text(
+          "It expires in 10 minutes. If you did not request it, ignore this email.",
+        ),
+      verificationEmail(code, purpose, language),
     );
   } catch (e) {
     await env.DB.prepare("DELETE FROM challenges WHERE id=?")

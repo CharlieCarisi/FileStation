@@ -85,6 +85,10 @@ test("parallel transfers survive pause/reload, resume missing chunks, and assemb
     .poll(async () => (await item("upload"))?.done)
     .toBe(8 * 1024 * 1024);
   expect(uploadStarted.size).toBeGreaterThanOrEqual(3);
+  await page.getByTestId("language-selector").selectOption("fr-CA");
+  expect((await item("upload")).state).toBe("running");
+  expect((await item("upload")).fileId).toBe(created.file.id);
+  await page.getByTestId("language-selector").selectOption("en-CA");
   await page
     .getByRole("button", { name: `Pause ${name}`, exact: true })
     .click();

@@ -24,6 +24,8 @@ import {
 import { emailLayout } from "./email.js";
 import { fileResponse } from "./file-response";
 import { uploadConnections } from "./transfer-options";
+import { shareLink } from "./share-links";
+import { translate, localeFor } from "../shared/i18n";
 
 const fail = () =>
   new HttpError(
@@ -366,7 +368,7 @@ export async function invitationRoutes(
           ...safe,
           recipients,
           code,
-          link: `${env.APP_ORIGIN || new URL(request.url).origin}${env.BASE_PATH || ""}/#share=${code}`,
+          link: await shareLink(request, env, code),
           files,
         };
       }),
@@ -484,33 +486,63 @@ export async function invitationRoutes(
         ).bind(invitationId, address),
       ),
     ]);
-    const link = `${env.APP_ORIGIN || new URL(request.url).origin}${env.BASE_PATH || ""}/#share=${code}`;
+    const link = await shareLink(request, env, code);
     let emailSent = false,
       emailError;
     if (value.sendEmail) {
       try {
-        const action =
+        const language = localeFor(env.LANGUAGE),
+          text = (key: string, values?: Record<string, unknown>) =>
+            translate(key, language, values);
+        const action = text(
           value.kind === "submission"
             ? "Submit your documents"
-            : "Collaborate on a document";
-        const intro = `${user.email} invited you to ${value.kind === "submission" ? "submit documents" : "edit " + value.targetName}: ${value.title.trim()}.`;
-        const details = `Verify your recipient email. Expires ${new Date(expiresAt).toUTCString()}. ${source ? "The original is kept. Edits and re-uploads replace the working copy; there is no version history." : "Your submissions are visible to the requester, not other recipients."}`;
+            : "Collaborate on a document",
+        );
+        const intro =
+          value.kind === "submission"
+            ? text("{0} invited you to submit documents: {1}.", {
+                0: user.email,
+                1: value.title.trim(),
+              })
+            : text("{0} invited you to edit {1}: {2}.", {
+                0: user.email,
+                1: value.targetName,
+                2: value.title.trim(),
+              });
+        const expiry =
+          new Intl.DateTimeFormat(language, {
+            dateStyle: "long",
+            timeStyle: "short",
+            timeZone: "UTC",
+          }).format(expiresAt) + " UTC";
+        const details =
+          text("Verify your recipient email. Expires {0}.", { 0: expiry }) +
+          " " +
+          text(
+            source
+              ? "The original is kept. Edits and re-uploads replace the working copy; there is no version history."
+              : "Your submissions are visible to the requester, not other recipients.",
+          );
         await mail(
           env,
           recipients,
           `File Station: ${action}`,
-          `${intro}\n\n${link}\nAccess code: ${code}\n\n${details}`,
-          emailLayout({
-            eyebrow: "YOU ARE INVITED",
-            title: action,
-            intro,
-            code,
-            codeLabel: "YOUR ACCESS CODE",
-            link,
-            button: action,
-            details,
-            footer: "Sent by File Station.",
-          }),
+          `${intro}\n\n${link}\n${text("Access code: {0}", { 0: code })}\n\n${details}`,
+          emailLayout(
+            {
+              eyebrow: text("YOU ARE INVITED"),
+              title: action,
+              intro,
+              code,
+              codeLabel: text("YOUR ACCESS CODE"),
+              link,
+              button: action,
+              details,
+              footer: text("Sent by File Station."),
+            },
+            language,
+          ),
         );
         emailSent = true;
       } catch {

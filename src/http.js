@@ -1,3 +1,4 @@
+import { getLocale } from "./i18n";
 export const basePath =
   location.pathname === "/files" || location.pathname.startsWith("/files/")
     ? "/files"
@@ -6,6 +7,7 @@ async function api(S, v = {}) {
   const T = await fetch(`${basePath}/api${S}`, {
       ...v,
       headers: {
+        "X-FileStation-Language": getLocale(),
         ...(v.body && typeof v.body == "string"
           ? { "Content-Type": "application/json" }
           : {}),

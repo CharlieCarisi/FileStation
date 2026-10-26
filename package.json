@@ -11,9 +11,13 @@
     "test": "node scripts/test.mjs",
     "test:browser": "playwright test",
     "db:local": "node scripts/local-secrets.mjs && node scripts/wrangler.mjs d1 migrations apply DB --local --env local",
-    "db:remote": "node scripts/wrangler.mjs d1 migrations apply DB --remote --env="
+    "db:remote": "node scripts/wrangler.mjs d1 migrations apply DB --remote --env=",
+    "i18n:build": "node scripts/i18n/build-catalogs.mjs",
+    "i18n:check": "node scripts/i18n/check.mjs",
+    "prebuild:client": "npm run i18n:check"
   },
   "dependencies": {
+    "@eigenpal/docx-editor-i18n": "1.9.0",
     "@eigenpal/docx-editor-react": "1.9.0",
     "aws4fetch": "1.0.20",
     "fast-xml-parser": "5.11.2",
@@ -25,6 +29,7 @@
     "undici": "8.11.2"
   },
   "devDependencies": {
+    "@babel/parser": "7.29.9",
     "@cloudflare/vitest-plugin": "1.4.0",
     "@cloudflare/workers-types": "5.20261009.1",
     "@playwright/test": "1.64.0",

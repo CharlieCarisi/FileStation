@@ -1,10 +1,11 @@
+import { docxLocale } from "./docx-locales";
+import { t } from "./i18n";
 import React, { useState } from "react";
 import { DocxEditor } from "@eigenpal/docx-editor-react";
 import { setGoogleFontsEnabled } from "@eigenpal/docx-editor-core";
 import "@eigenpal/docx-editor-react/styles.css";
 setGoogleFontsEnabled(false);
 const fonts = ["Arial", "Times New Roman", "Calibri", "Courier New"];
-
 export default function DocxPreview({
   buffer,
   name,
@@ -15,11 +16,14 @@ export default function DocxPreview({
   const [error, setError] = useState("");
   return error ? (
     <p className="preview-note" role="alert">
-      The DOCX preview could not be opened. Download the document to view it.
+      {t(
+        "The DOCX preview could not be opened. Download the document to view it.",
+      )}
     </p>
   ) : (
-    <div className="docx-preview" aria-label="Read-only document preview">
+    <div className="docx-preview" aria-label={t("Read-only document preview")}>
       <DocxEditor
+        i18n={docxLocale()}
         documentBuffer={buffer}
         documentName={name}
         readOnly
@@ -34,7 +38,7 @@ export default function DocxPreview({
         onError={(error) => setError(error.message)}
       />
       <p className="preview-note">
-        Read-only preview. Complex Word layouts may appear differently.
+        {t("Read-only preview. Complex Word layouts may appear differently.")}
       </p>
     </div>
   );

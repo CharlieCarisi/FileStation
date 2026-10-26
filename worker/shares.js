@@ -1,5 +1,7 @@
 // Restored from the deployed Worker on 2026-10-22; see docs/recovery.md.
 import { __name } from "./runtime.js";
+import { shareLink } from "./share-links";
+import { translate, localeFor } from "../shared/i18n";
 import { sharingEmail } from "./email.js";
 import {
   ensure,
@@ -195,23 +197,35 @@ async function shareRoutes(request, env, path) {
           ).bind(shareId, e),
         ),
       ]);
-      const origin = env.APP_ORIGIN || new URL(request.url).origin;
-      const link = `${origin}${env.BASE_PATH || ""}/#share=${code}`;
+      const link = await shareLink(request, env, code);
       let emailSent = false,
         emailError;
+      const language = localeFor(env.LANGUAGE),
+        text = (key, values) => translate(key, language, values);
       if (b.sendEmail) {
         try {
           await mail(
             env,
             recipients,
-            `${user.email} shared a file with you`,
-            `${user.email} shared ${file.name} with you.
-
-Open File Station: ${link}
-Access code: ${code}
-
-Use your recipient email address to verify access. This share expires on ${new Date(expiresAt).toISOString()} and may become unavailable earlier if its owner deletes it or storage retention removes it.`,
-            sharingEmail(user.email, file.name, link, code, expiresAt),
+            text("{0} shared a file with you", { 0: user.email }),
+            text("{0} shared {1} with you.", { 0: user.email, 1: file.name }) +
+              "\n\n" +
+              text("Open File Station: {0}", { 0: link }) +
+              "\n" +
+              text("Access code: {0}", { 0: code }) +
+              "\n\n" +
+              text(
+                "This share expires {0}. It may expire earlier if the owner deletes the file or storage retention removes it.",
+                { 0: new Date(expiresAt).toISOString() },
+              ),
+            sharingEmail(
+              user.email,
+              file.name,
+              link,
+              code,
+              expiresAt,
+              language,
+            ),
           );
           emailSent = true;
         } catch {
