@@ -2079,7 +2079,12 @@ function App() {
         j([]),
         setFolders([]),
         setCurrentFolder(null),
-        setCurrentSpace("private"));
+        setCurrentSpace("private"),
+        J("files"));
+      const url = new URL(location.href);
+      url.searchParams.delete("space");
+      url.searchParams.delete("folder");
+      history.replaceState(null, "", url);
     } catch (x) {
       Ae(x.message);
     }

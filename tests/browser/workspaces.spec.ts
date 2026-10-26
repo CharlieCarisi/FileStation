@@ -199,6 +199,30 @@ test("two team members use Public folders, share and upload while Private files 
       path: "test-results/public-workspace-mobile.png",
       animations: "disabled",
     });
+    // Sign out from Public, then sign in without reloading the React app.
+    await page
+      .getByRole("button", { name: "Public files", exact: true })
+      .first()
+      .click();
+    await page.getByRole("button", { name: "Sign out", exact: true }).click();
+    await page.getByRole("button", { name: "Sign in", exact: true }).click();
+    const login = page.getByRole("dialog");
+    await login
+      .getByLabel("Email address")
+      .fill(`workspace-c-${run}@international.gc.ca`);
+    await login
+      .getByRole("button", { name: "Email me a sign-in code", exact: true })
+      .click();
+    const development = await login.locator(".development").innerText();
+    await login
+      .locator("input[inputmode=numeric]")
+      .fill(development.match(/\d{6}/)![0]);
+    await login.getByRole("button", { name: "Sign in", exact: true }).click();
+    await expect(
+      page.getByRole("heading", { name: "Private files", exact: true }),
+    ).toBeVisible();
+    expect(new URL(page.url()).searchParams.has("space")).toBe(false);
+    await expect(page.locator(".files-table tbody tr")).toHaveCount(0);
     expect(errors).toEqual([]);
   } finally {
     await otherContext.close();
