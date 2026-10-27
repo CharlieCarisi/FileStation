@@ -6,6 +6,8 @@ import { basePath, formatBytes } from "./App.jsx";
 import PreviewLink from "./PreviewLink";
 const PdfPreview = lazy(() => import("./PdfPreview"));
 const DocxPreview = lazy(() => import("./DocxPreview"));
+const SpreadsheetPreview = lazy(() => import("./SpreadsheetPreview"));
+const PowerPointPreview = lazy(() => import("./PowerPointPreview"));
 type FileInfo = {
   id: string;
   name: string;
@@ -212,6 +214,14 @@ function PreviewContent({
           >
             {info.kind === "pdf" ? (
               <PdfPreview buffer={buffer} />
+            ) : info.kind === "spreadsheet" ? (
+              <SpreadsheetPreview
+                buffer={buffer}
+                name={file.name}
+                onRetry={onRetry}
+              />
+            ) : info.kind === "presentation" ? (
+              <PowerPointPreview buffer={buffer} onRetry={onRetry} />
             ) : (
               <DocxPreview buffer={buffer} name={file.name} />
             )}

@@ -248,6 +248,83 @@ describe("restored service and URL prefixes", () => {
   });
 });
 describe("authorized file previews", () => {
+  it("supports Excel and PowerPoint preview responses with matching size caps and keeps the renderer isolated", async () => {
+    const owner = await login();
+    for (const [name, mime, limit] of [
+      [
+        "Budget.XLSX",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        20,
+      ],
+      ["Legacy.xls", "application/vnd.ms-excel", 20],
+      [
+        "Briefing.pptx",
+        "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        50,
+      ],
+    ] as const) {
+      const file = await upload(
+        owner.cookie,
+        "Office document bytes",
+        "r2-default",
+        name,
+      );
+      const path = `/files/${file.id}/preview?version=${file.id}`;
+      expect((await request(path, "GET")).status).toBe(401);
+      const response = await request(
+        path,
+        "GET",
+        undefined,
+        owner.cookie,
+        "/files",
+      );
+      expect(response.status).toBe(200);
+      expect(response.headers.get("content-type")).toBe(mime);
+      expect(response.headers.get("etag")).toBe(`"${file.id}"`);
+      expect(response.headers.get("content-disposition")).toContain("inline;");
+      expect(await response.text()).toBe("Office document bytes");
+      await env.DB.prepare("UPDATE files SET size=? WHERE id=?")
+        .bind(limit * 1024 * 1024 + 1, file.id)
+        .run();
+      expect(
+        (await request(path, "HEAD", undefined, owner.cookie)).status,
+      ).toBe(413);
+    }
+    for (const prefix of ["", "/files"]) {
+      const response = await SELF.fetch(
+        `${origin}${prefix}/presentation-preview`,
+      );
+      expect(response.status).toBe(200);
+      expect(response.headers.get("content-type")).toContain("text/html");
+      const csp = response.headers.get("content-security-policy")!;
+      expect(csp).toContain("sandbox allow-scripts;");
+      expect(csp).not.toContain("allow-same-origin");
+      expect(csp).toContain("connect-src 'none'");
+      expect(csp).toContain("img-src data: blob:");
+      expect(csp).toContain(`frame-ancestors ${origin}`);
+      const preflight = await SELF.fetch(
+        `${origin}${prefix}/assets/presentation-test.js`,
+        {
+          method: "OPTIONS",
+          headers: {
+            Origin: "null",
+            "Access-Control-Request-Method": "GET",
+            "Access-Control-Request-Headers": "CF-Connecting-IP",
+          },
+        },
+      );
+      expect(preflight.status).toBe(204);
+      expect(preflight.headers.get("access-control-allow-origin")).toBe("*");
+      expect(preflight.headers.get("access-control-allow-methods")).toBe(
+        "GET, HEAD, OPTIONS",
+      );
+      expect(
+        (
+          await request("/me", "GET", undefined, owner.cookie, prefix)
+        ).headers.get("access-control-allow-origin"),
+      ).toBeNull();
+    }
+  });
   it("loads only authorized preview metadata for private/public files and verified shares", async () => {
     const owner = await login(),
       member = await login("preview-team@international.gc.ca"),

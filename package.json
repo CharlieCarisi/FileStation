@@ -17,6 +17,7 @@
     "prebuild:client": "npm run i18n:check"
   },
   "dependencies": {
+    "@aiden0z/pptx-renderer": "1.4.0",
     "@eigenpal/docx-editor-i18n": "1.9.0",
     "@eigenpal/docx-editor-react": "1.9.0",
     "@zip.js/zip.js": "2.24.0",
@@ -27,7 +28,8 @@
     "pdfjs-dist": "6.4.299",
     "react": "19.2.0",
     "react-dom": "19.2.0",
-    "undici": "8.11.2"
+    "undici": "8.11.2",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   },
   "devDependencies": {
     "@babel/parser": "7.29.9",

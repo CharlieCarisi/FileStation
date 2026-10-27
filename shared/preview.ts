@@ -1,4 +1,12 @@
-export type PreviewKind = "image" | "video" | "audio" | "pdf" | "docx" | "text";
+export type PreviewKind =
+  | "image"
+  | "video"
+  | "audio"
+  | "pdf"
+  | "docx"
+  | "text"
+  | "spreadsheet"
+  | "presentation";
 export type PreviewInfo = { kind: PreviewKind; mime: string; limit: number };
 const MiB = 1024 * 1024;
 const formats: Record<string, [PreviewKind, string]> = {
@@ -26,6 +34,15 @@ const formats: Record<string, [PreviewKind, string]> = {
     "docx",
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
   ],
+  xlsx: [
+    "spreadsheet",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  ],
+  xls: ["spreadsheet", "application/vnd.ms-excel"],
+  pptx: [
+    "presentation",
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+  ],
 };
 const textExtensions = new Set(
   "txt md markdown csv tsv json log xml yaml yml html htm svg css js jsx ts tsx sql ini toml sh py rs go java c cpp h rb".split(
@@ -47,11 +64,11 @@ export function previewInfo(name: string): PreviewInfo | null {
   const limit =
     kind === "text"
       ? 2 * MiB
-      : kind === "docx"
+      : kind === "docx" || kind === "spreadsheet"
         ? 20 * MiB
         : kind === "image"
           ? 25 * MiB
-          : kind === "pdf"
+          : kind === "pdf" || kind === "presentation"
             ? 50 * MiB
             : Infinity;
   return { kind, mime, limit };

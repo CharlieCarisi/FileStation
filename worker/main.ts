@@ -27,9 +27,12 @@ export default {
     };
     if (prefixed) url.pathname = url.pathname.slice(6) || "/";
     const request = new Request(url.href, incoming);
+    const publicAsset = /^\/assets\/[^/]+\.(?:js|mjs|css)$/.test(url.pathname);
     let response: Response;
     try {
-      if (url.pathname.startsWith("/api/")) {
+      if (publicAsset && request.method === "OPTIONS") {
+        response = new Response(null, { status: 204 });
+      } else if (url.pathname.startsWith("/api/")) {
         checkOrigin(request, env);
         response =
           (await folderRoutes(request, env, url.pathname)) ||
@@ -43,6 +46,29 @@ export default {
     const headers = new Headers(response.headers);
     for (const [key, value] of Object.entries(securityHeaders))
       headers.set(key, value as string);
+    // The presentation renderer receives bytes through postMessage in an opaque
+    // sandbox. Only this trusted static entry may be framed by this origin.
+    if (
+      ["/presentation-preview", "/presentation-preview.html"].includes(
+        url.pathname,
+      )
+    ) {
+      headers.set("X-Frame-Options", "SAMEORIGIN");
+      headers.set(
+        "Content-Security-Policy",
+        `default-src 'none'; sandbox allow-scripts; script-src ${url.origin}; style-src ${url.origin} 'unsafe-inline'; img-src data: blob:; media-src data: blob:; font-src data: blob:; connect-src 'none'; worker-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors ${url.origin}`,
+      );
+    }
+    // Module imports in the opaque sandbox need CORS for public static assets.
+    // Authenticated APIs keep their existing same-origin access rules.
+    if (publicAsset) {
+      headers.set("Access-Control-Allow-Origin", "*");
+      if (request.method === "OPTIONS") {
+        headers.set("Access-Control-Allow-Methods", "GET, HEAD, OPTIONS");
+        headers.set("Access-Control-Allow-Headers", "*");
+        headers.set("Access-Control-Max-Age", "86400");
+      }
+    }
     if (url.pathname.startsWith("/api/"))
       headers.set("Cache-Control", "private, no-store");
     if (env.DEV_MODE !== "true")

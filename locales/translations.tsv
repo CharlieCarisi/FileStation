@@ -893,3 +893,27 @@ Refresh preview|Actualiser l’aperçu|刷新预览
 Close preview|Fermer l’aperçu|关闭预览
 Choose a file to preview from File Station.|Choisissez un fichier à prévisualiser dans File Station.|请在 File Station 中选择要预览的文件。
 Sign in or verify your invitation in File Station, then retry this preview.|Connectez-vous ou vérifiez votre invitation dans File Station, puis réessayez cet aperçu.|请在 File Station 中登录或验证邀请，然后重试预览。
+Previous slide|Diapositive précédente|上一张幻灯片
+Slide {0} of {1}|Diapositive {0} sur {1}|第 {0} 张，共 {1} 张
+Next slide|Diapositive suivante|下一张幻灯片
+Go to slide|Aller à la diapositive|跳转到幻灯片
+Loading presentation…|Chargement de la présentation…|正在加载演示文稿…
+PowerPoint slide preview|Aperçu des diapositives PowerPoint|PowerPoint 幻灯片预览
+Read-only PowerPoint preview. Animations, transitions and linked media are not played. Complex layouts may differ.|Aperçu PowerPoint en lecture seule. Les animations, transitions et médias liés ne sont pas lus. Les mises en page complexes peuvent différer.|PowerPoint 只读预览。不会播放动画、切换效果或链接媒体。复杂版式可能有所不同。
+Loading workbook…|Chargement du classeur…|正在加载工作簿…
+Worksheet|Feuille de calcul|工作表
+Previous rows|Lignes précédentes|上一组行
+Rows {0}–{1} of {2}|Lignes {0}–{1} sur {2}|第 {0}–{1} 行，共 {2} 行
+Next rows|Lignes suivantes|下一组行
+Previous columns|Colonnes précédentes|上一组列
+Next columns|Colonnes suivantes|下一组列
+Read-only worksheet|Feuille de calcul en lecture seule|只读工作表
+Row number|Numéro de ligne|行号
+This worksheet is empty.|Cette feuille de calcul est vide.|此工作表为空。
+Preview shows the first 20,000 rows and 200 columns per sheet. Download the workbook to see everything.|L’aperçu affiche les 20 000 premières lignes et 200 colonnes de chaque feuille. Téléchargez le classeur pour tout voir.|预览显示每个工作表的前 20,000 行和 200 列。请下载工作簿以查看完整内容。
+Read-only data preview. Formulas show saved results, or formula text when no result was saved. Charts, images and advanced formatting are not shown.|Aperçu des données en lecture seule. Les formules affichent les résultats enregistrés, ou leur texte si aucun résultat n’a été enregistré. Les graphiques, images et mises en forme avancées ne sont pas affichés.|只读数据预览。公式显示已保存的计算结果；如无保存结果，则显示公式文本。不显示图表、图片和高级格式。
+This document is too complex for a browser preview. Download it to open it in Office.|Ce document est trop complexe pour l’aperçu dans le navigateur. Téléchargez-le pour l’ouvrir dans Office.|此文档过于复杂，无法在浏览器中预览。请下载后使用 Office 打开。
+This workbook could not be previewed. It may be password-protected or damaged. Download it to open it.|Impossible de prévisualiser ce classeur. Il est peut-être protégé par un mot de passe ou endommagé. Téléchargez-le pour l’ouvrir.|无法预览此工作簿。文件可能受密码保护或已损坏。请下载后打开。
+Workbook preview took too long. Download the file to open it.|L’aperçu du classeur a pris trop de temps. Téléchargez le fichier pour l’ouvrir.|工作簿预览超时。请下载文件后打开。
+This presentation could not be previewed. It may be password-protected or damaged. Download it to open it.|Impossible de prévisualiser cette présentation. Elle est peut-être protégée par un mot de passe ou endommagée. Téléchargez-la pour l’ouvrir.|无法预览此演示文稿。文件可能受密码保护或已损坏。请下载后打开。
+PowerPoint preview took too long. Download the file to open it.|L’aperçu PowerPoint a pris trop de temps. Téléchargez le fichier pour l’ouvrir.|PowerPoint 预览超时。请下载文件后打开。
