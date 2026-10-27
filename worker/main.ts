@@ -5,6 +5,7 @@ import { checkOrigin, errorResponse } from "./util.js";
 import type { Env } from "./model";
 import { localeFor } from "../shared/i18n";
 import { folderRoutes } from "./folders";
+import { shortcutRoutes } from "./shortcuts";
 export { StorageCoordinator } from "./coordinator.js";
 
 export default {
@@ -35,6 +36,7 @@ export default {
       } else if (url.pathname.startsWith("/api/")) {
         checkOrigin(request, env);
         response =
+          (await shortcutRoutes(request, env, url.pathname)) ||
           (await folderRoutes(request, env, url.pathname)) ||
           (await oneDriveAdminRoutes(request, env, url.pathname)) ||
           (await invitationRoutes(request, env, url.pathname)) ||

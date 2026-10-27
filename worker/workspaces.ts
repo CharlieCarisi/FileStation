@@ -13,3 +13,13 @@ export const ownsFile = (user: Row, file: Row) =>
   file.owner_id === user.id || user.role === "admin";
 export const readsFile = (user: Row, file: Row) =>
   ownsFile(user, file) || file.space === "public";
+export const shortcutAvailable = (
+  user: Row,
+  shortcut: Row,
+  target: Row,
+  time = Date.now(),
+) =>
+  target.state === "ready" &&
+  (!target.expires_at || target.expires_at > time) &&
+  readsFile(user, target) &&
+  (shortcut.space !== "public" || target.space === "public");

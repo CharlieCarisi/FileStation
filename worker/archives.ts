@@ -1,6 +1,6 @@
 import type { Env, Row } from "./model";
 import { ensure, json, now } from "./util.js";
-import { readsFile } from "./workspaces";
+import { readsFile, shortcutAvailable } from "./workspaces";
 
 // ZIP names are portable relative paths, including for legacy file names that
 // contain separators or collide after sanitizing. Never use a storage key here.
@@ -98,6 +98,30 @@ export async function folderArchive(env: Env, user: Row, folderId: string) {
     409,
     "Finish the uploads in this folder before creating a ZIP.",
   );
+  const shortcuts = (
+    await env.DB.prepare(
+      `${tree} SELECT s.name,s.folder_id,s.created_at,s.owner_id AS shortcut_owner_id,s.space AS shortcut_space,f.id,f.owner_id,f.space,f.state,f.expires_at,f.size FROM file_shortcuts s JOIN tree ON tree.id=s.folder_id JOIN files f ON f.id=s.file_id ORDER BY s.created_at,s.id LIMIT 1001`,
+    )
+      .bind(folderId)
+      .all<Row>()
+  ).results;
+  ensure(
+    files.length + shortcuts.length <= 1000,
+    400,
+    "A ZIP can contain up to 1,000 files. Choose a smaller folder.",
+  );
+  ensure(
+    shortcuts.every(
+      (row) =>
+        readsFile(user, {
+          owner_id: row.shortcut_owner_id,
+          space: row.shortcut_space,
+        }) && shortcutAvailable(user, { space: row.shortcut_space }, row),
+    ),
+    409,
+    "Move or remove unavailable shortcuts before creating a ZIP.",
+  );
+  const contents = [...files, ...shortcuts];
   return json({
     folder: {
       id: root!.id,
@@ -105,8 +129,8 @@ export async function folderArchive(env: Env, user: Row, folderId: string) {
       parent_id: root!.parent_id,
       space: root!.space,
     },
-    entries: archiveEntries(folders, files, folderId),
-    fileCount: files.length,
-    totalSize: files.reduce((total, file) => total + file.size, 0),
+    entries: archiveEntries(folders, contents, folderId),
+    fileCount: contents.length,
+    totalSize: contents.reduce((total, file) => total + file.size, 0),
   });
 }

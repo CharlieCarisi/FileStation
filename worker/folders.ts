@@ -27,6 +27,11 @@ export async function folderForOwner(
 }
 export function folderError(error: unknown): never {
   const message = error instanceof Error ? error.message : String(error);
+  if (message.includes("folder_shortcuts"))
+    throw new HttpError(
+      409,
+      "Move or remove the shortcuts before deleting this folder.",
+    );
   if (message.includes("folder_cycle"))
     throw new HttpError(
       409,
@@ -89,6 +94,11 @@ async function owner(env: Env, user: Row, ownerId: unknown) {
   return target as string;
 }
 export async function removeUserFolders(env: Env, ownerId: string) {
+  await env.DB.prepare(
+    "DELETE FROM file_shortcuts WHERE owner_id=? AND space='private'",
+  )
+    .bind(ownerId)
+    .run();
   await env.DB.prepare(
     "UPDATE invitations SET revoked_at=COALESCE(revoked_at,?) WHERE owner_id=?",
   )

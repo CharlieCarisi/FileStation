@@ -2832,3 +2832,139 @@ html[lang="fr-CA"] .sidebar nav button {
     max-width: 210px;
   }
 }
+
+/* Item menus preserve the native browser menu outside the file browser. */
+.item-context-menu {
+  position: fixed;
+  z-index: 1500;
+  min-width: 235px;
+  max-width: min(330px, calc(100vw - 16px));
+  max-height: calc(100dvh - 16px);
+  overflow-y: auto;
+  padding: 6px;
+  border: 1px solid #dbe3d3;
+  border-radius: 12px;
+  background: #fffefa;
+  box-shadow:
+    0 12px 42px #233a2e29,
+    0 2px 7px #233a2e12;
+}
+.item-menu-heading {
+  padding: 8px 10px 10px;
+  max-width: 310px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 11px;
+  font-weight: 700;
+  color: #7b8a72;
+  border-bottom: 1px solid #e8ebdf;
+  margin-bottom: 4px;
+}
+.item-context-menu [role="menuitem"] {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  border: 0;
+  border-radius: 6px;
+  padding: 10px 12px;
+  background: transparent;
+  color: #345a43;
+  text-decoration: none;
+  text-align: left;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  line-height: 1.4;
+}
+.item-context-menu [role="menuitem"] svg {
+  flex-shrink: 0;
+}
+.item-context-menu [role="menuitem"]:focus,
+.item-context-menu [role="menuitem"]:hover {
+  background: #edf3e6;
+  outline: none;
+}
+.item-context-menu [role="menuitem"].danger {
+  color: #ae5146;
+}
+.item-context-menu [role="menuitem"].danger:focus,
+.item-context-menu [role="menuitem"].danger:hover {
+  background: #faeee9;
+}
+.item-context-menu [role="menuitem"]:disabled {
+  cursor: default;
+  opacity: 0.45;
+}
+.item-menu-divider {
+  height: 1px;
+  margin: 5px;
+  background: #e8ebdf;
+}
+.files-table tr:focus-visible,
+.folder-card:focus-visible {
+  outline: 2px solid #6a8a58;
+  outline-offset: -2px;
+}
+.folder-card .folder-open > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.folder-card .folder-open strong {
+  display: block;
+  white-space: nowrap;
+}
+.folder-grid {
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+}
+.shortcut-icon {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+}
+.shortcut-icon > svg {
+  position: absolute;
+  bottom: -3px;
+  right: -4px;
+  padding: 1px;
+  background: #fffefa;
+  border-radius: 4px;
+  color: #51704b;
+}
+.shortcut-badge {
+  display: inline-flex;
+  color: #5f7d54;
+  background: #eef3e7;
+  border: 1px solid #dfe7d6;
+  border-radius: 5px;
+  padding: 2px 5px;
+  font-size: 9px;
+  white-space: nowrap;
+}
+.shortcut-row.is-unavailable .file-name {
+  opacity: 0.65;
+}
+.shortcut-row .file-name small {
+  max-width: 320px;
+  white-space: normal;
+  line-height: 1.5;
+}
+@media (pointer: coarse) {
+  .item-menu-trigger {
+    min-width: 44px;
+    min-height: 44px;
+  }
+  .item-context-menu [role="menuitem"] {
+    min-height: 44px;
+  }
+}
+@media (max-width: 640px) {
+  .folder-grid {
+    grid-template-columns: 1fr;
+  }
+  .item-context-menu {
+    min-width: min(255px, calc(100vw - 16px));
+  }
+}

@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { App } from "./App.jsx";
 import "./styles.css";
 import { LanguageProvider, t } from "./i18n";
+import { ItemMenuProvider } from "./ItemMenu";
 const PreviewPage = lazy(() => import("./PreviewPage"));
 const query = new URLSearchParams(location.search);
 const previewWindow = query.has("preview") || query.has("previewInvitation");
@@ -20,7 +21,9 @@ createRoot(document.getElementById("root")!).render(
           <PreviewPage />
         </Suspense>
       ) : (
-        <App />
+        <ItemMenuProvider>
+          <App />
+        </ItemMenuProvider>
       )}
     </LanguageProvider>
   </React.StrictMode>,

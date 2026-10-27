@@ -126,6 +126,10 @@ async function routes(request, env) {
         can_delete: canManage,
         can_make_private: canManage,
         can_resume: canManage,
+        can_create_shortcut:
+          file.state === "ready" &&
+          (!file.expires_at || file.expires_at > now()),
+        can_open_location: file.space === "public" || file.owner_id === user.id,
         ...(!canManage
           ? {
               provider_upload_id: undefined,

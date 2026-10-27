@@ -2019,6 +2019,7 @@ function App() {
       transfers.setScope(S?.id || "guest");
     }, [S?.id]));
   const [folders, setFolders] = D.useState([]);
+  const [shortcuts, setShortcuts] = D.useState([]);
   const [folderView, setFolderView] = D.useState(() =>
     localStorage.getItem("fs-folder-view") === "list" ? "list" : "tiles",
   );
@@ -2044,6 +2045,7 @@ function App() {
   };
   function openFolder(folder, replace = false, space = currentSpace) {
     k([]);
+    setShortcuts([]);
     setCurrentFolder(folder);
     setCurrentSpace(space);
     J(space === "public" ? "public" : "files");
@@ -2057,6 +2059,7 @@ function App() {
   D.useEffect(() => {
     function navigate() {
       k([]);
+      setShortcuts([]);
       setCurrentFolder(
         new URLSearchParams(location.search).get("folder") || null,
       );
@@ -2084,6 +2087,12 @@ function App() {
               `/files${view === "allfiles" ? "?all=true" : ["files", "public"].includes(view) ? `?space=${space}&folderId=${encodeURIComponent(folder || "root")}` : view === "shared" ? "?space=all&sharedByMe=true" : "?space=all"}`,
             ),
           );
+        if (user.status === "active" && ["files", "public"].includes(view))
+          requests.push(
+            api(
+              `/shortcuts?space=${space}&folderId=${encodeURIComponent(folder || "root")}`,
+            ),
+          );
         const results = await Promise.all(requests);
         if (
           sequence !== reloadSequence.current ||
@@ -2097,6 +2106,7 @@ function App() {
         if (user.status === "active") {
           setFolders(results[1].folders);
           k(results[2].files);
+          setShortcuts(results[3]?.shortcuts || []);
         }
       } catch (x) {
         if (
@@ -2141,6 +2151,7 @@ function App() {
         k([]),
         j([]),
         setFolders([]),
+        setShortcuts([]),
         setCurrentFolder(null),
         setCurrentSpace("private"),
         J("files"));
@@ -2160,6 +2171,16 @@ function App() {
         x.name.toLowerCase().includes(V.toLowerCase()) &&
         (Ve === "all" || x.connector_id === Ve),
     ),
+    visibleShortcuts = ["files", "public"].includes(R)
+      ? shortcuts.filter(
+          (item) =>
+            item.space === currentSpace &&
+            (item.folder_id || null) === currentFolder &&
+            (item.name.toLowerCase().includes(V.toLowerCase()) ||
+              item.target?.name.toLowerCase().includes(V.toLowerCase())) &&
+            (Ve === "all" || item.target?.connector_id === Ve),
+        )
+      : [],
     O = c.jsxs(c.Fragment, {
       children: [
         c.jsxs("div", {
@@ -2239,6 +2260,13 @@ function App() {
               onDelete: ye,
               onTransfers: () => J("transfers"),
               onChanged: Z,
+              shortcuts: visibleShortcuts,
+              onOpenFileLocation: (file) =>
+                openFolder(
+                  file.folder_id || null,
+                  false,
+                  file.space || "private",
+                ),
               folders:
                 folderView === "list" && ["files", "public"].includes(R)
                   ? folders.filter(
@@ -2250,6 +2278,7 @@ function App() {
               onOpenFolder: openFolder,
             }),
             !d.length &&
+              !visibleShortcuts.length &&
               !(
                 ["files", "public"].includes(R) &&
                 folders.some(

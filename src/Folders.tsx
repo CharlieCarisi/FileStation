@@ -10,7 +10,8 @@ import {
   List,
 } from "lucide-react";
 import { api, post } from "./http";
-import { Modal, ErrorMessage } from "./App.jsx";
+import { Modal, ErrorMessage, formatDate } from "./App.jsx";
+import { ItemMenu, type MenuAction } from "./ItemMenu";
 import { t, getLocale } from "./i18n";
 type Row = Record<string, any>;
 const FolderArchiveDialog = lazy(() => import("./FolderArchiveDialog"));
@@ -115,6 +116,7 @@ export function FolderSelect({
       <label>
         {label || t("Destination folder")}
         <select
+          aria-label={label || t("Destination folder")}
           value={value || ""}
           disabled={loading || !!error}
           onChange={(event) => onChange(event.target.value || null)}
@@ -201,16 +203,23 @@ function FolderForm({
     </Modal>
   );
 }
-export function FolderActions({
+export function FolderItem({
   folder,
   connectors,
   onChanged,
+  onOpen,
+  layout = "tile",
+  showOwner = false,
 }: {
   folder: Row;
   connectors: Row[];
   onChanged: () => void | Promise<void>;
+  onOpen?: (id: string) => void;
+  layout?: "tile" | "row";
+  showOwner?: boolean;
 }) {
   const [editing, setEditing] = useState(false),
+    [creating, setCreating] = useState(false),
     [archive, setArchive] = useState(false),
     [busy, setBusy] = useState(false),
     [error, setError] = useState("");
@@ -227,69 +236,154 @@ export function FolderActions({
       setBusy(false);
     }
   }
+  const items: MenuAction[] = [
+    {
+      id: "open",
+      label: t("Open folder"),
+      icon: Folder,
+      onSelect: () => onOpen?.(folder.id),
+    },
+    {
+      id: "create",
+      label: t("New subfolder"),
+      icon: FolderPlus,
+      onSelect: () => setCreating(true),
+    },
+    {
+      id: "zip",
+      label: t("Create folder ZIP"),
+      icon: FileArchive,
+      onSelect: () => setArchive(true),
+    },
+    {
+      id: "manage",
+      label: t("Rename or move folder"),
+      icon: FolderPen,
+      divider: true,
+      onSelect: () => setEditing(true),
+    },
+    {
+      id: "delete",
+      label: t("Delete folder"),
+      icon: Trash2,
+      danger: true,
+      disabled: busy,
+      onSelect: remove,
+    },
+  ];
   return (
-    <>
-      <div className="row-actions folder-actions">
-        <button
-          className="icon-button"
-          title={t("Create folder ZIP")}
-          aria-label={t("Create ZIP of {0}", { 0: folder.name })}
-          onClick={() => setArchive(true)}
-        >
-          <FileArchive size={17} aria-hidden="true" />
-        </button>
-        <button
-          className="icon-button"
-          title={t("Manage folder")}
-          aria-label={t("Manage folder {0}", { 0: folder.name })}
-          onClick={() => setEditing(true)}
-        >
-          <FolderPen size={16} aria-hidden="true" />
-        </button>
-        <button
-          className="icon-button danger"
-          title={t("Delete folder")}
-          disabled={busy}
-          aria-label={t("Delete folder {0}", { 0: folder.name })}
-          onClick={remove}
-        >
-          <Trash2 size={16} aria-hidden="true" />
-        </button>
-      </div>
-      {error && (
-        <Modal title={t("Folder")} onClose={() => setError("")}>
-          <ErrorMessage error={error} />
-        </Modal>
-      )}
-      {editing && (
-        <FolderForm
-          folder={folder}
-          parentId={folder.parent_id}
-          space={folder.space || "private"}
-          onClose={() => setEditing(false)}
-          onSaved={onChanged}
-        />
-      )}
-      {archive && (
-        <Suspense
-          fallback={
-            <Modal
+    <ItemMenu name={folder.name} items={items}>
+      {({ bind, trigger }) => {
+        const open = (
+          <button
+            className="folder-open"
+            aria-label={t("Open folder {0}", { 0: folder.name })}
+            onClick={() => onOpen?.(folder.id)}
+          >
+            <Folder size={24} aria-hidden="true" />
+            <span>
+              <strong>{folder.name}</strong>
+              {layout === "row" && <small>{t("Folder")}</small>}
+            </span>
+          </button>
+        );
+        const buttons = (
+          <div className="row-actions folder-actions">
+            <button
+              className="icon-button"
               title={t("Create folder ZIP")}
-              onClose={() => setArchive(false)}
+              aria-label={t("Create ZIP of {0}", { 0: folder.name })}
+              onClick={() => setArchive(true)}
             >
-              <p role="status">{t("Creating ZIP…")}</p>
-            </Modal>
-          }
-        >
-          <FolderArchiveDialog
-            folder={folder}
-            connectors={connectors}
-            onClose={() => setArchive(false)}
-            onSaved={onChanged}
-          />
-        </Suspense>
-      )}
-    </>
+              <FileArchive size={17} aria-hidden="true" />
+            </button>
+            <button
+              className="icon-button"
+              title={t("Manage folder")}
+              aria-label={t("Manage folder {0}", { 0: folder.name })}
+              onClick={() => setEditing(true)}
+            >
+              <FolderPen size={16} aria-hidden="true" />
+            </button>
+            <button
+              className="icon-button danger"
+              title={t("Delete folder")}
+              disabled={busy}
+              aria-label={t("Delete folder {0}", { 0: folder.name })}
+              onClick={remove}
+            >
+              <Trash2 size={16} aria-hidden="true" />
+            </button>
+            {trigger}
+          </div>
+        );
+        const dialogs = (
+          <>
+            {error && (
+              <Modal title={t("Folder")} onClose={() => setError("")}>
+                <ErrorMessage error={error} />
+              </Modal>
+            )}
+            {editing && (
+              <FolderForm
+                folder={folder}
+                parentId={folder.parent_id}
+                space={folder.space || "private"}
+                onClose={() => setEditing(false)}
+                onSaved={onChanged}
+              />
+            )}
+            {creating && (
+              <FolderForm
+                parentId={folder.id}
+                space={folder.space || "private"}
+                onClose={() => setCreating(false)}
+                onSaved={onChanged}
+              />
+            )}
+            {archive && (
+              <Suspense
+                fallback={
+                  <Modal
+                    title={t("Create folder ZIP")}
+                    onClose={() => setArchive(false)}
+                  >
+                    <p role="status">{t("Creating ZIP…")}</p>
+                  </Modal>
+                }
+              >
+                <FolderArchiveDialog
+                  folder={folder}
+                  connectors={connectors}
+                  onClose={() => setArchive(false)}
+                  onSaved={onChanged}
+                />
+              </Suspense>
+            )}
+          </>
+        );
+        return layout === "row" ? (
+          <tr {...bind} className="folder-row">
+            <td className="file-select-cell" />
+            <td>{open}</td>
+            <td>—</td>
+            <td>—</td>
+            <td>{showOwner ? "—" : formatDate(folder.created_at)}</td>
+            <td>—</td>
+            <td>
+              {buttons}
+              {dialogs}
+            </td>
+          </tr>
+        ) : (
+          <article {...bind} className="folder-card">
+            {open}
+            {buttons}
+            {dialogs}
+          </article>
+        );
+      }}
+    </ItemMenu>
   );
 }
 export function FolderPane({
@@ -397,21 +491,13 @@ export function FolderPane({
       {view === "tiles" && !!children.length && (
         <div className="folder-grid">
           {children.map((folder) => (
-            <article className="folder-card" key={folder.id}>
-              <button
-                className="folder-open"
-                aria-label={t("Open folder {0}", { 0: folder.name })}
-                onClick={() => onOpen(folder.id)}
-              >
-                <Folder size={24} />
-                <strong>{folder.name}</strong>
-              </button>
-              <FolderActions
-                folder={folder}
-                connectors={connectors}
-                onChanged={onChanged}
-              />
-            </article>
+            <FolderItem
+              key={folder.id}
+              folder={folder}
+              connectors={connectors}
+              onChanged={onChanged}
+              onOpen={(id) => onOpen(id)}
+            />
           ))}
         </div>
       )}

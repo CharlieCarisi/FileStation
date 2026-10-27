@@ -917,3 +917,38 @@ This workbook could not be previewed. It may be password-protected or damaged. D
 Workbook preview took too long. Download the file to open it.|L’aperçu du classeur a pris trop de temps. Téléchargez le fichier pour l’ouvrir.|工作簿预览超时。请下载文件后打开。
 This presentation could not be previewed. It may be password-protected or damaged. Download it to open it.|Impossible de prévisualiser cette présentation. Elle est peut-être protégée par un mot de passe ou endommagée. Téléchargez-la pour l’ouvrir.|无法预览此演示文稿。文件可能受密码保护或已损坏。请下载后打开。
 PowerPoint preview took too long. Download the file to open it.|L’aperçu PowerPoint a pris trop de temps. Téléchargez le fichier pour l’ouvrir.|PowerPoint 预览超时。请下载文件后打开。
+Create shortcut|Créer un raccourci|创建快捷方式
+Open file location|Ouvrir l’emplacement du fichier|打开文件所在位置
+Open folder|Ouvrir le dossier|打开文件夹
+New subfolder|Nouveau sous-dossier|新建子文件夹
+Rename or move folder|Renommer ou déplacer le dossier|重命名或移动文件夹
+Actions for {0}|Actions pour {0}|{0} 的操作
+More actions|Autres actions|更多操作
+More actions for {0}|Autres actions pour {0}|{0} 的更多操作
+Manage shortcut|Gérer le raccourci|管理快捷方式
+Shortcut name|Nom du raccourci|快捷方式名称
+A shortcut points to the original file without using extra storage. Removing the shortcut keeps the original file and its shares.|Un raccourci pointe vers le fichier d’origine sans utiliser d’espace de stockage supplémentaire. Sa suppression conserve le fichier d’origine et ses partages.|快捷方式指向原始文件，不占用额外存储空间。移除快捷方式后，原始文件及其分享将保留。
+The original file’s permissions and retention still apply. Public shortcuts require a Public original.|Les autorisations et la conservation du fichier d’origine s’appliquent toujours. Un raccourci public exige un original dans l’espace Public.|原始文件的权限和保留策略仍然适用。公共快捷方式要求原始文件位于公共空间。
+Save shortcut|Enregistrer le raccourci|保存快捷方式
+Remove shortcut {0}? The original file and its shares are kept.|Supprimer le raccourci {0}? Le fichier d’origine et ses partages seront conservés.|移除快捷方式 {0}？原始文件及其分享将保留。
+Open original location|Ouvrir l’emplacement de l’original|打开原始文件所在位置
+Rename or move shortcut|Renommer ou déplacer le raccourci|重命名或移动快捷方式
+Remove shortcut|Supprimer le raccourci|移除快捷方式
+Shortcut|Raccourci|快捷方式
+Original: {0}|Original : {0}|原始文件：{0}
+The original file was deleted, expired or is no longer accessible.|Le fichier d’origine a été supprimé, a expiré ou n’est plus accessible.|原始文件已删除、已过期或无法访问。
+Manage shortcut {0}|Gérer le raccourci {0}|管理快捷方式 {0}
+Remove shortcut {0}|Supprimer le raccourci {0}|移除快捷方式 {0}
+Enter a shortcut name.|Entrez un nom de raccourci.|请输入快捷方式名称。
+Use a shortcut name of 1–255 characters without slashes or control characters.|Utilisez un nom de raccourci de 1 à 255 caractères, sans barres obliques ni caractères de contrôle.|快捷方式名称须为 1–255 个字符，且不能包含斜杠或控制字符。
+A shortcut to this file already exists in that folder.|Un raccourci vers ce fichier existe déjà dans ce dossier.|此文件夹中已存在指向该文件的快捷方式。
+This workspace has reached the limit of 1,000 shortcuts.|Cet espace a atteint la limite de 1 000 raccourcis.|此工作区已达到 1,000 个快捷方式的上限。
+Move the original file to Public before creating a Public shortcut.|Déplacez le fichier d’origine vers Public avant de créer un raccourci public.|创建公共快捷方式前，请先将原始文件移至公共空间。
+Choose a file for this shortcut.|Choisissez un fichier pour ce raccourci.|请选择此快捷方式指向的文件。
+The original file changed. Refresh and try again.|Le fichier d’origine a changé. Actualisez la page et réessayez.|原始文件已发生变化。请刷新后重试。
+Shortcut not found.|Raccourci introuvable.|找不到快捷方式。
+Only the shortcut creator or an administrator can remove this shortcut.|Seuls la personne ayant créé le raccourci ou un administrateur peuvent le supprimer.|只有快捷方式的创建者或管理员可以移除此快捷方式。
+Only the shortcut creator or an administrator can move this shortcut to Private.|Seuls la personne ayant créé le raccourci ou un administrateur peuvent le déplacer vers Privé.|只有快捷方式的创建者或管理员可以将此快捷方式移至私人空间。
+This shortcut changed. Refresh and try again.|Ce raccourci a changé. Actualisez la page et réessayez.|此快捷方式已发生变化。请刷新后重试。
+Move or remove the shortcuts before deleting this folder.|Déplacez ou supprimez les raccourcis avant de supprimer ce dossier.|删除此文件夹前，请先移动或移除其中的快捷方式。
+Move or remove unavailable shortcuts before creating a ZIP.|Déplacez ou supprimez les raccourcis indisponibles avant de créer un ZIP.|创建 ZIP 前，请先移动或移除无法访问的快捷方式。

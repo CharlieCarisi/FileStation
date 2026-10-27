@@ -3,6 +3,21 @@ import { Eye, ExternalLink } from "lucide-react";
 import { previewInfo } from "../shared/preview";
 import { basePath } from "./http";
 import { getLocale, t } from "./i18n";
+export function previewHref(
+  file: { id: string; name: string; size: number },
+  invitationId?: string,
+) {
+  const info = previewInfo(file.name);
+  if (!info || file.size > info.limit) return null;
+  return `${basePath}/?${new URLSearchParams({ ...(invitationId ? { previewInvitation: invitationId } : { preview: file.id }), lang: getLocale() })}`;
+}
+export function openPreviewWindow(href: string) {
+  window.open(
+    href,
+    "_blank",
+    "popup=yes,width=1280,height=900,noopener,noreferrer",
+  );
+}
 
 export default function PreviewLink({
   file,
@@ -13,14 +28,8 @@ export default function PreviewLink({
   invitationId?: string;
   compact?: boolean;
 }) {
-  const info = previewInfo(file.name);
-  if (!info || file.size > info.limit) return null;
-  const query = new URLSearchParams({
-    ...(invitationId
-      ? { previewInvitation: invitationId }
-      : { preview: file.id }),
-    lang: getLocale(),
-  });
+  const href = previewHref(file, invitationId);
+  if (!href) return null;
   return (
     <a
       className={
@@ -28,7 +37,7 @@ export default function PreviewLink({
           ? "icon-button preview-action"
           : "text-button preview-window-link"
       }
-      href={`${basePath}/?${query}`}
+      href={href}
       target="_blank"
       rel="noopener noreferrer"
       title={t("Open preview in a new window")}
@@ -43,11 +52,7 @@ export default function PreviewLink({
         )
           return;
         event.preventDefault();
-        window.open(
-          event.currentTarget.href,
-          "_blank",
-          "popup=yes,width=1280,height=900,noopener,noreferrer",
-        );
+        openPreviewWindow(event.currentTarget.href);
       }}
     >
       {compact ? (
