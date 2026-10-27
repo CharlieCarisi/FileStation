@@ -213,6 +213,25 @@ async function routes(request, env) {
     return fileResponse(request, env, file, download[2] === "preview");
   }
   const fileRoute = path.match(/^\/api\/files\/([^/]+)$/);
+  if (fileRoute && request.method === "GET") {
+    const file = await env.DB.prepare(
+      "SELECT f.*,COALESCE(c.storage_adapter,c.adapter,c.kind) AS storage_kind FROM files f JOIN connectors c ON c.id=f.connector_id WHERE f.id=?",
+    )
+      .bind(fileRoute[1])
+      .first();
+    ensure(file, 404, "File not found.");
+    await fileAccess(request, env, file);
+    return json({
+      file: {
+        id: file.id,
+        name: file.name,
+        size: file.size,
+        mime: file.mime,
+        expires_at: file.expires_at,
+        storage_kind: file.storage_kind,
+      },
+    });
+  }
   if (fileRoute && request.method === "PATCH") {
     const user = await currentUser(request, env, true);
     return renameFile(request, env, user, fileRoute[1]);

@@ -886,5 +886,12 @@
   "You’re ready to collaborate": "You’re ready to collaborate",
   "Your email is verified. No account is needed.": "Your email is verified. No account is needed.",
   "Choose files below. Uploads start automatically; wait for Done before closing this page.": "Choose files below. Uploads start automatically; wait for Done before closing this page.",
-  "The local ZIP is no longer available. Cancel this transfer and create the ZIP again.": "The local ZIP is no longer available. Cancel this transfer and create the ZIP again."
+  "The local ZIP is no longer available. Cancel this transfer and create the ZIP again.": "The local ZIP is no longer available. Cancel this transfer and create the ZIP again.",
+  "Open preview in a new window": "Open preview in a new window",
+  "Preview {0} in a new window": "Preview {0} in a new window",
+  "Open in new window": "Open in new window",
+  "Refresh preview": "Refresh preview",
+  "Close preview": "Close preview",
+  "Choose a file to preview from File Station.": "Choose a file to preview from File Station.",
+  "Sign in or verify your invitation in File Station, then retry this preview.": "Sign in or verify your invitation in File Station, then retry this preview."
 }

@@ -55,3 +55,11 @@ The **Tiles / List** toggle beside New folder persists in the current browser. L
 ## Recipient guidance
 
 The public page centers the access-code form, explains that no account is needed, and keeps Sign in in the header. A visible three-step indicator follows code/email entry, email verification and the invited action. **How to upload files** opens an inline guide on the landing page and in submission requests, including choosing documents, automatic upload, pause/resume and waiting for Done. Download and collaboration views have matching contextual guides. The access card appears first on mobile. All new controls and guidance are available in Canadian French and Simplified Chinese.
+
+## Preview windows
+
+Ready files in Private, Public, Shared by me, and administrative file lists have an **eye icon** when their format and size support previewing. It opens a dedicated preview window, keeping the file browser and its transfers in place. Existing recipient and collaboration previews also have **Open in new window**. Browser preferences can open these links in a tab instead; modified clicks and the link context menu retain normal browser behavior.
+
+The window uses the same local image, media, PDF, read-only DOCX and escaped text/code viewers and format limits described above. Explicitly opening a window loads the supported preview immediately, including media larger than the inline auto-open threshold. It provides refresh, close, language and direct-download controls where the storage supports direct downloads. For large chunk-backed WebDAV/Synology files, use resumable download in the original window. Preview windows do not create or overwrite transfer history.
+
+The window loads metadata through the same file/share permission checks as file bytes. Metadata exposes only the filename, size, MIME type, expiry, ID and storage type. It contains no share codes, credentials or provider URLs. Cookies remain on the current origin; preview links work at both supported File Station addresses. An unverified, expired or revoked session cannot open private content. Each content request also rechecks access. Collaboration windows use the invitation's current working copy and version checks; use **Refresh preview** to load a newly saved revision. Existing preview bytes may remain visible until refreshed or closed.

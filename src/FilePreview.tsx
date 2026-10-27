@@ -3,6 +3,7 @@ import React, { Component, lazy, Suspense, useEffect, useState } from "react";
 import { Eye, EyeOff, FileSearch } from "lucide-react";
 import { previewInfo, type PreviewInfo } from "../shared/preview";
 import { basePath, formatBytes } from "./App.jsx";
+import PreviewLink from "./PreviewLink";
 const PdfPreview = lazy(() => import("./PdfPreview"));
 const DocxPreview = lazy(() => import("./DocxPreview"));
 type FileInfo = {
@@ -13,14 +14,18 @@ type FileInfo = {
 export default function FilePreview({
   file,
   previewPath = `/files/${file.id}/preview`,
+  invitationId,
+  standalone = false,
 }: {
   file: FileInfo;
   previewPath?: string;
+  invitationId?: string;
+  standalone?: boolean;
 }) {
   const info = previewInfo(file.name);
   const available = info && file.size <= info.limit;
   const [open, setOpen] = useState(
-    Boolean(available && file.size <= 10 * 1024 * 1024),
+    Boolean(available && (standalone || file.size <= 10 * 1024 * 1024)),
   );
   const [attempt, setAttempt] = useState(0);
   const url = `${basePath}/api${previewPath}?version=${encodeURIComponent(file.id)}`;
@@ -36,20 +41,25 @@ export default function FilePreview({
           <FileSearch size={18} aria-hidden="true" />
           {t(" File preview")}
         </span>
-        {available && (
-          <button
-            className="text-button"
-            aria-expanded={open}
-            onClick={() => setOpen(!open)}
-          >
-            {open ? (
-              <EyeOff size={15} aria-hidden="true" />
-            ) : (
-              <Eye size={15} aria-hidden="true" />
-            )}
-            {open ? t("Hide preview") : t("Show preview")}
-          </button>
-        )}
+        <div className="preview-actions">
+          {!standalone && (
+            <PreviewLink file={file} invitationId={invitationId} />
+          )}
+          {available && (
+            <button
+              className="text-button"
+              aria-expanded={open}
+              onClick={() => setOpen(!open)}
+            >
+              {open ? (
+                <EyeOff size={15} aria-hidden="true" />
+              ) : (
+                <Eye size={15} aria-hidden="true" />
+              )}
+              {open ? t("Hide preview") : t("Show preview")}
+            </button>
+          )}
+        </div>
       </header>
       {!info ? (
         <p className="preview-note">

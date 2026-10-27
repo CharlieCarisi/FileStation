@@ -51,7 +51,7 @@ function wavFixture(samples = 16000) {
   return bytes;
 }
 
-test("verified download previews render documents and media under /files without exposing markup", async ({
+test("verified download previews open documents and media in separate windows without exposing markup", async ({
   page,
   browser,
 }) => {
@@ -142,18 +142,53 @@ test("verified download previews render documents and media under /files without
     )![0];
     await partner.getByLabel("Email verification PIN").fill(pin);
     await partner.getByRole("button", { name: "Verify and continue" }).click();
-    const dialog = partner.getByRole("dialog", { name: "A file for you." }),
-      preview = dialog.getByRole("region", {
-        name: `Preview of ${fixture.name}`,
-      });
+    const dialog = partner.getByRole("dialog", { name: "A file for you." });
+    let preview = dialog.getByRole("region", {
+      name: `Preview of ${fixture.name}`,
+    });
     await expect(preview).toBeVisible();
     if (fixture.name === "large-sound.wav") {
       await expect(
         preview.getByRole("button", { name: "Show preview" }),
       ).toBeVisible();
       expect(requests.some((url) => url.includes(created.file.id))).toBeFalsy();
-      await preview.getByRole("button", { name: "Show preview" }).click();
     }
+    let viewer = partner;
+    if (fixture.name !== "archive.zip") {
+      const originalURL = partner.url(),
+        popup = partner.waitForEvent("popup");
+      await preview
+        .getByRole("link", {
+          name: `Preview ${fixture.name} in a new window`,
+          exact: true,
+        })
+        .click();
+      viewer = await popup;
+      viewer.on("pageerror", (error) => errors.push(error.message));
+      viewer.on("request", (request) => {
+        if (request.url().includes("/preview?")) requests.push(request.url());
+      });
+      await expect(viewer).toHaveURL(
+        new RegExp(`/files/\\?preview=${created.file.id}&lang=en-CA$`),
+      );
+      expect(await viewer.evaluate(() => window.opener)).toBeNull();
+      expect(partner.url()).toBe(originalURL);
+      await expect(dialog).toBeVisible();
+      preview = viewer.getByRole("region", {
+        name: `Preview of ${fixture.name}`,
+        exact: true,
+      });
+      await expect(preview).toBeVisible();
+      await expect(
+        viewer.getByRole("heading", { name: fixture.name, exact: true }),
+      ).toBeVisible();
+      await expect(
+        preview.getByRole("link", { name: /in a new window/ }),
+      ).toHaveCount(0);
+    } else
+      await expect(
+        preview.getByRole("link", { name: /in a new window/ }),
+      ).toHaveCount(0);
     if (fixture.name === "message.txt")
       await expect(preview.locator("pre")).toHaveText(
         "Hello preview recipient.",
@@ -161,7 +196,7 @@ test("verified download previews render documents and media under /files without
     if (fixture.name === "unsafe.svg") {
       await expect(preview.locator("pre")).toContainText("<svg");
       expect(
-        await partner.evaluate(() => (window as any).previewExecuted),
+        await viewer.evaluate(() => (window as any).previewExecuted),
       ).toBeUndefined();
       await expect(preview.locator("svg[onload]")).toHaveCount(0);
     }
@@ -186,14 +221,16 @@ test("verified download previews render documents and media under /files without
           .locator("canvas")
           .evaluate((canvas: HTMLCanvasElement) => canvas.width),
       ).toBeGreaterThan(100);
-      await partner.setViewportSize({ width: 390, height: 844 });
+      await viewer.setViewportSize({ width: 390, height: 844 });
       expect(
-        await dialog.evaluate(
-          (element) => element.scrollWidth <= element.clientWidth,
-        ),
+        await viewer
+          .locator(".standalone-preview-main")
+          .evaluate((element) => element.scrollWidth <= element.clientWidth),
       ).toBeTruthy();
-      await partner.screenshot({ path: "test-results/preview-mobile.png" });
-      await partner.setViewportSize({ width: 1280, height: 720 });
+      await viewer.screenshot({
+        path: "test-results/preview-window-mobile.png",
+      });
+      await viewer.setViewportSize({ width: 1280, height: 720 });
     }
     if (fixture.name === "document.docx") {
       await expect(
@@ -248,6 +285,13 @@ test("verified download previews render documents and media under /files without
       await expect(preview.getByRole("alert")).toContainText(
         /no longer available|expired|revoked/,
       );
+    }
+    if (viewer !== partner) {
+      const closed = viewer.waitForEvent("close");
+      await viewer
+        .getByRole("button", { name: "Close preview", exact: true })
+        .click();
+      await closed;
     }
   }
   expect(requests.length).toBeGreaterThan(5);

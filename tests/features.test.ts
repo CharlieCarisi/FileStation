@@ -248,6 +248,100 @@ describe("restored service and URL prefixes", () => {
   });
 });
 describe("authorized file previews", () => {
+  it("loads only authorized preview metadata for private/public files and verified shares", async () => {
+    const owner = await login(),
+      member = await login("preview-team@international.gc.ca"),
+      pending = await login("preview-pending@example.com"),
+      file = await upload(
+        owner.cookie,
+        "Preview metadata",
+        "r2-default",
+        "Private notes.txt",
+      );
+    const path = `/files/${file.id}`;
+    for (const cookie of ["", member.cookie, pending.cookie]) {
+      const denied = await request(path, "GET", undefined, cookie, "/files");
+      expect(denied.status).toBe(401);
+      expect(await denied.text()).not.toContain(file.name);
+    }
+    const own = await request(path, "GET", undefined, owner.cookie, "/files");
+    expect(own.status).toBe(200);
+    expect(own.headers.get("cache-control")).toBe("private, no-store");
+    const summary = (await own.json()) as Row;
+    expect(Object.keys(summary.file).sort()).toEqual(
+      ["id", "name", "size", "mime", "expires_at", "storage_kind"].sort(),
+    );
+    expect(summary.file).toMatchObject({
+      id: file.id,
+      name: file.name,
+      size: file.size,
+      storage_kind: "r2",
+    });
+    expect(summary.file.expires_at).toBeGreaterThan(Date.now());
+    const shareResponse = await request(
+      `${path}/shares`,
+      "POST",
+      { recipients: ["partner@example.com"], expiresDays: 1, sendEmail: false },
+      owner.cookie,
+    );
+    expect(shareResponse.status).toBe(201);
+    const share = (await shareResponse.json()) as Row,
+      guest = await verify(share);
+    expect((await request(path, "GET", undefined, guest.cookie)).status).toBe(
+      200,
+    );
+    const another = await upload(owner.cookie);
+    expect(
+      (await request(`/files/${another.id}`, "GET", undefined, guest.cookie))
+        .status,
+    ).toBe(403);
+    await request(`/shares/${share.id}`, "DELETE", undefined, owner.cookie);
+    expect((await request(path, "GET", undefined, guest.cookie)).status).toBe(
+      410,
+    );
+    expect(
+      (
+        await request(
+          "/files/move",
+          "POST",
+          { fileIds: [file.id], space: "public", folderId: null },
+          owner.cookie,
+        )
+      ).status,
+    ).toBe(200);
+    expect(
+      (await request(path, "GET", undefined, member.cookie, "/files")).status,
+    ).toBe(200);
+    expect((await request(path, "GET", undefined, pending.cookie)).status).toBe(
+      401,
+    );
+    await env.DB.prepare("UPDATE files SET expires_at=1 WHERE id=?")
+      .bind(file.id)
+      .run();
+    expect((await request(path, "GET", undefined, owner.cookie)).status).toBe(
+      410,
+    );
+    expect((await request(path, "GET", undefined, member.cookie)).status).toBe(
+      410,
+    );
+    const unavailable = await upload(owner.cookie);
+    await request(
+      `/files/${unavailable.id}`,
+      "DELETE",
+      undefined,
+      owner.cookie,
+    );
+    expect(
+      (
+        await request(
+          `/files/${unavailable.id}`,
+          "GET",
+          undefined,
+          owner.cookie,
+        )
+      ).status,
+    ).toBe(410);
+  });
   it("requires a verified recipient, serves safe text and ranges, and stops access after revocation", async () => {
     const admin = await login(),
       file = await upload(

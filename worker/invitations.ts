@@ -103,12 +103,15 @@ function fileSummary(file: Row) {
     fingerprint: file.fingerprint,
     created_at: file.created_at,
     expires_at: file.expires_at,
+    storage_kind: file.storage_kind,
   };
 }
 async function view(env: Env, invite: Row, address: string) {
   let file = null;
   if (invite.kind === "collaboration") {
-    const row = await env.DB.prepare("SELECT * FROM files WHERE id=?")
+    const row = await env.DB.prepare(
+      "SELECT f.*,COALESCE(c.storage_adapter,c.adapter,c.kind) AS storage_kind FROM files f JOIN connectors c ON c.id=f.connector_id WHERE f.id=?",
+    )
       .bind(invite.current_file_id || invite.source_file_id)
       .first<Row>();
     file = { ...fileSummary(row!), name: invite.target_name };

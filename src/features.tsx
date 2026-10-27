@@ -204,7 +204,8 @@ export function InvitationDialog({
     if (supplied) {
       setConnectors(supplied);
       setConnector(
-        (value: string) => value || supplied.find((row) => row.enabled)?.id || "",
+        (value: string) =>
+          value || supplied.find((row) => row.enabled)?.id || "",
       );
     } else
       api("/connectors")
@@ -756,6 +757,7 @@ export function InvitationPortal({ initial }: { initial: Row }) {
             key={data.file.id}
             file={data.file}
             previewPath={`/invitations/${invitation.id}/preview`}
+            invitationId={invitation.id}
           />
           <div className="feature-actions">
             <button

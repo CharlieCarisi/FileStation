@@ -20,6 +20,7 @@ import { t } from "./i18n";
 import RenameFileDialog from "./RenameFileDialog";
 import { transfers } from "./transfers";
 import { DownloadIcon, CompletionBadge } from "./TransferFeedback";
+import PreviewLink from "./PreviewLink";
 type Row = Record<string, any>;
 export default function FileTable({
   files,
@@ -216,6 +217,7 @@ export default function FileTable({
                   <div className="row-actions">
                     {file.state === "ready" ? (
                       <>
+                        <PreviewLink file={file as any} compact />
                         <button
                           className="icon-button download-action resumable"
                           aria-label={t("Resumable download {0}", {

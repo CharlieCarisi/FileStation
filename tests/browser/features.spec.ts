@@ -117,6 +117,30 @@ test("under /files, verify an external submission and edit text and DOCX working
       extension === "txt" ? "Original text." : "Original DOCX text.",
       { timeout: 30000 },
     );
+    const openingPreview = page.waitForEvent("popup");
+    await preview
+      .getByRole("link", {
+        name: `Preview working.${extension} in a new window`,
+        exact: true,
+      })
+      .click();
+    const previewWindow = await openingPreview;
+    previewWindow.on("pageerror", (error) => errors.push(error.message));
+    await expect(previewWindow).toHaveURL(
+      new RegExp(`/files/\\?previewInvitation=${invitation.id}&lang=en-CA$`),
+    );
+    await expect(
+      previewWindow.getByRole("region", {
+        name: `Preview of working.${extension}`,
+        exact: true,
+      }),
+    ).toContainText(
+      extension === "txt" ? "Original text." : "Original DOCX text.",
+      { timeout: 30000 },
+    );
+    await expect(previewWindow.locator('[contenteditable="true"]')).toHaveCount(
+      0,
+    );
     await page
       .getByRole("button", { name: "Edit online", exact: true })
       .click();
@@ -148,6 +172,27 @@ test("under /files, verify an external submission and edit text and DOCX working
       extension === "txt" ? "Edited in File Station." : "Edited in browser.",
       { timeout: 30000 },
     );
+    const separatePreview = previewWindow.getByRole("region", {
+      name: `Preview of working.${extension}`,
+      exact: true,
+    });
+    await separatePreview
+      .getByRole("button", { name: "Hide preview", exact: true })
+      .click();
+    await separatePreview
+      .getByRole("button", { name: "Show preview", exact: true })
+      .click();
+    await expect(separatePreview.getByRole("alert")).toContainText(
+      "working copy changed",
+    );
+    await previewWindow
+      .getByRole("button", { name: "Refresh preview", exact: true })
+      .click();
+    await expect(separatePreview).toContainText(
+      extension === "txt" ? "Edited in File Station." : "Edited in browser.",
+      { timeout: 30000 },
+    );
+    await previewWindow.close();
     const download = await page.request.get(
       `/files/api/invitations/${invitation.id}/download`,
     );

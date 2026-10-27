@@ -886,5 +886,12 @@
   "You’re ready to collaborate": "可以开始协作了",
   "Your email is verified. No account is needed.": "邮箱已验证，无需账户。",
   "Choose files below. Uploads start automatically; wait for Done before closing this page.": "请在下方选择文件，上传将自动开始。显示“完成”后再关闭此页面。",
-  "The local ZIP is no longer available. Cancel this transfer and create the ZIP again.": "本地 ZIP 已不可用。请取消此传输并重新创建 ZIP。"
+  "The local ZIP is no longer available. Cancel this transfer and create the ZIP again.": "本地 ZIP 已不可用。请取消此传输并重新创建 ZIP。",
+  "Open preview in a new window": "在新窗口中打开预览",
+  "Preview {0} in a new window": "在新窗口中预览 {0}",
+  "Open in new window": "在新窗口中打开",
+  "Refresh preview": "刷新预览",
+  "Close preview": "关闭预览",
+  "Choose a file to preview from File Station.": "请在 File Station 中选择要预览的文件。",
+  "Sign in or verify your invitation in File Station, then retry this preview.": "请在 File Station 中登录或验证邀请，然后重试预览。"
 }
