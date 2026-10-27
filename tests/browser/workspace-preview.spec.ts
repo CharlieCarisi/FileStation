@@ -74,7 +74,9 @@ test("workspace Preview opens a read-only window on both paths and respects Publ
     await expect(viewer).toHaveURL(
       `http://127.0.0.1:8791${prefix}/?preview=${fileId}&lang=en-CA`,
     );
-    await expect(viewer.locator("pre.preview-text")).toHaveText(fixtures[0].text);
+    await expect(viewer.locator("pre.preview-text")).toHaveText(
+      fixtures[0].text,
+    );
     expect(await viewer.evaluate(() => window.opener)).toBeNull();
     expect(page.url()).toBe(originalURL);
     await expect(
@@ -93,13 +95,48 @@ test("workspace Preview opens a read-only window on both paths and respects Publ
       path: `test-results/workspace-preview${prefix ? "-prefix" : "-root"}.png`,
     });
     await viewer.reload();
-    await expect(viewer.locator("pre.preview-text")).toHaveText(fixtures[0].text);
+    await expect(viewer.locator("pre.preview-text")).toHaveText(
+      fixtures[0].text,
+    );
     const closed = viewer.waitForEvent("close");
     await viewer
       .getByRole("button", { name: "Close preview", exact: true })
       .click();
     await closed;
   }
+  // A CDN can weaken the ETag when compressing text, but must never make a
+  // different or unidentified working copy pass the version check.
+  let previewTag: string | null = `W/"${fileId}"`;
+  const compressedPreview = await page.context().newPage();
+  await compressedPreview.route("**/api/files/*/preview?*", async (route) => {
+    const response = await route.fetch(),
+      headers = response.headers();
+    if (previewTag === null) delete headers.etag;
+    else headers.etag = previewTag;
+    await route.fulfill({ response, headers });
+  });
+  await compressedPreview.goto(`/files/?preview=${fileId}&lang=en-CA`);
+  await expect(compressedPreview.locator("pre.preview-text")).toHaveText(
+    fixtures[0].text,
+  );
+  for (const tag of ['W/"a-different-working-copy"', null]) {
+    previewTag = tag;
+    await compressedPreview
+      .getByRole("button", { name: "Refresh preview", exact: true })
+      .click();
+    await expect(compressedPreview.getByRole("alert")).toContainText(
+      "The document changed",
+    );
+    await expect(compressedPreview.locator("pre.preview-text")).toHaveCount(0);
+  }
+  previewTag = `W/"${fileId}"`;
+  await compressedPreview
+    .getByRole("button", { name: "Refresh preview", exact: true })
+    .click();
+  await expect(compressedPreview.locator("pre.preview-text")).toHaveText(
+    fixtures[0].text,
+  );
+  await compressedPreview.close();
   await api("/files/move", {
     fileIds: [fileId],
     space: "public",

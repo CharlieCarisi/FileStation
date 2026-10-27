@@ -126,7 +126,11 @@ function PreviewContent({
           };
           throw Error(result.error || "The preview could not be opened.");
         }
-        if (response.headers.get("etag") !== `"${file.id}"`)
+        // Cloudflare compression can weaken a strong ETag without changing the
+        // decoded file. Both forms must still identify this exact file version.
+        if (
+          response.headers.get("etag")?.replace(/^W\//, "") !== `"${file.id}"`
+        )
           throw Error(
             "The document changed. Close and reopen it to see the latest copy.",
           );
