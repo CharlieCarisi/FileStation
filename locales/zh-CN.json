@@ -815,5 +815,17 @@
   "Downloaded": "已下载",
   "Finalizing upload…": "正在完成上传…",
   "Upload progress for {0}": "{0} 的上传进度",
-  "Download progress for {0}": "{0} 的下载进度"
+  "Download progress for {0}": "{0} 的下载进度",
+  "Rename file": "重命名文件",
+  "Rename {0}": "重命名 {0}",
+  "File name": "文件名",
+  "Renaming…": "正在重命名…",
+  "The file extension stays {0}.": "文件扩展名保持为 {0}。",
+  "Renaming keeps existing shares, folders, storage, and retention dates.": "重命名会保留现有共享、文件夹、存储位置和保留期限。",
+  "Enter a file name.": "请输入文件名。",
+  "Use a file name of 1–255 characters without slashes or control characters.": "文件名须为 1–255 个字符，且不能包含斜杠或控制字符。",
+  "Keep the original file extension when renaming.": "重命名时请保留原有文件扩展名。",
+  "Choose a valid filename to rename.": "请选择有效的文件名进行重命名。",
+  "Finish uploading the file before renaming it.": "请先完成文件上传，再进行重命名。",
+  "file renamed": "已重命名文件"
 }

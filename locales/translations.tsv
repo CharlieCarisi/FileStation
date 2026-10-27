@@ -815,3 +815,15 @@ Downloaded|Téléchargé|已下载
 Finalizing upload…|Finalisation du téléversement…|正在完成上传…
 Upload progress for {0}|Progression du téléversement de {0}|{0} 的上传进度
 Download progress for {0}|Progression du téléchargement de {0}|{0} 的下载进度
+Rename file|Renommer le fichier|重命名文件
+Rename {0}|Renommer {0}|重命名 {0}
+File name|Nom du fichier|文件名
+Renaming…|Changement de nom…|正在重命名…
+The file extension stays {0}.|L’extension du fichier reste {0}.|文件扩展名保持为 {0}。
+Renaming keeps existing shares, folders, storage, and retention dates.|Le changement de nom conserve les partages, les dossiers, le stockage et les dates de conservation.|重命名会保留现有共享、文件夹、存储位置和保留期限。
+Enter a file name.|Entrez un nom de fichier.|请输入文件名。
+Use a file name of 1–255 characters without slashes or control characters.|Utilisez un nom de fichier de 1 à 255 caractères, sans barres obliques ni caractères de contrôle.|文件名须为 1–255 个字符，且不能包含斜杠或控制字符。
+Keep the original file extension when renaming.|Conservez l’extension d’origine lors du changement de nom.|重命名时请保留原有文件扩展名。
+Choose a valid filename to rename.|Choisissez un nom de fichier valide à renommer.|请选择有效的文件名进行重命名。
+Finish uploading the file before renaming it.|Terminez le téléversement du fichier avant de le renommer.|请先完成文件上传，再进行重命名。
+file renamed|fichier renommé|已重命名文件

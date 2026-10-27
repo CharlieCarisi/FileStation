@@ -2300,3 +2300,28 @@ html[lang="fr-CA"] .sidebar nav button {
     right: 12px;
   }
 }
+
+.rename-name {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+}
+.rename-name input {
+  min-width: 0;
+  flex: 1;
+}
+.rename-name:has(.rename-extension) input {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+.rename-extension {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 12px;
+  background: #f4f6ef;
+  border: 1px solid var(--line);
+  border-left: 0;
+  border-radius: 0 6px 6px 0;
+  color: #617657;
+  font-size: 13px;
+}

@@ -815,5 +815,17 @@
   "Downloaded": "Téléchargé",
   "Finalizing upload…": "Finalisation du téléversement…",
   "Upload progress for {0}": "Progression du téléversement de {0}",
-  "Download progress for {0}": "Progression du téléchargement de {0}"
+  "Download progress for {0}": "Progression du téléchargement de {0}",
+  "Rename file": "Renommer le fichier",
+  "Rename {0}": "Renommer {0}",
+  "File name": "Nom du fichier",
+  "Renaming…": "Changement de nom…",
+  "The file extension stays {0}.": "L’extension du fichier reste {0}.",
+  "Renaming keeps existing shares, folders, storage, and retention dates.": "Le changement de nom conserve les partages, les dossiers, le stockage et les dates de conservation.",
+  "Enter a file name.": "Entrez un nom de fichier.",
+  "Use a file name of 1–255 characters without slashes or control characters.": "Utilisez un nom de fichier de 1 à 255 caractères, sans barres obliques ni caractères de contrôle.",
+  "Keep the original file extension when renaming.": "Conservez l’extension d’origine lors du changement de nom.",
+  "Choose a valid filename to rename.": "Choisissez un nom de fichier valide à renommer.",
+  "Finish uploading the file before renaming it.": "Terminez le téléversement du fichier avant de le renommer.",
+  "file renamed": "fichier renommé"
 }

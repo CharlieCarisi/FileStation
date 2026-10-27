@@ -716,8 +716,8 @@ export async function invitationRoutes(
             "UPDATE invitations SET space=CASE WHEN current_file_id IS NOT NULL AND current_file_id<>source_file_id THEN (SELECT f.space FROM files f WHERE f.id=invitations.current_file_id) ELSE space END,folder_id=CASE WHEN current_file_id IS NOT NULL AND current_file_id<>source_file_id THEN (SELECT f.folder_id FROM files f WHERE f.id=invitations.current_file_id) ELSE folder_id END,current_file_id=?,revision=revision+1 WHERE id=? AND revision=? AND revoked_at IS NULL AND expires_at>? AND EXISTS (SELECT 1 FROM files WHERE id=invitations.source_file_id AND state='ready' AND (expires_at IS NULL OR expires_at>?)) RETURNING revision",
           ).bind(file.id, invite.id, file.base_revision, time, time),
           env.DB.prepare(
-            "UPDATE files SET folder_id=(SELECT folder_id FROM invitations WHERE id=?),space=(SELECT space FROM invitations WHERE id=?) WHERE id=? AND EXISTS(SELECT 1 FROM invitations WHERE id=? AND current_file_id=?)",
-          ).bind(invite.id, invite.id, file.id, invite.id, file.id),
+            "UPDATE files SET name=(SELECT target_name FROM invitations WHERE id=?),folder_id=(SELECT folder_id FROM invitations WHERE id=?),space=(SELECT space FROM invitations WHERE id=?) WHERE id=? AND EXISTS(SELECT 1 FROM invitations WHERE id=? AND current_file_id=?)",
+          ).bind(invite.id, invite.id, invite.id, file.id, invite.id, file.id),
           env.DB.prepare(
             "UPDATE invitation_files SET published_at=? WHERE file_id=? AND EXISTS (SELECT 1 FROM invitations WHERE id=? AND current_file_id=?)",
           ).bind(time, file.id, invite.id, file.id),

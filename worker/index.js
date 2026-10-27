@@ -30,6 +30,7 @@ import { uploadConnections } from "./transfer-options";
 import { SHARE_ADDRESSES } from "./share-links";
 import { folderForOwner, removeUserFolders } from "./folders";
 import { workspaceSpace, ownsFile } from "./workspaces";
+import { renameFile, renameAvailable } from "./file-names";
 async function connectorList(env, admin) {
   const result = await env.DB.prepare(
     `SELECT c.id,c.name,COALESCE(c.storage_adapter,c.adapter,c.kind) AS kind,c.limit_bytes,c.retention_days,c.enabled,c.config,c.encrypted_credentials IS NOT NULL AS credentials_configured,COALESCE(SUM(CASE WHEN f.state IN ('ready','deleting') THEN f.size ELSE 0 END),0) AS used_bytes,COALESCE(SUM(CASE WHEN f.state='uploading' THEN f.size ELSE 0 END),0) AS reserved_bytes,COUNT(CASE WHEN f.state='ready' THEN 1 END) AS file_count FROM connectors c LEFT JOIN files f ON f.connector_id=c.id GROUP BY c.id ORDER BY c.created_at`,
@@ -110,7 +111,7 @@ async function routes(request, env) {
       if (selected) bindings.push(selected);
     }
     const rows = await env.DB.prepare(
-      `SELECT f.*,directory.name AS folder_name,u.email AS owner_email,c.name AS connector_name,COALESCE(c.storage_adapter,c.adapter,c.kind) AS storage_kind,(SELECT COUNT(*) FROM shares s WHERE s.file_id=f.id AND s.revoked_at IS NULL AND (s.expires_at IS NULL OR s.expires_at>?)) AS share_count FROM files f JOIN users u ON u.id=f.owner_id JOIN connectors c ON c.id=f.connector_id LEFT JOIN folders directory ON directory.id=f.folder_id WHERE ${filters.join(" AND ")} ORDER BY f.created_at DESC LIMIT 500`,
+      `SELECT f.*,${renameAvailable("f")} AS rename_available,directory.name AS folder_name,u.email AS owner_email,c.name AS connector_name,COALESCE(c.storage_adapter,c.adapter,c.kind) AS storage_kind,(SELECT COUNT(*) FROM shares s WHERE s.file_id=f.id AND s.revoked_at IS NULL AND (s.expires_at IS NULL OR s.expires_at>?)) AS share_count FROM files f JOIN users u ON u.id=f.owner_id JOIN connectors c ON c.id=f.connector_id LEFT JOIN folders directory ON directory.id=f.folder_id WHERE ${filters.join(" AND ")} ORDER BY f.created_at DESC LIMIT 500`,
     )
       .bind(...bindings)
       .all();
@@ -118,6 +119,10 @@ async function routes(request, env) {
       const canManage = ownsFile(user, file);
       return {
         ...file,
+        can_rename:
+          file.state === "ready" &&
+          (!file.expires_at || file.expires_at > now()) &&
+          !!file.rename_available,
         can_delete: canManage,
         can_make_private: canManage,
         can_resume: canManage,
@@ -208,6 +213,10 @@ async function routes(request, env) {
     return fileResponse(request, env, file, download[2] === "preview");
   }
   const fileRoute = path.match(/^\/api\/files\/([^/]+)$/);
+  if (fileRoute && request.method === "PATCH") {
+    const user = await currentUser(request, env, true);
+    return renameFile(request, env, user, fileRoute[1]);
+  }
   if (fileRoute && request.method === "DELETE") {
     const user = await currentUser(request, env, true);
     const file = await env.DB.prepare("SELECT * FROM files WHERE id=?")

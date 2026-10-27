@@ -5,6 +5,7 @@ import {
   FolderInput,
   Trash2,
   ArrowLeftRight,
+  TextCursorInput,
 } from "lucide-react";
 import {
   FileIcon,
@@ -15,6 +16,7 @@ import {
 import { basePath } from "./http";
 import { MoveFilesDialog } from "./Folders";
 import { t } from "./i18n";
+import RenameFileDialog from "./RenameFileDialog";
 import { transfers } from "./transfers";
 import { DownloadIcon, CompletionBadge } from "./TransferFeedback";
 type Row = Record<string, any>;
@@ -49,6 +51,7 @@ export default function FileTable({
       )
       .map((item: Row) => item.fileId),
   );
+  const [renaming, setRenaming] = useState<Row | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set()),
     [moving, setMoving] = useState<Row[] | null>(null);
   useEffect(() => setSelected(new Set()), [contextKey]);
@@ -222,6 +225,16 @@ export default function FileTable({
                         <ArrowLeftRight size={17} aria-hidden="true" />
                       </button>
                     ) : null}
+                    {file.can_rename && (
+                      <button
+                        className="icon-button"
+                        title={t("Rename file")}
+                        aria-label={t("Rename {0}", { 0: file.name })}
+                        onClick={() => setRenaming(file)}
+                      >
+                        <TextCursorInput size={17} aria-hidden="true" />
+                      </button>
+                    )}
                     <button
                       className="icon-button"
                       aria-label={t("Move {0}", { 0: file.name })}
@@ -247,6 +260,13 @@ export default function FileTable({
           </tbody>
         </table>
       </div>
+      {renaming && (
+        <RenameFileDialog
+          file={renaming}
+          onClose={() => setRenaming(null)}
+          onRenamed={onChanged}
+        />
+      )}
       {moving && (
         <MoveFilesDialog
           files={moving}
