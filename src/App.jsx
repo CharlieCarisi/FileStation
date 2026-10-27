@@ -6,6 +6,7 @@ import {
   OneDriveDialog,
 } from "./features";
 import FilePreview from "./FilePreview";
+import GuestGuide, { AccessSteps } from "./GuestGuide";
 import ShareAddressSettings from "./ShareAddressSettings";
 import { FolderPane, FolderSelect, SpaceSelect } from "./Folders";
 import FileTable from "./FileTable";
@@ -272,6 +273,18 @@ function UploadDialog({
     [J, A] = D.useState(""),
     [j, N] = D.useState(!1),
     k = S.find((G) => G.id === C);
+  D.useEffect(() => {
+    B(
+      (selected) =>
+        selected ||
+        S.find(
+          (connector) =>
+            connector.enabled &&
+            (connector.kind === "r2" || connector.credentials_configured),
+        )?.id ||
+        "",
+    );
+  }, [S]);
   async function xe(G) {
     (G.preventDefault(), R(!0), A(""));
     try {
@@ -2006,6 +2019,13 @@ function App() {
       transfers.setScope(S?.id || "guest");
     }, [S?.id]));
   const [folders, setFolders] = D.useState([]);
+  const [folderView, setFolderView] = D.useState(() =>
+    localStorage.getItem("fs-folder-view") === "list" ? "list" : "tiles",
+  );
+  function changeFolderView(view) {
+    localStorage.setItem("fs-folder-view", view);
+    setFolderView(view);
+  }
   const [currentSpace, setCurrentSpace] = D.useState(() =>
     new URLSearchParams(location.search).get("space") === "public"
       ? "public"
@@ -2200,6 +2220,10 @@ function App() {
             current: currentFolder,
             onOpen: openFolder,
             onChanged: Z,
+            connectors: A,
+            view: folderView,
+            onView: changeFolderView,
+            search: V,
           }),
         c.jsxs("div", {
           className: "file-list",
@@ -2215,8 +2239,25 @@ function App() {
               onDelete: ye,
               onTransfers: () => J("transfers"),
               onChanged: Z,
+              folders:
+                folderView === "list" && ["files", "public"].includes(R)
+                  ? folders.filter(
+                      (folder) =>
+                        (folder.parent_id || null) === currentFolder &&
+                        folder.name.toLowerCase().includes(V.toLowerCase()),
+                    )
+                  : [],
+              onOpenFolder: openFolder,
             }),
             !d.length &&
+              !(
+                ["files", "public"].includes(R) &&
+                folders.some(
+                  (folder) =>
+                    (folder.parent_id || null) === currentFolder &&
+                    folder.name.toLowerCase().includes(V.toLowerCase()),
+                )
+              ) &&
               c.jsxs("div", {
                 className: "empty-state",
                 children: [
@@ -2836,16 +2877,6 @@ function App() {
                             "A little station for your big ideas. Send files to the people who need them, with your storage and your rules.",
                           ),
                         }),
-                        c.jsxs("button", {
-                          className: "button primary hero-cta",
-                          onClick: () => C(!0),
-                          children: [
-                            t("Sign in to upload"),
-                            c.jsx($i, {
-                              size: 19,
-                            }),
-                          ],
-                        }),
                         c.jsxs("div", {
                           className: "hero-features",
                           children: [
@@ -2932,7 +2963,7 @@ function App() {
                             }),
                             c.jsx("span", {
                               className: "pill green",
-                              children: t("FOR RECIPIENTS"),
+                              children: t("No account needed"),
                             }),
                           ],
                         }),
@@ -2942,9 +2973,9 @@ function App() {
                         c.jsxs("p", {
                           className: "muted",
                           children: [
-                            t("Enter the access code you received."),
-                            c.jsx("br", {}),
-                            t("We\u2019ll take it from here."),
+                            t(
+                              "Upload or download with your invitation. Enter your access code and the email address that received it.",
+                            ),
                           ],
                         }),
                         c.jsx(AccessForm, {
@@ -3049,6 +3080,8 @@ function App() {
           subtitle: t("Your recipient email has been verified."),
           onClose: () => sl(void 0),
           children: [
+            c.jsx(AccessSteps, { step: 3 }),
+            c.jsx(GuestGuide, { mode: "download" }),
             c.jsxs("div", {
               className: "received-file",
               children: [
@@ -3287,6 +3320,7 @@ function TransfersPanel({ _version: S = 0, version: v = 0, onError: T }) {
                                       }),
                                     }),
                                     M.direction === "upload" &&
+                                      !M.localArchive &&
                                       c.jsx("button", {
                                         className: "text-button",
                                         onClick: () => {

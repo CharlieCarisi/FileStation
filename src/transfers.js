@@ -1,5 +1,6 @@
 import { api, post, basePath } from "./http";
 import { RequestPool, parallel } from "../shared/concurrency";
+import { archiveFile, removeArchive } from "./archive-storage";
 class DiskWorker {
   worker = new Worker(new URL("./disk.worker.js", import.meta.url), {
     type: "module",
@@ -114,7 +115,14 @@ class TransferManager {
         this.update());
     }
   }
-  async upload(v, T, invitation, folderId = null, space = "private") {
+  async upload(
+    v,
+    T,
+    invitation,
+    folderId = null,
+    space = "private",
+    options = {},
+  ) {
     const o = await fingerprint(v),
       _ = await post(
         invitation ? `/invitations/${invitation.id}/uploads` : "/uploads",
@@ -127,6 +135,7 @@ class TransferManager {
           size: v.size,
           mime: v.type,
           fingerprint: o,
+          preserveExistingFiles: options.preserveExistingFiles === true,
         },
       ),
       C = {
@@ -145,6 +154,7 @@ class TransferManager {
         partSize: _.partSize,
         connections: Math.min(this.concurrency, _.uploadConcurrency || 1),
         evicted: _.evicted,
+        localArchive: options.localArchive,
       };
     (this.items.unshift(C),
       this.files.set(C.id, v),
@@ -173,6 +183,17 @@ class TransferManager {
       )
         return;
       try {
+        if (o.direction === "upload" && o.localArchive && !this.files.has(v)) {
+          try {
+            const saved = await archiveFile(o.localArchive);
+            if ((await fingerprint(saved)) !== o.fingerprint) throw new Error();
+            this.files.set(v, saved);
+          } catch {
+            throw new Error(
+              "The local ZIP is no longer available. Cancel this transfer and create the ZIP again.",
+            );
+          }
+        }
         if (T) {
           if (T.size !== o.size || (await fingerprint(T)) !== o.fingerprint)
             throw new Error("Select the original file to resume this upload.");
@@ -199,6 +220,10 @@ class TransferManager {
             ? await this.runUpload(o, this.files.get(v), _.signal)
             : await this.runDownload(o, _.signal),
           o.state === "running" && (o.state = "complete"));
+        if (o.state === "complete" && o.localArchive) {
+          this.update(); // Persist completion before removing the only local source.
+          await removeArchive(o.localArchive).catch(() => {});
+        }
       } catch (_) {
         o.state !== "paused" &&
           ((o.state = "error"),
@@ -227,9 +252,13 @@ class TransferManager {
       ((this.items = this.items.filter((o) => o.id !== v)),
         this.files.delete(v),
         this.update());
+      await removeArchive(T.localArchive).catch(() => {});
     }
   }
   dismiss(v) {
+    removeArchive(this.items.find((item) => item.id === v)?.localArchive).catch(
+      () => {},
+    );
     (this.items.find((o) => o.id === v)?.direction === "download" &&
       downloadDirectory()
         .then(() => removeDownload(v))

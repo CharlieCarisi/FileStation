@@ -220,6 +220,12 @@ var StorageCoordinator = class {
         .bind(c.id)
         .first();
       ensure(
+        b.preserveExistingFiles !== true ||
+          (usage?.used || 0) + b.size <= c.limit_bytes,
+        409,
+        "Not enough free space to save this ZIP without deleting existing files. Choose another storage connector or free up space.",
+      );
+      ensure(
         (usage?.reserved || 0) + b.size <= c.limit_bytes,
         409,
         "Other uploads have reserved this capacity. Retry after they finish.",

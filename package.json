@@ -19,6 +19,7 @@
   "dependencies": {
     "@eigenpal/docx-editor-i18n": "1.9.0",
     "@eigenpal/docx-editor-react": "1.9.0",
+    "@zip.js/zip.js": "2.24.0",
     "aws4fetch": "1.0.20",
     "fast-xml-parser": "5.11.2",
     "jsonc-parser": "3.3.1",

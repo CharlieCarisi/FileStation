@@ -2,6 +2,7 @@ import type { Env, Row } from "./model";
 import { currentUser } from "./auth.js";
 import { workspaceSpace, ownsFile, readsFile, type Space } from "./workspaces";
 import { body, ensure, json, id, now, audit, HttpError } from "./util.js";
+import { folderArchive } from "./archives";
 
 export async function folderForOwner(
   env: Env,
@@ -103,6 +104,13 @@ export async function removeUserFolders(env: Env, ownerId: string) {
   }
 }
 export async function folderRoutes(request: Request, env: Env, path: string) {
+  const archive = path.match(/^\/api\/folders\/([^/]+)\/archive$/);
+  if (archive && request.method === "GET")
+    return folderArchive(
+      env,
+      await currentUser(request, env, true),
+      archive[1],
+    );
   const match = path.match(/^\/api\/folders(?:\/([^/]+))?$/);
   if (!match && path !== "/api/files/move") return null;
   const user = await currentUser(request, env, true);

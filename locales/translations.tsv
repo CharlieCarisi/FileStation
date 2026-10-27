@@ -836,3 +836,53 @@ Invitation email sent to {0} recipients.|Courriel d’invitation envoyé à {0} 
 Email sent to 1 recipient. They’ll verify their address before downloading.|Courriel envoyé à 1 destinataire. Cette personne devra vérifier son adresse avant de télécharger.|邮件已发送给 1 位收件人。下载前需验证其邮箱地址。
 Email sent to {0} recipients. They’ll verify their address before downloading.|Courriel envoyé à {0} destinataires. Chaque personne devra vérifier son adresse avant de télécharger.|邮件已发送给 {0} 位收件人。下载前需各自验证其邮箱地址。
 Everyone invited uses this same code and verifies their own email address.|Toutes les personnes invitées utilisent ce même code et vérifient leur propre adresse courriel.|所有受邀者使用同一个访问码，并各自验证其邮箱地址。
+A ZIP can contain up to 1,000 files. Choose a smaller folder.|Un ZIP peut contenir jusqu’à 1 000 fichiers. Choisissez un dossier plus petit.|一个 ZIP 最多可包含 1,000 个文件。请选择较小的文件夹。
+Finish the uploads in this folder before creating a ZIP.|Terminez les téléversements dans ce dossier avant de créer un ZIP.|请先完成此文件夹中的上传，再创建 ZIP。
+Not enough free space to save this ZIP without deleting existing files. Choose another storage connector or free up space.|L’espace disponible ne suffit pas pour enregistrer ce ZIP tout en conservant les fichiers existants. Choisissez un autre connecteur ou libérez de l’espace.|可用空间不足，无法在保留现有文件的情况下保存此 ZIP。请选择其他存储连接器或释放空间。
+This browser cannot create ZIPs on disk. Use a current version of Chrome, Edge, Firefox or Safari.|Ce navigateur ne peut pas créer de ZIP sur disque. Utilisez une version récente de Chrome, Edge, Firefox ou Safari.|此浏览器无法在磁盘上创建 ZIP。请使用最新版 Chrome、Edge、Firefox 或 Safari。
+Your browser does not have enough free space to create this ZIP. Choose a smaller folder or free up disk space.|Votre navigateur ne dispose pas d’assez d’espace pour créer ce ZIP. Choisissez un dossier plus petit ou libérez de l’espace disque.|浏览器可用空间不足，无法创建此 ZIP。请选择较小的文件夹或释放磁盘空间。
+Create folder ZIP|Créer un ZIP du dossier|创建文件夹 ZIP
+Create ZIP of {0}|Créer un ZIP de {0}|将 {0} 打包为 ZIP
+Save a ZIP of this folder and its subfolders as a regular file, ready to share.|Enregistrez ce dossier et ses sous-dossiers en ZIP, comme un fichier prêt à partager.|将此文件夹及其子文件夹打包为 ZIP，保存为可分享的普通文件。
+{0} files · {1} before compression|{0} fichiers · {1} avant compression|{0} 个文件 · 压缩前 {1}
+ZIP filename|Nom du fichier ZIP|ZIP 文件名
+Choose a storage connector|Choisir un connecteur de stockage|选择存储连接器
+The ZIP is saved beside the original folder, in the same workspace. Existing files are kept; enough free storage is required.|Le ZIP est enregistré à côté du dossier d’origine, dans le même espace. Les fichiers existants sont conservés; il faut assez d’espace libre.|ZIP 将保存在原文件夹旁边，位于同一工作区。现有文件会保留，因此需要足够的可用存储空间。
+Keep this tab open while creating the ZIP. Its upload can then be paused and resumed in Transfers.|Gardez cet onglet ouvert pendant la création du ZIP. Vous pourrez ensuite interrompre et reprendre son téléversement dans Transferts.|创建 ZIP 时请保持此标签页打开。之后可在“传输”中暂停和继续上传。
+Creating ZIP…|Création du ZIP…|正在创建 ZIP…
+Create and save ZIP|Créer et enregistrer le ZIP|创建并保存 ZIP
+Delete folder|Supprimer le dossier|删除文件夹
+Folder view|Affichage des dossiers|文件夹视图
+Folder tile view|Afficher les dossiers en vignettes|文件夹平铺视图
+Folder list view|Afficher les dossiers en liste|文件夹列表视图
+Tiles|Vignettes|平铺
+List|Liste|列表
+No account needed|Aucun compte requis|无需账户
+Upload or download with your invitation. Enter your access code and the email address that received it.|Téléversez ou téléchargez avec votre invitation. Entrez votre code d’accès et l’adresse courriel qui l’a reçu.|使用邀请即可上传或下载。请输入访问码和收到邀请的邮箱地址。
+Invitation steps|Étapes de l’invitation|邀请使用步骤
+Code & email|Code et courriel|访问码和邮箱
+Verify email|Vérifier le courriel|验证邮箱
+Upload or download|Téléverser ou télécharger|上传或下载
+How to download your file|Comment télécharger votre fichier|如何下载文件
+How to work on this document|Comment travailler sur ce document|如何协作编辑此文档
+How to upload files|Comment téléverser des fichiers|如何上传文件
+A quick step-by-step guide · No account needed|Un guide rapide, étape par étape · Aucun compte requis|快速分步指南 · 无需账户
+Open your invitation|Ouvrez votre invitation|打开邀请
+Follow the link in your email, or enter the access code your contact gave you.|Suivez le lien reçu par courriel ou entrez le code d’accès fourni par votre contact.|点击邮件中的链接，或输入联系人提供的访问码。
+Use your invited email address|Utilisez l’adresse courriel invitée|使用受邀邮箱地址
+Enter the email address the invitation was sent to, then choose Continue securely. You do not need to sign in or create an account.|Entrez l’adresse courriel qui a reçu l’invitation, puis choisissez Continuer en toute sécurité. Vous n’avez pas à vous connecter ni à créer de compte.|输入收到邀请的邮箱地址，然后选择“安全继续”。无需登录或创建账户。
+Enter the six-digit verification PIN from File Station. Check your junk or spam folder if it has not arrived.|Entrez le NIP de vérification à six chiffres de File Station. Si vous ne le trouvez pas, vérifiez vos courriels indésirables.|输入 File Station 发送的六位验证码。如未收到，请检查垃圾邮件文件夹。
+Preview and download|Prévisualisez et téléchargez|预览并下载
+Preview supported files, then choose Direct download to save in your browser, or Resumable download to pause and continue in Transfers.|Prévisualisez les fichiers compatibles, puis choisissez Téléchargement direct pour enregistrer dans votre navigateur, ou Téléchargement avec reprise pour interrompre et continuer dans Transferts.|预览支持的文件，然后选择“直接下载”通过浏览器保存，或选择“可续传下载”以便在“传输”中暂停和继续。
+Edit or re-upload|Modifiez ou téléversez à nouveau|编辑或重新上传
+Choose Edit online for supported documents. Save your changes, or download the document, edit on your computer, and choose Re-upload your edited document before the invitation expires.|Choisissez Modifier en ligne pour les documents compatibles. Enregistrez vos modifications ou téléchargez le document, modifiez-le sur votre ordinateur, puis choisissez Téléverser votre document modifié avant l’expiration de l’invitation.|对于支持的文档，选择“在线编辑”并保存更改。也可下载文档，在电脑上编辑后，在邀请过期前选择“重新上传编辑后的文档”。
+Choose your documents|Choisissez vos documents|选择文档
+Choose documents to submit and select one or more files. Uploads start automatically. Your contact has already chosen where they will be saved.|Choisissez Documents à soumettre et sélectionnez un ou plusieurs fichiers. Le téléversement démarre automatiquement. Votre contact a déjà choisi où les enregistrer.|点击“选择要提交的文档”并选择一个或多个文件，上传会自动开始。联系人已为您选择保存位置。
+Wait for Done|Attendez la mention Terminé|等待显示“完成”
+Keep the page open until every upload shows Done. You can pause and resume in Transfers. After a refresh, select the same original file to continue an unfinished upload.|Gardez la page ouverte jusqu’à ce que chaque téléversement affiche Terminé. Vous pouvez interrompre et reprendre dans Transferts. Après une actualisation, sélectionnez le même fichier d’origine pour continuer un téléversement inachevé.|请保持页面打开，直到每个上传都显示“完成”。您可以在“传输”中暂停和继续。刷新页面后，重新选择相同的原始文件即可继续未完成的上传。
+A download code opens a file preview and download options instead. A collaboration code lets you edit or re-upload the invited document.|Un code de téléchargement ouvre plutôt un aperçu et les options de téléchargement. Un code de collaboration permet de modifier ou de téléverser à nouveau le document invité.|下载码将打开文件预览和下载选项。协作码可用于编辑或重新上传受邀文档。
+You’re ready to upload|Vous pouvez téléverser vos fichiers|可以开始上传了
+You’re ready to collaborate|Vous pouvez collaborer|可以开始协作了
+Your email is verified. No account is needed.|Votre adresse courriel est vérifiée. Aucun compte n’est requis.|邮箱已验证，无需账户。
+Choose files below. Uploads start automatically; wait for Done before closing this page.|Choisissez vos fichiers ci-dessous. Le téléversement démarre automatiquement; attendez la mention Terminé avant de fermer cette page.|请在下方选择文件，上传将自动开始。显示“完成”后再关闭此页面。
+The local ZIP is no longer available. Cancel this transfer and create the ZIP again.|Le ZIP local n’est plus disponible. Annulez ce transfert et créez le ZIP à nouveau.|本地 ZIP 已不可用。请取消此传输并重新创建 ZIP。

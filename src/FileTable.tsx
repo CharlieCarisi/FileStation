@@ -6,6 +6,7 @@ import {
   Trash2,
   ArrowLeftRight,
   TextCursorInput,
+  Folder,
 } from "lucide-react";
 import {
   FileIcon,
@@ -14,7 +15,7 @@ import {
   canDirectDownload,
 } from "./App.jsx";
 import { basePath } from "./http";
-import { MoveFilesDialog } from "./Folders";
+import { MoveFilesDialog, FolderActions } from "./Folders";
 import { t } from "./i18n";
 import RenameFileDialog from "./RenameFileDialog";
 import { transfers } from "./transfers";
@@ -31,6 +32,8 @@ export default function FileTable({
   onDelete,
   onTransfers,
   onChanged,
+  folders = [],
+  onOpenFolder,
 }: {
   files: Row[];
   connectors: Row[];
@@ -42,6 +45,8 @@ export default function FileTable({
   onDelete: (file: Row) => void;
   onTransfers: () => void;
   onChanged: () => void | Promise<void>;
+  folders?: Row[];
+  onOpenFolder?: (id: string) => void;
 }) {
   useSyncExternalStore(transfers.subscribe, transfers.getSnapshot);
   const completedUploads = new Set(
@@ -120,6 +125,35 @@ export default function FileTable({
             </tr>
           </thead>
           <tbody>
+            {folders.map((folder) => (
+              <tr key={`folder:${folder.id}`} className="folder-row">
+                <td className="file-select-cell" />
+                <td>
+                  <button
+                    className="folder-open"
+                    aria-label={t("Open folder {0}", { 0: folder.name })}
+                    onClick={() => onOpenFolder?.(folder.id)}
+                  >
+                    <Folder size={24} aria-hidden="true" />
+                    <span>
+                      <strong>{folder.name}</strong>
+                      <small>{t("Folder")}</small>
+                    </span>
+                  </button>
+                </td>
+                <td>—</td>
+                <td>—</td>
+                <td>{showOwner ? "—" : formatDate(folder.created_at)}</td>
+                <td>—</td>
+                <td>
+                  <FolderActions
+                    folder={folder}
+                    connectors={connectors}
+                    onChanged={onChanged}
+                  />
+                </td>
+              </tr>
+            ))}
             {files.map((file) => (
               <tr key={file.id}>
                 <td className="file-select-cell">

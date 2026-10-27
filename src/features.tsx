@@ -19,6 +19,7 @@ import {
   TransfersPanel,
 } from "./App.jsx";
 import FilePreview from "./FilePreview";
+import GuestGuide, { AccessSteps } from "./GuestGuide";
 import { DownloadIcon } from "./TransferFeedback";
 import { FilePenLine, CloudUpload } from "lucide-react";
 import { FolderSelect, SpaceSelect } from "./Folders";
@@ -69,6 +70,7 @@ export function AccessGate({
   }
   return (
     <>
+      <AccessSteps step={challenge ? 2 : 1} />
       <form className="receive-form" onSubmit={submit}>
         {challenge ? (
           <>
@@ -103,7 +105,7 @@ export function AccessGate({
                 required
                 maxLength={18}
                 autoComplete="off"
-                placeholder={t("Download, upload or collaboration code")}
+                placeholder={t("ACCESS CODE")}
                 value={code}
                 onChange={(e) => setCode(e.target.value.toUpperCase())}
               />
@@ -147,6 +149,7 @@ export function AccessGate({
           )}
         </p>
       </form>
+      <GuestGuide />
       {workspace && (
         <Modal
           title={workspace.invitation.title}
@@ -197,14 +200,20 @@ export function InvitationDialog({
     [error, setError] = useState(""),
     [busy, setBusy] = useState(false);
   useEffect(() => {
-    if (!supplied)
+    // The dialog can open before the workspace's connector request finishes.
+    if (supplied) {
+      setConnectors(supplied);
+      setConnector(
+        (value: string) => value || supplied.find((row) => row.enabled)?.id || "",
+      );
+    } else
       api("/connectors")
         .then((r: Row) => {
           setConnectors(r.connectors);
           setConnector((v: string) => v || r.connectors[0]?.id || "");
         })
         .catch((e: Error) => setError(e.message));
-  }, []);
+  }, [supplied]);
   function chooseSource(id: string) {
     const file = files.find((f) => f.id === id);
     setSourceId(id);
@@ -706,6 +715,28 @@ export function InvitationPortal({ initial }: { initial: Row }) {
   }
   return (
     <div className="invitation-portal">
+      <AccessSteps step={3} />
+      <div className="guest-ready" role="status">
+        <CloudUpload size={23} aria-hidden="true" />
+        <div>
+          <strong>
+            {invitation.kind === "submission"
+              ? t("You’re ready to upload")
+              : t("You’re ready to collaborate")}
+          </strong>
+          <p>{t("Your email is verified. No account is needed.")}</p>
+          {invitation.kind === "submission" && (
+            <p>
+              {t(
+                "Choose files below. Uploads start automatically; wait for Done before closing this page.",
+              )}
+            </p>
+          )}
+        </div>
+      </div>
+      <GuestGuide
+        mode={invitation.kind === "submission" ? "upload" : "collaboration"}
+      />
       <p className="muted">
         {t("Expires ")}
         {new Date(invitation.expires_at).toLocaleString(getLocale())}

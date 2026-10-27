@@ -1,9 +1,19 @@
-import React, { useEffect, useState } from "react";
-import { Folder, Home, FolderPen, FolderPlus, Trash2 } from "lucide-react";
+import React, { lazy, Suspense, useEffect, useState } from "react";
+import {
+  Folder,
+  Home,
+  FolderPen,
+  FolderPlus,
+  Trash2,
+  FileArchive,
+  LayoutGrid,
+  List,
+} from "lucide-react";
 import { api, post } from "./http";
 import { Modal, ErrorMessage } from "./App.jsx";
 import { t, getLocale } from "./i18n";
 type Row = Record<string, any>;
+const FolderArchiveDialog = lazy(() => import("./FolderArchiveDialog"));
 const message = (error: unknown) =>
   error instanceof Error ? error.message : "The request failed.";
 export function folderPath(id: string | null, folders: Row[]): string {
@@ -191,22 +201,119 @@ function FolderForm({
     </Modal>
   );
 }
+export function FolderActions({
+  folder,
+  connectors,
+  onChanged,
+}: {
+  folder: Row;
+  connectors: Row[];
+  onChanged: () => void | Promise<void>;
+}) {
+  const [editing, setEditing] = useState(false),
+    [archive, setArchive] = useState(false),
+    [busy, setBusy] = useState(false),
+    [error, setError] = useState("");
+  async function remove() {
+    if (!confirm(t("Delete empty folder {0}?", { 0: folder.name }))) return;
+    setBusy(true);
+    setError("");
+    try {
+      await api(`/folders/${folder.id}`, { method: "DELETE" });
+      await onChanged();
+    } catch (error) {
+      setError(message(error));
+    } finally {
+      setBusy(false);
+    }
+  }
+  return (
+    <>
+      <div className="row-actions folder-actions">
+        <button
+          className="icon-button"
+          title={t("Create folder ZIP")}
+          aria-label={t("Create ZIP of {0}", { 0: folder.name })}
+          onClick={() => setArchive(true)}
+        >
+          <FileArchive size={17} aria-hidden="true" />
+        </button>
+        <button
+          className="icon-button"
+          title={t("Manage folder")}
+          aria-label={t("Manage folder {0}", { 0: folder.name })}
+          onClick={() => setEditing(true)}
+        >
+          <FolderPen size={16} aria-hidden="true" />
+        </button>
+        <button
+          className="icon-button danger"
+          title={t("Delete folder")}
+          disabled={busy}
+          aria-label={t("Delete folder {0}", { 0: folder.name })}
+          onClick={remove}
+        >
+          <Trash2 size={16} aria-hidden="true" />
+        </button>
+      </div>
+      {error && (
+        <Modal title={t("Folder")} onClose={() => setError("")}>
+          <ErrorMessage error={error} />
+        </Modal>
+      )}
+      {editing && (
+        <FolderForm
+          folder={folder}
+          parentId={folder.parent_id}
+          space={folder.space || "private"}
+          onClose={() => setEditing(false)}
+          onSaved={onChanged}
+        />
+      )}
+      {archive && (
+        <Suspense
+          fallback={
+            <Modal
+              title={t("Create folder ZIP")}
+              onClose={() => setArchive(false)}
+            >
+              <p role="status">{t("Creating ZIP…")}</p>
+            </Modal>
+          }
+        >
+          <FolderArchiveDialog
+            folder={folder}
+            connectors={connectors}
+            onClose={() => setArchive(false)}
+            onSaved={onChanged}
+          />
+        </Suspense>
+      )}
+    </>
+  );
+}
 export function FolderPane({
   folders,
   current,
   space = "private",
   onOpen,
   onChanged,
+  connectors,
+  view,
+  onView,
+  search = "",
 }: {
   folders: Row[];
   current: string | null;
   space?: string;
   onOpen: (id: string | null) => void;
   onChanged: () => void | Promise<void>;
+  connectors: Row[];
+  view: string;
+  onView: (view: string) => void;
+  search?: string;
 }) {
-  const [editing, setEditing] = useState<Row | null | undefined>(),
-    [error, setError] = useState(""),
-    [busy, setBusy] = useState("");
+  const [creating, setCreating] = useState(false);
   const ancestors: Row[] = [];
   let parent = current;
   const seen = new Set<string>();
@@ -217,20 +324,11 @@ export function FolderPane({
     ancestors.unshift(folder);
     parent = folder.parent_id;
   }
-  const children = folders.filter((row) => (row.parent_id || null) === current);
-  async function remove(folder: Row) {
-    if (!confirm(t("Delete empty folder {0}?", { 0: folder.name }))) return;
-    setBusy(folder.id);
-    setError("");
-    try {
-      await api(`/folders/${folder.id}`, { method: "DELETE" });
-      await onChanged();
-    } catch (error) {
-      setError(message(error));
-    } finally {
-      setBusy("");
-    }
-  }
+  const children = folders.filter(
+    (row) =>
+      (row.parent_id || null) === current &&
+      row.name.toLowerCase().includes(search.toLowerCase()),
+  );
   return (
     <section className="folder-workspace" aria-label={t("Workspace folders")}>
       <div className="folder-toolbar">
@@ -257,18 +355,46 @@ export function FolderPane({
             </React.Fragment>
           ))}
         </nav>
-        <button className="button secondary" onClick={() => setEditing(null)}>
-          <FolderPlus size={16} aria-hidden="true" />
-          {t("New folder")}
-        </button>
+        <div className="folder-toolbar-actions">
+          <div
+            className="folder-view-toggle"
+            role="group"
+            aria-label={t("Folder view")}
+          >
+            <button
+              className="text-button"
+              aria-label={t("Folder tile view")}
+              aria-pressed={view === "tiles"}
+              onClick={() => onView("tiles")}
+            >
+              <LayoutGrid size={16} />
+              {t("Tiles")}
+            </button>
+            <button
+              className="text-button"
+              aria-label={t("Folder list view")}
+              aria-pressed={view === "list"}
+              onClick={() => onView("list")}
+            >
+              <List size={16} />
+              {t("List")}
+            </button>
+          </div>
+          <button
+            className="button secondary"
+            onClick={() => setCreating(true)}
+          >
+            <FolderPlus size={16} aria-hidden="true" />
+            {t("New folder")}
+          </button>
+        </div>
       </div>
       <p className="fineprint">
         {t(
           "Folders organize your workspace. Each file keeps its storage destination and retention policy.",
         )}
       </p>
-      <ErrorMessage error={error} />
-      {!!children.length && (
+      {view === "tiles" && !!children.length && (
         <div className="folder-grid">
           {children.map((folder) => (
             <article className="folder-card" key={folder.id}>
@@ -280,33 +406,20 @@ export function FolderPane({
                 <Folder size={24} />
                 <strong>{folder.name}</strong>
               </button>
-              <div className="row-actions">
-                <button
-                  className="icon-button"
-                  aria-label={t("Manage folder {0}", { 0: folder.name })}
-                  onClick={() => setEditing(folder)}
-                >
-                  <FolderPen size={16} aria-hidden="true" />
-                </button>
-                <button
-                  className="icon-button danger"
-                  disabled={busy === folder.id}
-                  aria-label={t("Delete folder {0}", { 0: folder.name })}
-                  onClick={() => remove(folder)}
-                >
-                  <Trash2 size={16} />
-                </button>
-              </div>
+              <FolderActions
+                folder={folder}
+                connectors={connectors}
+                onChanged={onChanged}
+              />
             </article>
           ))}
         </div>
       )}
-      {editing !== undefined && (
+      {creating && (
         <FolderForm
-          folder={editing || undefined}
           parentId={current}
           space={space}
-          onClose={() => setEditing(undefined)}
+          onClose={() => setCreating(false)}
           onSaved={onChanged}
         />
       )}
