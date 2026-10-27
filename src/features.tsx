@@ -1,4 +1,6 @@
 import { t, getLocale } from "./i18n";
+import { parseRecipients } from "../shared/recipients";
+import RecipientField from "./RecipientField";
 import React, {
   lazy,
   Suspense,
@@ -229,7 +231,7 @@ export function InvitationDialog({
           connectorId,
           folderId,
           space: destinationSpace,
-          recipients: recipients.split(/[,;\s]+/).filter(Boolean),
+          recipients: parseRecipients(recipients),
           expiresDays: days,
           maxFileBytes: Math.round(maxMB * 1e6),
           maxFiles: count,
@@ -279,9 +281,20 @@ export function InvitationDialog({
             {t("Copy link")}
           </button>
           <p>
-            {result.emailSent
-              ? t("Invitation email sent.")
-              : t("Send this link and code to the invited recipients.")}
+            {result.developmentEmail
+              ? t("Email simulated locally. Copy the link for testing.")
+              : result.emailSent
+                ? result.recipientCount === 1
+                  ? t("Invitation email sent to 1 recipient.")
+                  : t("Invitation email sent to {0} recipients.", {
+                      0: result.recipientCount,
+                    })
+                : t("Send this link and code to the invited recipients.")}
+          </p>
+          <p className="fineprint">
+            {t(
+              "Everyone invited uses this same code and verifies their own email address.",
+            )}
           </p>
           <ErrorMessage error={result.emailError || error} />
         </>
@@ -383,16 +396,11 @@ export function InvitationDialog({
             onChange={setFolderId}
             onReady={setFolderReady}
           />
-          <label>
-            {t("Invited email addresses")}
-            <textarea
-              required
-              rows={3}
-              value={recipients}
-              onChange={(e) => setRecipients(e.target.value)}
-              placeholder="partner@example.com"
-            />
-          </label>
+          <RecipientField
+            label={t("Invited email addresses")}
+            value={recipients}
+            onChange={setRecipients}
+          />
           <div className="field-row">
             <label>
               {t("Expires in days")}

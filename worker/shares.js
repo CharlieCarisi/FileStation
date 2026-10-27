@@ -8,6 +8,7 @@ import {
   json,
   body,
   email,
+  recipientEmails,
   id,
   now,
   hash,
@@ -162,14 +163,7 @@ async function shareRoutes(request, env, path) {
         "This file is no longer available.",
       );
       const b = await body(request);
-      ensure(
-        Array.isArray(b.recipients) &&
-          b.recipients.length > 0 &&
-          b.recipients.length <= 20,
-        400,
-        "Enter between 1 and 20 recipient email addresses.",
-      );
-      const recipients = [...new Set(b.recipients.map(email))];
+      const recipients = recipientEmails(b.recipients);
       ensure(
         Number.isInteger(b.expiresDays) &&
           b.expiresDays >= 1 &&
@@ -254,6 +248,7 @@ async function shareRoutes(request, env, path) {
           expiresAt,
           emailSent,
           emailError,
+          recipientCount: recipients.length,
           developmentEmail: env.DEV_MODE === "true" && b.sendEmail,
         },
         201,

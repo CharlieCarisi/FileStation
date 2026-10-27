@@ -8,6 +8,7 @@ import {
   json,
   body,
   email,
+  recipientEmails,
   id,
   now,
   hash,
@@ -410,14 +411,7 @@ export async function invitationRoutes(
       400,
       "Enter an invitation title up to 160 characters.",
     );
-    ensure(
-      Array.isArray(value.recipients) &&
-        value.recipients.length >= 1 &&
-        value.recipients.length <= 20,
-      400,
-      "Enter 1–20 recipient email addresses.",
-    );
-    const recipients = [...new Set<string>(value.recipients.map(email))];
+    const recipients = recipientEmails(value.recipients);
     ensure(
       Number.isInteger(value.expiresDays) &&
         value.expiresDays >= 1 &&
@@ -595,7 +589,16 @@ export async function invitationRoutes(
     }
     await audit(env, user.id, `invitation.${value.kind}.created`, invitationId);
     return json(
-      { id: invitationId, code, link, expiresAt, emailSent, emailError },
+      {
+        id: invitationId,
+        code,
+        link,
+        expiresAt,
+        emailSent,
+        emailError,
+        recipientCount: recipients.length,
+        developmentEmail: env.DEV_MODE === "true" && !!value.sendEmail,
+      },
       201,
     );
   }

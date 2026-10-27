@@ -827,3 +827,12 @@ Keep the original file extension when renaming.|Conservez l’extension d’orig
 Choose a valid filename to rename.|Choisissez un nom de fichier valide à renommer.|请选择有效的文件名进行重命名。
 Finish uploading the file before renaming it.|Terminez le téléversement du fichier avant de le renommer.|请先完成文件上传，再进行重命名。
 file renamed|fichier renommé|已重命名文件
+Check this email address: {0}|Vérifiez cette adresse courriel : {0}|请检查此邮箱地址：{0}
+Separate addresses with commas, semicolons, spaces, or new lines. Up to 20 recipients.|Séparez les adresses par des virgules, des points-virgules, des espaces ou des sauts de ligne. Maximum de 20 destinataires.|请使用逗号、分号、空格或换行分隔邮箱地址，最多 20 位收件人。
+1 recipient|1 destinataire|1 位收件人
+{0} recipients|{0} destinataires|{0} 位收件人
+Invitation email sent to 1 recipient.|Courriel d’invitation envoyé à 1 destinataire.|邀请邮件已发送给 1 位收件人。
+Invitation email sent to {0} recipients.|Courriel d’invitation envoyé à {0} destinataires.|邀请邮件已发送给 {0} 位收件人。
+Email sent to 1 recipient. They’ll verify their address before downloading.|Courriel envoyé à 1 destinataire. Cette personne devra vérifier son adresse avant de télécharger.|邮件已发送给 1 位收件人。下载前需验证其邮箱地址。
+Email sent to {0} recipients. They’ll verify their address before downloading.|Courriel envoyé à {0} destinataires. Chaque personne devra vérifier son adresse avant de télécharger.|邮件已发送给 {0} 位收件人。下载前需各自验证其邮箱地址。
+Everyone invited uses this same code and verifies their own email address.|Toutes les personnes invitées utilisent ce même code et vérifient leur propre adresse courriel.|所有受邀者使用同一个访问码，并各自验证其邮箱地址。

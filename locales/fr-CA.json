@@ -827,5 +827,14 @@
   "Keep the original file extension when renaming.": "Conservez l’extension d’origine lors du changement de nom.",
   "Choose a valid filename to rename.": "Choisissez un nom de fichier valide à renommer.",
   "Finish uploading the file before renaming it.": "Terminez le téléversement du fichier avant de le renommer.",
-  "file renamed": "fichier renommé"
+  "file renamed": "fichier renommé",
+  "Check this email address: {0}": "Vérifiez cette adresse courriel : {0}",
+  "Separate addresses with commas, semicolons, spaces, or new lines. Up to 20 recipients.": "Séparez les adresses par des virgules, des points-virgules, des espaces ou des sauts de ligne. Maximum de 20 destinataires.",
+  "1 recipient": "1 destinataire",
+  "{0} recipients": "{0} destinataires",
+  "Invitation email sent to 1 recipient.": "Courriel d’invitation envoyé à 1 destinataire.",
+  "Invitation email sent to {0} recipients.": "Courriel d’invitation envoyé à {0} destinataires.",
+  "Email sent to 1 recipient. They’ll verify their address before downloading.": "Courriel envoyé à 1 destinataire. Cette personne devra vérifier son adresse avant de télécharger.",
+  "Email sent to {0} recipients. They’ll verify their address before downloading.": "Courriel envoyé à {0} destinataires. Chaque personne devra vérifier son adresse avant de télécharger.",
+  "Everyone invited uses this same code and verifies their own email address.": "Toutes les personnes invitées utilisent ce même code et vérifient leur propre adresse courriel."
 }

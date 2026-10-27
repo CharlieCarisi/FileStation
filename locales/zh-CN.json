@@ -827,5 +827,14 @@
   "Keep the original file extension when renaming.": "重命名时请保留原有文件扩展名。",
   "Choose a valid filename to rename.": "请选择有效的文件名进行重命名。",
   "Finish uploading the file before renaming it.": "请先完成文件上传，再进行重命名。",
-  "file renamed": "已重命名文件"
+  "file renamed": "已重命名文件",
+  "Check this email address: {0}": "请检查此邮箱地址：{0}",
+  "Separate addresses with commas, semicolons, spaces, or new lines. Up to 20 recipients.": "请使用逗号、分号、空格或换行分隔邮箱地址，最多 20 位收件人。",
+  "1 recipient": "1 位收件人",
+  "{0} recipients": "{0} 位收件人",
+  "Invitation email sent to 1 recipient.": "邀请邮件已发送给 1 位收件人。",
+  "Invitation email sent to {0} recipients.": "邀请邮件已发送给 {0} 位收件人。",
+  "Email sent to 1 recipient. They’ll verify their address before downloading.": "邮件已发送给 1 位收件人。下载前需验证其邮箱地址。",
+  "Email sent to {0} recipients. They’ll verify their address before downloading.": "邮件已发送给 {0} 位收件人。下载前需各自验证其邮箱地址。",
+  "Everyone invited uses this same code and verifies their own email address.": "所有受邀者使用同一个访问码，并各自验证其邮箱地址。"
 }

@@ -2,6 +2,7 @@
 import { __name } from "./runtime.js";
 import { emailLayout } from "./email.js";
 import { base64, smtpMail } from "./smtp.js";
+import { parseRecipients, validEmailAddress } from "../shared/recipients";
 var HttpError = class extends Error {
   constructor(status, message) {
     super(message);
@@ -38,11 +39,7 @@ __name(body, "body");
 function email(value) {
   ensure(typeof value === "string", 400, "Enter an email address.");
   const e = value.trim().toLowerCase();
-  ensure(
-    e.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e),
-    400,
-    "Enter a valid email address.",
-  );
+  ensure(validEmailAddress(e), 400, "Enter a valid email address.");
   return e;
 }
 __name(email, "email");
@@ -130,6 +127,13 @@ function escapeHtml(s) {
   );
 }
 __name(escapeHtml, "escapeHtml");
+function recipientEmails(value) {
+  try {
+    return parseRecipients(value);
+  } catch (error) {
+    throw new HttpError(400, error.message);
+  }
+}
 async function mail(env, to, subject, text, html) {
   if (env.DEV_MODE === "true") return;
   html ||= emailLayout({
@@ -153,6 +157,7 @@ async function mail(env, to, subject, text, html) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       api_key: env.SMTP2GO_API_KEY,
+      fastaccept: false,
       sender: env.SMTP_FROM,
       to,
       subject,
@@ -163,8 +168,10 @@ async function mail(env, to, subject, text, html) {
   const result = await r.json();
   ensure(
     r.ok &&
-      result.data?.succeeded === to.length &&
-      !result.data?.failed &&
+      // SMTP2GO counts one message addressed to several recipients as one email.
+      result.data?.succeeded === 1 &&
+      result.data?.failed === 0 &&
+      !result.data?.failures?.length &&
       !result.data?.error_code,
     502,
     "The email provider could not deliver the message. Please try again.",
@@ -256,6 +263,7 @@ export {
   json,
   body,
   email,
+  recipientEmails,
   id,
   now,
   hash,

@@ -9,6 +9,8 @@ import FilePreview from "./FilePreview";
 import ShareAddressSettings from "./ShareAddressSettings";
 import { FolderPane, FolderSelect, SpaceSelect } from "./Folders";
 import FileTable from "./FileTable";
+import RecipientField from "./RecipientField";
+import { parseRecipients } from "../shared/recipients";
 import { DownloadIcon, CompletionBadge } from "./TransferFeedback";
 // Restored from the published browser application; see docs/recovery.md.
 import * as D from "react";
@@ -461,7 +463,7 @@ function ShareDialog({ file: S, onClose: v, onChanged: T }) {
     (V.preventDefault(), A(!0), N(""));
     try {
       const Me = await post(`/files/${S.id}/shares`, {
-        recipients: o.split(/[,;\s]+/).filter(Boolean),
+        recipients: parseRecipients(o),
         expiresDays: C,
         sendEmail: M,
       });
@@ -563,13 +565,18 @@ Access code: ${k.code}`,
                   c.jsx(Gm, {
                     size: 18,
                   }),
-                  k.emailError ||
+                  (k.emailError && t(k.emailError)) ||
                     (k.developmentEmail
                       ? t("Email simulated locally. Copy the link for testing.")
                       : k.emailSent
-                        ? t(
-                            "Email sent to your recipients. They\u2019ll verify their address before downloading.",
-                          )
+                        ? k.recipientCount === 1
+                          ? t(
+                              "Email sent to 1 recipient. They’ll verify their address before downloading.",
+                            )
+                          : t(
+                              "Email sent to {0} recipients. They’ll verify their address before downloading.",
+                              { 0: k.recipientCount },
+                            )
                         : t(
                             "Copy this link and send it to your recipients. They\u2019ll verify their address before downloading.",
                           )),
@@ -585,22 +592,10 @@ Access code: ${k.code}`,
         : c.jsxs("form", {
             onSubmit: De,
             children: [
-              c.jsxs("label", {
-                children: [
-                  t("Recipient email addresses"),
-                  c.jsx("textarea", {
-                    required: !0,
-                    rows: 3,
-                    value: o,
-                    onChange: (V) => _(V.target.value),
-                    placeholder: "alex@company.com, sam@company.com",
-                  }),
-                  c.jsx("small", {
-                    children: t(
-                      "Separate addresses with commas. Up to 20 recipients.",
-                    ),
-                  }),
-                ],
+              c.jsx(RecipientField, {
+                label: t("Recipient email addresses"),
+                value: o,
+                onChange: _,
               }),
               c.jsxs("label", {
                 children: [
