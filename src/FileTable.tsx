@@ -1,11 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useSyncExternalStore } from "react";
 import {
-  Download,
   ArrowDown,
-  Link2,
+  Share2,
   FolderInput,
   Trash2,
-  Upload,
+  ArrowLeftRight,
 } from "lucide-react";
 import {
   FileIcon,
@@ -16,6 +15,8 @@ import {
 import { basePath } from "./http";
 import { MoveFilesDialog } from "./Folders";
 import { t } from "./i18n";
+import { transfers } from "./transfers";
+import { DownloadIcon, CompletionBadge } from "./TransferFeedback";
 type Row = Record<string, any>;
 export default function FileTable({
   files,
@@ -40,6 +41,14 @@ export default function FileTable({
   onTransfers: () => void;
   onChanged: () => void | Promise<void>;
 }) {
+  useSyncExternalStore(transfers.subscribe, transfers.getSnapshot);
+  const completedUploads = new Set(
+    transfers.items
+      .filter(
+        (item: Row) => item.direction === "upload" && item.state === "complete",
+      )
+      .map((item: Row) => item.fileId),
+  );
   const [selected, setSelected] = useState<Set<string>>(new Set()),
     [moving, setMoving] = useState<Row[] | null>(null);
   useEffect(() => setSelected(new Set()), [contextKey]);
@@ -122,7 +131,13 @@ export default function FileTable({
                   <div className="file-name">
                     <FileIcon name={file.name} />
                     <div>
-                      <strong title={file.name}>{file.name}</strong>
+                      <div className="file-title">
+                        <strong title={file.name}>{file.name}</strong>
+                        {completedUploads.has(file.id) &&
+                          file.state === "ready" && (
+                            <CompletionBadge compact name={file.name} />
+                          )}
+                      </div>
                       <small>
                         {file.state === "uploading"
                           ? t("Upload in progress")
@@ -165,23 +180,27 @@ export default function FileTable({
                     {file.state === "ready" ? (
                       <>
                         <button
-                          className="icon-button"
-                          aria-label={t("Download {0}", { 0: file.name })}
+                          className="icon-button download-action resumable"
+                          aria-label={t("Resumable download {0}", {
+                            0: file.name,
+                          })}
                           title={t("Resumable download")}
                           onClick={() => onDownload(file)}
                         >
-                          <Download size={17} />
+                          <DownloadIcon resumable size={18} />
+                          <span>{t("Resumable")}</span>
                         </button>
                         {canDirectDownload(file) && (
                           <a
-                            className="icon-button"
+                            className="icon-button download-action direct"
                             aria-label={t("Direct browser download {0}", {
                               0: file.name,
                             })}
                             title={t("Direct browser download")}
                             href={`${basePath}/api/files/${file.id}/download`}
                           >
-                            <ArrowDown size={17} />
+                            <DownloadIcon size={18} />
+                            <span>{t("Direct")}</span>
                           </a>
                         )}
                         <button
@@ -190,7 +209,7 @@ export default function FileTable({
                           title={t("Share file")}
                           onClick={() => onShare(file)}
                         >
-                          <Link2 size={17} />
+                          <Share2 size={17} aria-hidden="true" />
                         </button>
                       </>
                     ) : file.can_resume !== false ? (
@@ -200,7 +219,7 @@ export default function FileTable({
                         title={t("Go to transfers")}
                         onClick={onTransfers}
                       >
-                        <Upload size={17} />
+                        <ArrowLeftRight size={17} aria-hidden="true" />
                       </button>
                     ) : null}
                     <button

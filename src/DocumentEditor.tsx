@@ -1,3 +1,4 @@
+import { FileDown, Save, X, Pause, Play } from "lucide-react";
 import { docxLocale } from "./docx-locales";
 import { t, LanguageSelector } from "./i18n";
 import React, {
@@ -178,6 +179,7 @@ export default function DocumentEditor({
             onClick={downloadLocal}
             disabled={loading}
           >
+            <FileDown size={17} aria-hidden="true" />
             {t("Download my edits")}
           </button>
           <button
@@ -185,6 +187,7 @@ export default function DocumentEditor({
             onClick={() => save()}
             disabled={loading || saving || (!buffer && docx)}
           >
+            <Save size={17} aria-hidden="true" />
             {saving ? t("Saving\u2026") : t("Save working copy")}
           </button>
           <button
@@ -192,6 +195,7 @@ export default function DocumentEditor({
             onClick={close}
             disabled={saving}
           >
+            <X size={17} aria-hidden="true" />
             {t("Close editor")}
           </button>
         </div>
@@ -205,6 +209,7 @@ export default function DocumentEditor({
               className="text-button"
               onClick={() => transfers.pause(transfer.id)}
             >
+              <Pause size={15} aria-hidden="true" />
               {t("Pause save")}
             </button>
           ) : transfer.state === "paused" ? (
@@ -212,6 +217,7 @@ export default function DocumentEditor({
               className="text-button"
               onClick={() => transfers.resume(transfer.id)}
             >
+              <Play size={15} aria-hidden="true" />
               {t("Resume save")}
             </button>
           ) : null}

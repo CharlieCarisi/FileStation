@@ -161,7 +161,7 @@ test("parallel transfers survive pause/reload, resume missing chunks, and assemb
   );
   await page.reload();
   await page
-    .getByRole("button", { name: `Download ${name}`, exact: true })
+    .getByRole("button", { name: `Resumable download ${name}`, exact: true })
     .click();
   await page
     .getByRole("button", { name: /^Transfers/ })

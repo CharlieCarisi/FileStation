@@ -17,6 +17,8 @@ import {
   TransfersPanel,
 } from "./App.jsx";
 import FilePreview from "./FilePreview";
+import { DownloadIcon } from "./TransferFeedback";
+import { FilePenLine, CloudUpload } from "lucide-react";
 import { FolderSelect, SpaceSelect } from "./Folders";
 const DocumentEditor = lazy(() => import("./DocumentEditor"));
 type Row = Record<string, any>;
@@ -726,6 +728,7 @@ export function InvitationPortal({ initial }: { initial: Row }) {
                 ) || data.file.size > 20 * 1024 * 1024
               }
             >
+              <FilePenLine size={17} aria-hidden="true" />
               {t("Edit online")}
             </button>
             <button
@@ -736,9 +739,11 @@ export function InvitationPortal({ initial }: { initial: Row }) {
                   .catch((e: Error) => setError(e.message))
               }
             >
+              <DownloadIcon resumable />
               {t("Resumable download")}
             </button>
             <a className="text-button" href={`${basePath}/api${path}`}>
+              <DownloadIcon />
               {t("Direct download")}
             </a>
           </div>
@@ -756,6 +761,7 @@ export function InvitationPortal({ initial }: { initial: Row }) {
         </p>
       )}
       <label className="submission-drop">
+        <CloudUpload size={24} aria-hidden="true" />
         {invitation.kind === "collaboration"
           ? t("Re-upload your edited document")
           : t("Choose documents to submit")}

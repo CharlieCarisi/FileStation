@@ -805,5 +805,15 @@
   "The file changed. Refresh and try again.": "Le fichier a été modifié. Actualisez la page et réessayez.",
   "Delete user and personal files": "Supprimer le compte et les fichiers personnels",
   "This deactivates {0} and deletes their Private files and unfinished uploads. Completed Public files remain available to the team.": "Cette action désactive {0} et supprime ses fichiers privés et ses téléversements inachevés. Les fichiers communs dont le téléversement est terminé demeurent accessibles à l’équipe.",
-  "Account and personal files deleted. Public files were retained.": "Le compte et les fichiers personnels ont été supprimés. Les fichiers communs ont été conservés."
+  "Account and personal files deleted. Public files were retained.": "Le compte et les fichiers personnels ont été supprimés. Les fichiers communs ont été conservés.",
+  "Upload complete for {0}": "Téléversement terminé pour {0}",
+  "Download complete for {0}": "Téléchargement terminé pour {0}",
+  "Resumable download {0}": "Téléchargement avec reprise de {0}",
+  "Resumable": "Reprise",
+  "Direct": "Direct",
+  "Uploaded": "Téléversé",
+  "Downloaded": "Téléchargé",
+  "Finalizing upload…": "Finalisation du téléversement…",
+  "Upload progress for {0}": "Progression du téléversement de {0}",
+  "Download progress for {0}": "Progression du téléchargement de {0}"
 }

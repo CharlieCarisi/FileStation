@@ -4,6 +4,10 @@ test("two team members use Public folders, share and upload while Private files 
   page,
   browser,
 }) => {
+  // Multiple accounts in this flow use their own simulated client IPs.
+  await page
+    .context()
+    .setExtraHTTPHeaders({ "CF-Connecting-IP": "192.0.2.91" });
   const run = Date.now(),
     name = `Personal-${run}.txt`,
     team = `Team-${run}`,
@@ -47,7 +51,9 @@ test("two team members use Public folders, share and upload while Private files 
   await expect(
     page.getByRole("button", { name: `Share ${name}`, exact: true }),
   ).toBeVisible();
-  const otherContext = await browser.newContext(),
+  const otherContext = await browser.newContext({
+      extraHTTPHeaders: { "CF-Connecting-IP": "192.0.2.92" },
+    }),
     colleague = await otherContext.newPage();
   colleague.on("pageerror", (error) => errors.push(error.message));
   try {

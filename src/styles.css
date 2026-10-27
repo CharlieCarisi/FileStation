@@ -2215,3 +2215,88 @@ html[lang="fr-CA"] .sidebar nav button {
     overflow-wrap: anywhere;
   }
 }
+
+/* Completion stays attached to its file, without interrupting the workspace. */
+.completion-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+  padding: 5px 10px;
+  border: 1px solid #add2b6;
+  border-radius: 999px;
+  background: #edf8ef;
+  color: #25613d;
+  font-size: 11px;
+  font-weight: 650;
+  line-height: 1;
+  white-space: nowrap;
+}
+.completion-badge.compact {
+  padding: 3px 6px;
+  gap: 3px;
+  font-size: 9px;
+}
+.transfer-card {
+  position: relative;
+}
+.transfer-card.is-complete {
+  border-color: #add2b6;
+  padding-top: 28px;
+}
+.transfer-card > .completion-badge {
+  position: absolute;
+  top: -12px;
+  right: 16px;
+  box-shadow: 0 2px 5px #1c5a3a0a;
+}
+.transfer-card.is-complete .progress-bar i {
+  background: #4a9365;
+}
+.file-title {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.file-title strong {
+  min-width: 0;
+}
+.row-actions .download-action {
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px 8px;
+  min-width: 52px;
+}
+.download-action span {
+  font-size: 9px;
+  font-weight: 550;
+  line-height: 1.1;
+}
+.row-actions .download-action.resumable {
+  color: #35674a;
+}
+.row-actions .download-action.direct {
+  color: #697e86;
+}
+.feature-actions .text-button,
+.submission-drop > svg {
+  vertical-align: middle;
+}
+.feature-actions .text-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.submission-drop > svg {
+  display: block;
+  margin: 0 auto 8px;
+}
+@media (max-width: 600px) {
+  .transfer-card.is-complete {
+    padding-top: 26px;
+  }
+  .transfer-card > .completion-badge {
+    right: 12px;
+  }
+}

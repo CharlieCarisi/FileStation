@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Folder, Home, Settings2, Trash2 } from "lucide-react";
+import { Folder, Home, FolderPen, FolderPlus, Trash2 } from "lucide-react";
 import { api, post } from "./http";
 import { Modal, ErrorMessage } from "./App.jsx";
 import { t, getLocale } from "./i18n";
@@ -258,6 +258,7 @@ export function FolderPane({
           ))}
         </nav>
         <button className="button secondary" onClick={() => setEditing(null)}>
+          <FolderPlus size={16} aria-hidden="true" />
           {t("New folder")}
         </button>
       </div>
@@ -285,7 +286,7 @@ export function FolderPane({
                   aria-label={t("Manage folder {0}", { 0: folder.name })}
                   onClick={() => setEditing(folder)}
                 >
-                  <Settings2 size={16} />
+                  <FolderPen size={16} aria-hidden="true" />
                 </button>
                 <button
                   className="icon-button danger"

@@ -9,18 +9,30 @@ import FilePreview from "./FilePreview";
 import ShareAddressSettings from "./ShareAddressSettings";
 import { FolderPane, FolderSelect, SpaceSelect } from "./Folders";
 import FileTable from "./FileTable";
+import { DownloadIcon, CompletionBadge } from "./TransferFeedback";
 // Restored from the published browser application; see docs/recovery.md.
 import * as D from "react";
 import * as c from "react/jsx-runtime";
 import {
-  Link2 as Fi,
+  Share2 as Fi,
+  FolderLock,
+  KeyRound,
+  Inbox,
+  FilePenLine,
+  ArrowLeftRight,
+  Files,
+  CloudDownload,
+  CircleCheck,
+  CircleX,
+  FileAudio,
+  FileVideo,
+  FileSpreadsheet,
+  FileCode2,
+  Presentation,
   Settings2 as Vm,
   Trash2 as Lm,
-  ArrowDownToLine as gn,
-  ArrowDown as Gf,
   ArrowRight as $i,
   ArrowUpRight as zm,
-  ArrowUp as a1,
   Check as ki,
   ChevronRight as Am,
   CircleAlert as n1,
@@ -44,7 +56,6 @@ import {
   Save as Qm,
   Search as m1,
   ShieldCheck as yu,
-  Upload as v1,
   UserCheck as y1,
   UserX as g1,
   Users as S1,
@@ -419,7 +430,7 @@ function UploadDialog({
                     ? " " + formatBytes(o.reduce((G, $) => G + $.size, 0))
                     : "",
                 }),
-            c.jsx($i, {
+            c.jsx(u1, {
               size: 17,
             }),
           ],
@@ -1833,9 +1844,9 @@ const userNavigation = [
     {
       page: "files",
       label: "Private files",
-      icon: Xf,
+      icon: FolderLock,
     },
-    { page: "public", label: "Public files", icon: S1 },
+    { page: "public", label: "Public files", icon: Xf },
     {
       page: "shared",
       label: "Shared by me",
@@ -1844,22 +1855,22 @@ const userNavigation = [
     {
       page: "access",
       label: "Use an access code",
-      icon: Fi,
+      icon: KeyRound,
     },
     {
       page: "requests",
       label: "File requests",
-      icon: v1,
+      icon: Inbox,
     },
     {
       page: "collaborations",
       label: "Collaborations",
-      icon: qm,
+      icon: FilePenLine,
     },
     {
       page: "transfers",
       label: "Transfers",
-      icon: gn,
+      icon: ArrowLeftRight,
     },
     {
       page: "storage",
@@ -1876,7 +1887,7 @@ const userNavigation = [
     {
       page: "allfiles",
       label: "All files",
-      icon: Bm,
+      icon: Files,
     },
     {
       page: "settings",
@@ -1907,19 +1918,56 @@ function Brand() {
   });
 }
 function FileIcon({ name: S }) {
-  const v = S.split(".").at(-1)?.toLowerCase(),
-    T = ["png", "jpg", "jpeg", "webp", "gif", "svg"].includes(v || "")
-      ? s1
-      : ["zip", "tar", "gz", "rar", "7z"].includes(v || "")
-        ? c1
-        : ["txt", "doc", "docx", "pdf", "md", "csv", "xlsx"].includes(v || "")
-          ? qm
-          : f1;
+  const ext = S.split(".").at(-1)?.toLowerCase() || "";
+  const image = [
+    "png",
+    "jpg",
+    "jpeg",
+    "webp",
+    "gif",
+    "svg",
+    "avif",
+    "heic",
+  ].includes(ext);
+  const Icon = image
+    ? s1
+    : ["zip", "tar", "gz", "rar", "7z"].includes(ext)
+      ? c1
+      : ["mp4", "webm", "mov", "mkv", "avi", "m4v", "ogv"].includes(ext)
+        ? FileVideo
+        : ["mp3", "wav", "ogg", "m4a", "flac", "aac"].includes(ext)
+          ? FileAudio
+          : ["xlsx", "xls", "csv", "ods"].includes(ext)
+            ? FileSpreadsheet
+            : ["ppt", "pptx", "odp"].includes(ext)
+              ? Presentation
+              : [
+                    "json",
+                    "xml",
+                    "html",
+                    "css",
+                    "js",
+                    "ts",
+                    "yaml",
+                    "yml",
+                  ].includes(ext)
+                ? FileCode2
+                : [
+                      "txt",
+                      "doc",
+                      "docx",
+                      "pdf",
+                      "md",
+                      "rtf",
+                      "odt",
+                      "log",
+                    ].includes(ext)
+                  ? qm
+                  : f1;
   return c.jsx("span", {
-    className: `file-icon ${v === "pdf" ? "red" : ["png", "jpg", "jpeg"].includes(v || "") ? "purple" : ""}`,
-    children: c.jsx(T, {
-      size: 22,
-    }),
+    className: `file-icon ${ext === "pdf" ? "red" : image ? "purple" : ""}`,
+    "aria-hidden": true,
+    children: c.jsx(Icon, { size: 22 }),
   });
 }
 function App() {
@@ -2883,7 +2931,7 @@ function App() {
                           children: [
                             c.jsx("span", {
                               className: "receive-symbol",
-                              children: c.jsx(gn, {
+                              children: c.jsx(KeyRound, {
                                 size: 25,
                               }),
                             }),
@@ -3041,9 +3089,7 @@ function App() {
                 fe(oe);
               },
               children: [
-                c.jsx(gn, {
-                  size: 18,
-                }),
+                c.jsx(DownloadIcon, { resumable: true, size: 18 }),
                 t("Start resumable download"),
               ],
             }),
@@ -3053,7 +3099,7 @@ function App() {
                   href: `${basePath}/api/files/${oe.id}/download`,
                   children: [
                     t("Direct browser download"),
-                    c.jsx(zm, {
+                    c.jsx(DownloadIcon, {
                       size: 14,
                     }),
                   ],
@@ -3159,8 +3205,14 @@ function TransfersPanel({ _version: S = 0, version: v = 0, onError: T }) {
             c.jsxs(
               "article",
               {
-                className: "transfer-card",
+                className: `transfer-card ${M.state === "complete" ? "is-complete" : ""}`,
+                "aria-label": M.name,
                 children: [
+                  M.state === "complete" &&
+                    c.jsx(CompletionBadge, {
+                      name: M.name,
+                      direction: M.direction,
+                    }),
                   c.jsxs("div", {
                     className: "transfer-head",
                     children: [
@@ -3168,10 +3220,10 @@ function TransfersPanel({ _version: S = 0, version: v = 0, onError: T }) {
                         className: `transfer-direction ${M.direction}`,
                         children:
                           M.direction === "upload"
-                            ? c.jsx(a1, {
+                            ? c.jsx(M.state === "complete" ? CircleCheck : u1, {
                                 size: 20,
                               })
-                            : c.jsx(Gf, {
+                            : c.jsx(CloudDownload, {
                                 size: 20,
                               }),
                       }),
@@ -3183,15 +3235,21 @@ function TransfersPanel({ _version: S = 0, version: v = 0, onError: T }) {
                           c.jsxs("small", {
                             children: [
                               M.direction === "upload"
-                                ? t("Uploading")
-                                : t("Downloading"),
+                                ? M.state === "complete"
+                                  ? t("Uploaded")
+                                  : M.state === "running" && M.done >= M.size
+                                    ? t("Finalizing upload…")
+                                    : t("Uploading")
+                                : M.state === "complete"
+                                  ? t("Downloaded")
+                                  : t("Downloading"),
                               " \xB7 ",
                               formatBytes(M.done),
                               t(" of"),
                               " ",
                               formatBytes(M.size),
-                              " \xB7 ",
-                              t(M.state),
+                              M.state === "complete" ? "" : " · ",
+                              M.state === "complete" ? "" : t(M.state),
                               M.connections
                                 ? t(" \xB7 {0} connection{1}", {
                                     0: M.connections,
@@ -3253,13 +3311,11 @@ function TransfersPanel({ _version: S = 0, version: v = 0, onError: T }) {
                                         .saveDownload(M)
                                         .catch((R) => T(R.message));
                                     },
-                                    children: c.jsx(gn, {
+                                    children: c.jsx(Qm, {
                                       size: 18,
                                     }),
                                   })
-                                : c.jsx(ki, {
-                                    size: 18,
-                                  }),
+                                : null,
                           c.jsx("button", {
                             className: "icon-button",
                             title:
@@ -3273,9 +3329,12 @@ function TransfersPanel({ _version: S = 0, version: v = 0, onError: T }) {
                               M.state === "complete"
                                 ? transfers.dismiss(M.id)
                                 : void B(M),
-                            children: c.jsx(Lf, {
-                              size: 17,
-                            }),
+                            children: c.jsx(
+                              M.state === "complete" ? Lf : CircleX,
+                              {
+                                size: 17,
+                              },
+                            ),
                           }),
                         ],
                       }),
@@ -3283,6 +3342,19 @@ function TransfersPanel({ _version: S = 0, version: v = 0, onError: T }) {
                   }),
                   c.jsx("div", {
                     className: "progress-bar",
+                    role: "progressbar",
+                    "aria-label": t(
+                      M.direction === "upload"
+                        ? "Upload progress for {0}"
+                        : "Download progress for {0}",
+                      { 0: M.name },
+                    ),
+                    "aria-valuemin": 0,
+                    "aria-valuemax": 100,
+                    "aria-valuenow": Math.min(
+                      100,
+                      Math.floor((M.done / M.size) * 100),
+                    ),
                     children: c.jsx("i", {
                       style: {
                         width: `${Math.min(100, (M.done / M.size) * 100)}%`,
@@ -3303,7 +3375,7 @@ function TransfersPanel({ _version: S = 0, version: v = 0, onError: T }) {
             children: [
               c.jsx("div", {
                 className: "empty-icon",
-                children: c.jsx(gn, {
+                children: c.jsx(ArrowLeftRight, {
                   size: 32,
                 }),
               }),

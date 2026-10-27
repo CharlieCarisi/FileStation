@@ -805,5 +805,15 @@
   "The file changed. Refresh and try again.": "文件已更改。请刷新后重试。",
   "Delete user and personal files": "删除用户及个人文件",
   "This deactivates {0} and deletes their Private files and unfinished uploads. Completed Public files remain available to the team.": "此操作将停用 {0}，并删除其个人文件及未完成的上传。已上传完成的公共文件仍可供团队访问。",
-  "Account and personal files deleted. Public files were retained.": "用户账户及个人文件已删除。公共文件已保留。"
+  "Account and personal files deleted. Public files were retained.": "用户账户及个人文件已删除。公共文件已保留。",
+  "Upload complete for {0}": "{0} 上传完成",
+  "Download complete for {0}": "{0} 下载完成",
+  "Resumable download {0}": "可续传下载 {0}",
+  "Resumable": "可续传",
+  "Direct": "直接",
+  "Uploaded": "已上传",
+  "Downloaded": "已下载",
+  "Finalizing upload…": "正在完成上传…",
+  "Upload progress for {0}": "{0} 的上传进度",
+  "Download progress for {0}": "{0} 的下载进度"
 }
