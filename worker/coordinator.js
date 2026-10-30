@@ -82,14 +82,30 @@ var StorageCoordinator = class {
     )
       .bind(connector.id, now(), now())
       .all();
-    for (const file of stale.results)
-      await this.deleteFile(
-        file,
-        connector,
-        file.delete_reason ||
-          (file.state === "uploading" ? "abandoned" : "expired"),
-        null,
-      );
+    let removed = 0,
+      pending = 0;
+    for (const file of stale.results) {
+      try {
+        await this.deleteFile(
+          file,
+          connector,
+          file.delete_reason ||
+            (file.state === "uploading" ? "abandoned" : "expired"),
+          null,
+        );
+        removed++;
+      } catch (error) {
+        // A failed deletion stays in 'deleting' and still counts against quota.
+        // It must not prevent cleanup of other files or uploads into free space.
+        pending++;
+        console.warn("Storage cleanup pending", {
+          connectorId: connector.id,
+          fileId: file.id,
+          error: error instanceof Error ? error.name : "unknown",
+        });
+      }
+    }
+    return { removed, pending };
   }
   async run(request) {
     const url = new URL(request.url),
@@ -110,8 +126,11 @@ var StorageCoordinator = class {
       });
     }
     if (url.pathname === "/cleanup") {
-      await this.cleanup(c);
-      return json({ ok: true });
+      const result = await this.cleanup(c);
+      return json(
+        { ok: result.pending === 0, ...result },
+        result.pending ? 503 : 200,
+      );
     }
     if (url.pathname === "/configure") {
       const b = await body(request);

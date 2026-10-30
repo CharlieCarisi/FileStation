@@ -95,7 +95,7 @@ export class OneDriveStorage {
     });
     return value.access_token as string;
   }
-  async graph(path: string, init: RequestInit = {}) {
+  async graphResponse(path: string, init: RequestInit = {}) {
     ensure(
       path.startsWith("/") && !path.startsWith("//"),
       500,
@@ -118,6 +118,10 @@ export class OneDriveStorage {
       tokens.delete(this.tokenKey());
       response = await send(await this.accessToken());
     }
+    return response;
+  }
+  async graph(path: string, init: RequestInit = {}) {
+    const response = await this.graphResponse(path, init);
     if (!response.ok) {
       const status = response.status;
       let code = "";
@@ -323,33 +327,57 @@ export class OneDriveStorage {
     await this.storeId(file, item.id);
   }
   async remove(file: Row) {
-    if (!file.completed_at && file.provider_upload_id) {
-      const response = await fetch(await this.session(file), {
-        method: "DELETE",
-        redirect: "manual",
-      });
-      ensure(
-        response.ok || response.status === 404,
-        502,
-        "OneDrive could not cancel the upload. Cleanup will retry.",
-      );
-      await response.body?.cancel();
+    let cancellationPending = false;
+    // A saved item ID means Microsoft's final part already committed the file,
+    // even if File Station did not receive/finish the completion request.
+    if (
+      !file.completed_at &&
+      !file.provider_file_id &&
+      file.provider_upload_id
+    ) {
+      try {
+        const response = await fetch(await this.session(file), {
+          method: "DELETE",
+          redirect: "manual",
+        });
+        // An expired/revoked preauthenticated URL may return 401/403 rather
+        // than 404. Still check the authenticated item below: the final part
+        // might have committed before its response was lost.
+        cancellationPending =
+          !response.ok && ![401, 403, 404, 410].includes(response.status);
+        if (!response.ok)
+          console.warn("OneDrive upload cancellation response", {
+            fileId: file.id,
+            status: response.status,
+          });
+        await response.body?.cancel();
+      } catch {
+        cancellationPending = true;
+        console.warn("OneDrive upload cancellation unavailable", {
+          fileId: file.id,
+        });
+      }
     }
     // A final part may have committed before the caller received its response.
     const path = file.provider_file_id
       ? this.item(file.provider_file_id)
       : this.path(file);
-    const response = await fetch(GRAPH + path, {
-      method: "DELETE",
-      redirect: "manual",
-      headers: { Authorization: `Bearer ${await this.accessToken()}` },
-    });
+    const response = await this.graphResponse(path, { method: "DELETE" });
+    const deleted = response.ok,
+      absent = response.status === 404;
+    await response.body?.cancel();
     ensure(
-      response.ok || response.status === 404,
+      deleted || absent,
       502,
       "OneDrive could not delete the file. Cleanup will retry.",
     );
-    await response.body?.cancel();
+    // If Graph actually removed a committed item, its old upload session is
+    // irrelevant. An absent item alone cannot confirm a transient cancel error.
+    ensure(
+      !cancellationPending || deleted,
+      502,
+      "OneDrive could not cancel the upload. Cleanup will retry.",
+    );
   }
   async download(file: Row, offset: number, length: number) {
     // The preauthenticated download URL is a computed annotation. Request the
