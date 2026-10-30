@@ -78,9 +78,9 @@ export async function folderArchive(env: Env, user: Row, folderId: string) {
   );
   const files = (
     await env.DB.prepare(
-      `${tree} SELECT f.id,f.owner_id,f.space,f.folder_id,f.name,f.size,f.created_at,f.state FROM files f JOIN tree ON tree.id=f.folder_id WHERE f.state IN ('ready','uploading') AND (f.expires_at IS NULL OR f.expires_at>?) AND (f.state<>'uploading' OR f.upload_expires_at>?) ORDER BY f.created_at,f.id LIMIT 1001`,
+      `${tree} SELECT f.id,f.owner_id,f.space,f.folder_id,f.name,f.size,f.created_at,f.state FROM files f JOIN tree ON tree.id=f.folder_id WHERE f.state='ready' AND (f.expires_at IS NULL OR f.expires_at>?) ORDER BY f.created_at,f.id LIMIT 1001`,
     )
-      .bind(folderId, now(), now())
+      .bind(folderId, now())
       .all<Row>()
   ).results;
   ensure(
@@ -92,11 +92,6 @@ export async function folderArchive(env: Env, user: Row, folderId: string) {
     files.every((row) => readsFile(user, row)),
     404,
     "Folder not found.",
-  );
-  ensure(
-    files.every((row) => row.state === "ready"),
-    409,
-    "Finish the uploads in this folder before creating a ZIP.",
   );
   const shortcuts = (
     await env.DB.prepare(

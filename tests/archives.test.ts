@@ -147,19 +147,31 @@ describe("folder archives", () => {
       ),
     ).toBe(true);
   });
-  it("snapshots nested folders, preserves empty folders, protects private access, and ignores expired files", async () => {
+  it("snapshots completed files, skips pending uploads in nested folders, preserves empty folders and protects private access", async () => {
     const admin = await login(),
       owner = await login("owner@international.gc.ca"),
       other = await login("other@international.gc.ca");
     const root = await folder(owner.cookie, "Reports 合同"),
       nested = await folder(owner.cookie, "Nested", root.id);
-    await folder(owner.cookie, "Empty", root.id);
+    const empty = await folder(owner.cookie, "Empty", root.id);
     const first = await upload(owner.cookie, root.id),
       second = await upload(owner.cookie, nested.id);
     const expired = await upload(owner.cookie, root.id);
     await env.DB.prepare("UPDATE files SET expires_at=1 WHERE id=?")
       .bind(expired.id)
       .run();
+    const pendingRoot = await begin(owner.cookie, { folderId: root.id }),
+      pendingNested = await begin(owner.cookie, { folderId: nested.id }),
+      pendingOnly = await begin(owner.cookie, { folderId: empty.id });
+    // Even uploaded bytes stay out until the upload is committed successfully.
+    await result(
+      await request(
+        `/uploads/${pendingNested.id}/parts/1`,
+        "PUT",
+        new TextEncoder().encode("original"),
+        owner.cookie,
+      ),
+    );
     await result(await request(`/folders/${root.id}/archive`), 401);
     await result(
       await request(
@@ -191,17 +203,48 @@ describe("folder archives", () => {
       ).toEqual([first.id, second.id].sort());
       expect(JSON.stringify(manifest)).not.toContain("object_key");
     }
-    await begin(owner.cookie, { folderId: nested.id });
-    const blocked = await result(
+    const pendingManifest = await result(
+      await request(
+        `/folders/${empty.id}/archive`,
+        "GET",
+        undefined,
+        owner.cookie,
+      ),
+    );
+    expect(pendingManifest.fileCount).toBe(0);
+    expect(pendingManifest.totalSize).toBe(0);
+    expect(pendingManifest.entries).toEqual([
+      { path: "Empty/", directory: true },
+    ]);
+    for (const pending of [pendingRoot, pendingNested, pendingOnly])
+      expect(
+        (await env.DB.prepare("SELECT state FROM files WHERE id=?")
+          .bind(pending.id)
+          .first<Row>())!.state,
+      ).toBe("uploading");
+    await result(
+      await request(
+        `/uploads/${pendingNested.id}/complete`,
+        "POST",
+        {},
+        owner.cookie,
+      ),
+    );
+    const completedManifest = await result(
       await request(
         `/folders/${root.id}/archive`,
         "GET",
         undefined,
         owner.cookie,
       ),
-      409,
     );
-    expect(blocked.error).toContain("Finish the uploads");
+    expect(completedManifest.fileCount).toBe(3);
+    expect(completedManifest.totalSize).toBe(24);
+    expect(
+      completedManifest.entries.some(
+        (entry: Row) => entry.id === pendingNested.id,
+      ),
+    ).toBe(true);
     const shared = (
       await result(
         await request(
@@ -260,6 +303,8 @@ describe("folder archives", () => {
     )
       .bind(ids, file.id)
       .run();
+    // Pending reservations do not count toward the 1,000 archived-file limit.
+    await begin(user.cookie, { folderId: root.id });
     const manifest = await result(
       await request(
         `/folders/${root.id}/archive`,

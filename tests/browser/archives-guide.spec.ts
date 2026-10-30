@@ -192,6 +192,16 @@ test("folder rows persist, a nested ZIP saves with exact contents and resumes af
   await page
     .getByRole("button", { name: "Go to root folder", exact: true })
     .click();
+  // A pending upload in a nested folder must not block the ZIP or be included.
+  const pending = (
+    await api("/uploads", {
+      connectorId: "r2-default",
+      folderId: nested.id,
+      name: "Pending.txt",
+      size: 8,
+      fingerprint: "b".repeat(64),
+    })
+  ).file;
   // Block archive transfer parts, then pause and reload. Its disk-backed source
   // must be restored without requiring a ZIP that exists on the user's desktop.
   let block = true;
@@ -218,6 +228,9 @@ test("folder rows persist, a nested ZIP saves with exact contents and resumes af
     .getByRole("button", { name: "Create and save ZIP", exact: true })
     .click();
   await expect(dialog).toHaveCount(0);
+  expect(
+    (await api(`/uploads/${pending.id}`, undefined, "GET")).file.state,
+  ).toBe("uploading");
   expect(ranges).toContain("bytes=0-8388607");
   expect(ranges).toContain(`bytes=8388608-${large.length - 1}`);
   await page
