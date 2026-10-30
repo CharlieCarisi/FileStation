@@ -952,5 +952,13 @@
   "Only the shortcut creator or an administrator can move this shortcut to Private.": "Only the shortcut creator or an administrator can move this shortcut to Private.",
   "This shortcut changed. Refresh and try again.": "This shortcut changed. Refresh and try again.",
   "Move or remove the shortcuts before deleting this folder.": "Move or remove the shortcuts before deleting this folder.",
-  "Move or remove unavailable shortcuts before creating a ZIP.": "Move or remove unavailable shortcuts before creating a ZIP."
+  "Move or remove unavailable shortcuts before creating a ZIP.": "Move or remove unavailable shortcuts before creating a ZIP.",
+  "ZIP method": "ZIP method",
+  "Stream to storage (large folders)": "Stream to storage (large folders)",
+  "Compress using browser storage": "Compress using browser storage",
+  "Files are packaged without compression and uploaded in small parts. No temporary ZIP is stored in your browser. Pause or resume in Transfers, including after a page refresh.": "Files are packaged without compression and uploaded in small parts. No temporary ZIP is stored in your browser. Pause or resume in Transfers, including after a page refresh.",
+  "Compression creates a temporary ZIP in browser storage before uploading. For videos or large folders, choose Stream to storage.": "Compression creates a temporary ZIP in browser storage before uploading. For videos or large folders, choose Stream to storage.",
+  "Browser storage is too small for compression. Choose Stream to storage to create this ZIP without a temporary browser file.": "Browser storage is too small for compression. Choose Stream to storage to create this ZIP without a temporary browser file.",
+  "The ZIP transfer source is invalid. Cancel this transfer and create the ZIP again.": "The ZIP transfer source is invalid. Cancel this transfer and create the ZIP again.",
+  "{0} files · {1} of source files": "{0} files · {1} of source files"
 }

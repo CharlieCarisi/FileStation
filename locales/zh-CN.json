@@ -952,5 +952,13 @@
   "Only the shortcut creator or an administrator can move this shortcut to Private.": "只有快捷方式的创建者或管理员可以将此快捷方式移至私人空间。",
   "This shortcut changed. Refresh and try again.": "此快捷方式已发生变化。请刷新后重试。",
   "Move or remove the shortcuts before deleting this folder.": "删除此文件夹前，请先移动或移除其中的快捷方式。",
-  "Move or remove unavailable shortcuts before creating a ZIP.": "创建 ZIP 前，请先移动或移除无法访问的快捷方式。"
+  "Move or remove unavailable shortcuts before creating a ZIP.": "创建 ZIP 前，请先移动或移除无法访问的快捷方式。",
+  "ZIP method": "ZIP 创建方式",
+  "Stream to storage (large folders)": "流式保存到存储（适合大文件夹）",
+  "Compress using browser storage": "使用浏览器存储进行压缩",
+  "Files are packaged without compression and uploaded in small parts. No temporary ZIP is stored in your browser. Pause or resume in Transfers, including after a page refresh.": "文件不进行压缩，而是打包后分块上传，浏览器不会保存临时 ZIP。可在“传输”中暂停或继续，刷新页面后也能恢复。",
+  "Compression creates a temporary ZIP in browser storage before uploading. For videos or large folders, choose Stream to storage.": "压缩方式会先在浏览器存储中创建临时 ZIP，再进行上传。视频或大型文件夹建议选择流式保存到存储。",
+  "Browser storage is too small for compression. Choose Stream to storage to create this ZIP without a temporary browser file.": "浏览器存储空间不足以进行压缩。请选择流式保存到存储，无需在浏览器中保存临时文件即可创建此 ZIP。",
+  "The ZIP transfer source is invalid. Cancel this transfer and create the ZIP again.": "ZIP 传输源数据无效。请取消此传输并重新创建 ZIP。",
+  "{0} files · {1} of source files": "{0} 个文件 · 源文件共 {1}"
 }

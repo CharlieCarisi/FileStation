@@ -3350,6 +3350,7 @@ function TransfersPanel({ _version: S = 0, version: v = 0, onError: T }) {
                                     }),
                                     M.direction === "upload" &&
                                       !M.localArchive &&
+                                      !M.streamingArchive &&
                                       c.jsx("button", {
                                         className: "text-button",
                                         onClick: () => {

@@ -10,8 +10,19 @@ import {
   removeArchive,
 } from "./archive-storage";
 import { t } from "./i18n";
+import { createStreamingArchive } from "./streaming-archive";
 type Row = Record<string, any>;
 const RANGE_SIZE = 8 * 1024 * 1024;
+function estimatedArchiveSize(manifest: Row) {
+  return (
+    manifest.totalSize * 1.01 +
+    manifest.entries.reduce(
+      (total: number, entry: Row) =>
+        total + new TextEncoder().encode(entry.path).length * 2 + 512,
+      65536,
+    )
+  );
+}
 
 class FileReader extends Reader<string> {
   cache = new Uint8Array(0);
@@ -95,6 +106,7 @@ export default function FolderArchiveDialog({
     [connector, setConnector] = useState("");
   const [busy, setBusy] = useState(false),
     [progress, setProgress] = useState({ done: 0, name: "" });
+  const [method, setMethod] = useState("stream");
   const controller = useRef<AbortController | null>(null);
   const destinations = connectors.filter(
     (row) => row.enabled && (row.kind === "r2" || row.credentials_configured),
@@ -102,7 +114,25 @@ export default function FolderArchiveDialog({
   useEffect(() => {
     const load = new AbortController();
     api(`/folders/${folder.id}/archive`, { signal: load.signal })
-      .then(setManifest)
+      .then(async (snapshot: Row) => {
+        let useStreaming =
+          snapshot.totalSize >= 256 * 1024 * 1024 ||
+          !navigator.storage?.getDirectory;
+        try {
+          const estimate = await navigator.storage?.estimate();
+          if (
+            estimate?.quota !== undefined &&
+            estimatedArchiveSize(snapshot) >
+              estimate.quota - (estimate.usage ?? 0)
+          )
+            useStreaming = true;
+        } catch {
+          useStreaming = true;
+        }
+        if (load.signal.aborted) return;
+        setMethod(useStreaming ? "stream" : "compress");
+        setManifest(snapshot);
+      })
       .catch((error) => {
         if (!load.signal.aborted) setError(error.message);
       });
@@ -128,23 +158,30 @@ export default function FolderArchiveDialog({
     let source: { key: string; name: string; lastModified: number } | undefined;
     let sink: FileSystemWritableFileStream | undefined;
     try {
-      const directory = await archiveDirectory();
-      const estimate = await navigator.storage.estimate();
-      const needed =
-        manifest.totalSize * 1.01 +
-        manifest.entries.reduce(
-          (total: number, entry: Row) =>
-            total + new TextEncoder().encode(entry.path).length * 2 + 512,
-          65536,
+      if (method === "stream") {
+        const transferId = await transfers.uploadArchive(
+          createStreamingArchive(manifest as any, name),
+          connector,
+          folder.parent_id || null,
+          folder.space || "private",
         );
+        if (abort.signal.aborted) {
+          await transfers.cancel(transferId);
+          return;
+        }
+        await onSaved();
+        onClose();
+        return;
+      }
+      const estimate = await navigator.storage.estimate();
       if (
-        estimate.quota &&
-        estimate.usage &&
-        needed > estimate.quota - estimate.usage
+        estimate.quota !== undefined &&
+        estimatedArchiveSize(manifest) > estimate.quota - (estimate.usage ?? 0)
       )
         throw Error(
-          "Your browser does not have enough free space to create this ZIP. Choose a smaller folder or free up disk space.",
+          "Browser storage is too small for compression. Choose Stream to storage to create this ZIP without a temporary browser file.",
         );
+      const directory = await archiveDirectory();
       source = {
         key: crypto.randomUUID(),
         name: /\.zip$/i.test(name.trim()) ? name.trim() : `${name.trim()}.zip`,
@@ -210,7 +247,12 @@ export default function FolderArchiveDialog({
       await onSaved();
       onClose();
     } catch (error: any) {
-      if (!abort.signal.aborted) setError(error.message);
+      if (!abort.signal.aborted)
+        setError(
+          error.name === "QuotaExceededError"
+            ? "Browser storage is too small for compression. Choose Stream to storage to create this ZIP without a temporary browser file."
+            : error.message,
+        );
     } finally {
       await sink?.abort().catch(() => {});
       await removeArchive(source);
@@ -228,12 +270,37 @@ export default function FolderArchiveDialog({
         </p>
         {manifest && (
           <p className="info">
-            {t("{0} files · {1} before compression", {
+            {t("{0} files · {1} of source files", {
               0: manifest.fileCount,
               1: formatBytes(manifest.totalSize),
             })}
           </p>
         )}
+        <label>
+          {t("ZIP method")}
+          <select
+            aria-label={t("ZIP method")}
+            value={method}
+            disabled={busy || !manifest}
+            onChange={(event) => setMethod(event.target.value)}
+          >
+            <option value="stream">
+              {t("Stream to storage (large folders)")}
+            </option>
+            <option value="compress">
+              {t("Compress using browser storage")}
+            </option>
+          </select>
+        </label>
+        <p className="fineprint">
+          {method === "stream"
+            ? t(
+                "Files are packaged without compression and uploaded in small parts. No temporary ZIP is stored in your browser. Pause or resume in Transfers, including after a page refresh.",
+              )
+            : t(
+                "Compression creates a temporary ZIP in browser storage before uploading. For videos or large folders, choose Stream to storage.",
+              )}
+        </p>
         <label>
           {t("ZIP filename")}
           <input
@@ -268,11 +335,13 @@ export default function FolderArchiveDialog({
             "The ZIP is saved beside the original folder, in the same workspace. Existing files are kept; enough free storage is required.",
           )}
         </p>
-        <p className="fineprint">
-          {t(
-            "Keep this tab open while creating the ZIP. Its upload can then be paused and resumed in Transfers.",
-          )}
-        </p>
+        {method === "compress" && (
+          <p className="fineprint">
+            {t(
+              "Keep this tab open while creating the ZIP. Its upload can then be paused and resumed in Transfers.",
+            )}
+          </p>
+        )}
         {busy && (
           <div className="archive-progress" role="status">
             <strong>

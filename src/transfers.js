@@ -162,6 +162,40 @@ class TransferManager {
       this.resume(C.id));
     return C.id;
   }
+  async uploadArchive(source, connectorId, folderId = null, space = "private") {
+    const { StreamingZip, streamingArchiveFingerprint } =
+      await import("./streaming-archive");
+    const zip = new StreamingZip(source),
+      fingerprint = await streamingArchiveFingerprint(source);
+    const created = await post("/uploads", {
+      connectorId,
+      folderId,
+      space,
+      name: source.name,
+      size: zip.size,
+      mime: "application/zip",
+      fingerprint,
+      preserveExistingFiles: true,
+    });
+    const item = {
+      id: crypto.randomUUID(),
+      apiBase: "/uploads",
+      fileId: created.file.id,
+      name: source.name,
+      size: zip.size,
+      done: 0,
+      direction: "upload",
+      state: "paused",
+      fingerprint,
+      partSize: created.partSize,
+      connections: 1,
+      streamingArchive: source,
+    };
+    this.items.unshift(item);
+    this.update();
+    this.resume(item.id);
+    return item.id;
+  }
   pause(v) {
     const T = this.items.find((o) => o.id === v);
     T &&
@@ -199,7 +233,11 @@ class TransferManager {
             throw new Error("Select the original file to resume this upload.");
           this.files.set(v, T);
         }
-        if (o.direction === "upload" && !this.files.has(v)) {
+        if (
+          o.direction === "upload" &&
+          !o.streamingArchive &&
+          !this.files.has(v)
+        ) {
           ((o.error = "Select the original file to resume."),
             (o.state = "paused"),
             this.update());
@@ -220,6 +258,8 @@ class TransferManager {
             ? await this.runUpload(o, this.files.get(v), _.signal)
             : await this.runDownload(o, _.signal),
           o.state === "running" && (o.state = "complete"));
+        if (o.state === "complete" && o.streamingArchive)
+          delete o.streamingArchive;
         if (o.state === "complete" && o.localArchive) {
           this.update(); // Persist completion before removing the only local source.
           await removeArchive(o.localArchive).catch(() => {});
@@ -296,10 +336,9 @@ class TransferManager {
     if (status.file.state !== "uploading")
       throw new Error("This upload was deleted or expired.");
     item.partSize = status.partSize;
-    item.connections = Math.min(
-      this.concurrency,
-      status.uploadConcurrency || 1,
-    );
+    item.connections = item.streamingArchive
+      ? 1
+      : Math.min(this.concurrency, status.uploadConcurrency || 1);
     const completed = new Set(status.parts.map((part) => part.part_number));
     item.done = status.parts.reduce((total, part) => total + part.size, 0);
     this.update();
@@ -307,32 +346,113 @@ class TransferManager {
       { length: Math.ceil(item.size / item.partSize) },
       (_, index) => index + 1,
     ).filter((part) => !completed.has(part));
-    await parallel(
-      missing,
-      item.connections,
-      signal,
-      async (part, activeSignal) => {
-        const bytes = file.slice(
-          (part - 1) * item.partSize,
-          Math.min(part * item.partSize, item.size),
+    if (item.streamingArchive) {
+      const { StreamingZip, streamingArchiveFingerprint } =
+        await import("./streaming-archive");
+      const source = item.streamingArchive;
+      const zip = new StreamingZip(
+        source,
+        async (entry, offset, length, activeSignal) => {
+          return retryTransfer(
+            () =>
+              this.pool.run(async () => {
+                const end = offset + length - 1;
+                const response = await fetch(
+                  `${basePath}/api/files/${encodeURIComponent(entry.id)}/download`,
+                  {
+                    headers: { Range: `bytes=${offset}-${end}` },
+                    signal: activeSignal,
+                  },
+                );
+                if (!response.ok) {
+                  const data = await response.json();
+                  const error = new Error(data.error || "Download failed.");
+                  Object.assign(error, { status: response.status });
+                  throw error;
+                }
+                if (
+                  response.status !== 206 ||
+                  response.headers.get("etag")?.replace(/^W\//, "") !==
+                    `"${entry.id}"` ||
+                  response.headers.get("content-range") !==
+                    `bytes ${offset}-${end}/${entry.size}`
+                ) {
+                  await response.body?.cancel();
+                  throw Error("The server returned an unexpected byte range.");
+                }
+                const bytes = new Uint8Array(await response.arrayBuffer());
+                if (bytes.byteLength !== length)
+                  throw Error(
+                    "An incomplete download part was received. Retry to continue.",
+                  );
+                return bytes;
+              }, activeSignal),
+            activeSignal,
+          );
+        },
+      );
+      if (
+        zip.size !== item.size ||
+        (await streamingArchiveFingerprint(source)) !== item.fingerprint
+      )
+        throw Error(
+          "The ZIP transfer source is invalid. Cancel this transfer and create the ZIP again.",
         );
+      for (const part of missing) {
+        signal.throwIfAborted();
+        const start = (part - 1) * item.partSize;
+        const bytes = await zip.readPart(
+          start,
+          Math.min(item.partSize, item.size - start),
+          signal,
+        );
+        // Persist the next part's CRC checkpoint before the server can accept
+        // this part, including when its response is lost during a reload.
+        this.update();
         await retryTransfer(
           () =>
             this.pool.run(
               () =>
                 api(`${path}/parts/${part}`, {
                   method: "PUT",
-                  body: bytes,
-                  signal: activeSignal,
+                  body: new Blob([bytes]),
+                  signal,
                 }),
-              activeSignal,
+              signal,
             ),
-          activeSignal,
+          signal,
         );
-        item.done += bytes.size;
+        item.done += bytes.byteLength;
         this.update();
-      },
-    );
+      }
+    } else {
+      await parallel(
+        missing,
+        item.connections,
+        signal,
+        async (part, activeSignal) => {
+          const bytes = file.slice(
+            (part - 1) * item.partSize,
+            Math.min(part * item.partSize, item.size),
+          );
+          await retryTransfer(
+            () =>
+              this.pool.run(
+                () =>
+                  api(`${path}/parts/${part}`, {
+                    method: "PUT",
+                    body: bytes,
+                    signal: activeSignal,
+                  }),
+                activeSignal,
+              ),
+            activeSignal,
+          );
+          item.done += bytes.size;
+          this.update();
+        },
+      );
+    }
     signal.throwIfAborted();
     await post(`${path}/complete`, {}, { signal });
     if (item.invitationId) await post(`${path}/publish`, {}, { signal });

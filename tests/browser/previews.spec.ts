@@ -290,7 +290,12 @@ test("verified download previews open documents and media in separate windows wi
       const closed = viewer.waitForEvent("close");
       await viewer
         .getByRole("button", { name: "Close preview", exact: true })
-        .click();
+        .click()
+        .catch((error) => {
+          // The popup may close before Chromium acknowledges the click.
+          // Accept only that expected close; the partner page must stay open.
+          if (!viewer.isClosed() || partner.isClosed()) throw error;
+        });
       await closed;
     }
   }

@@ -952,5 +952,13 @@
   "Only the shortcut creator or an administrator can move this shortcut to Private.": "Seuls la personne ayant créé le raccourci ou un administrateur peuvent le déplacer vers Privé.",
   "This shortcut changed. Refresh and try again.": "Ce raccourci a changé. Actualisez la page et réessayez.",
   "Move or remove the shortcuts before deleting this folder.": "Déplacez ou supprimez les raccourcis avant de supprimer ce dossier.",
-  "Move or remove unavailable shortcuts before creating a ZIP.": "Déplacez ou supprimez les raccourcis indisponibles avant de créer un ZIP."
+  "Move or remove unavailable shortcuts before creating a ZIP.": "Déplacez ou supprimez les raccourcis indisponibles avant de créer un ZIP.",
+  "ZIP method": "Méthode de création du ZIP",
+  "Stream to storage (large folders)": "Transférer directement au stockage (gros dossiers)",
+  "Compress using browser storage": "Compresser dans le stockage du navigateur",
+  "Files are packaged without compression and uploaded in small parts. No temporary ZIP is stored in your browser. Pause or resume in Transfers, including after a page refresh.": "Les fichiers sont regroupés sans compression et téléversés par petits blocs. Aucun ZIP temporaire n’est conservé dans votre navigateur. Mettez le transfert en pause ou reprenez-le dans Transferts, même après avoir actualisé la page.",
+  "Compression creates a temporary ZIP in browser storage before uploading. For videos or large folders, choose Stream to storage.": "La compression crée un ZIP temporaire dans le stockage du navigateur avant le téléversement. Pour les vidéos ou les gros dossiers, choisissez le transfert direct au stockage.",
+  "Browser storage is too small for compression. Choose Stream to storage to create this ZIP without a temporary browser file.": "Le stockage du navigateur est insuffisant pour la compression. Choisissez le transfert direct au stockage pour créer ce ZIP sans fichier temporaire dans le navigateur.",
+  "The ZIP transfer source is invalid. Cancel this transfer and create the ZIP again.": "La source du transfert ZIP est invalide. Annulez ce transfert et créez le ZIP de nouveau.",
+  "{0} files · {1} of source files": "{0} fichiers · {1} de fichiers sources"
 }
