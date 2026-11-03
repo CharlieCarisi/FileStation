@@ -16,6 +16,7 @@ import { ONEDRIVE_PART_SIZE } from "./onedrive";
 import { OperationGate, uploadConcurrency } from "../shared/concurrency";
 import { folderForOwner, folderError } from "./folders";
 import { workspaceSpace } from "./workspaces";
+import { streamFolderDownload } from "./folder-download";
 import {
   guardInvitationUpload,
   recordInvitationUpload,
@@ -34,6 +35,13 @@ var StorageCoordinator = class {
   gate = new OperationGate(3);
   fetch(request) {
     const url = new URL(request.url);
+    if (url.pathname === "/folder-download" && request.method === "POST")
+      return request
+        .json()
+        .then(({ source, files }) =>
+          streamFolderDownload(request, this.env, source, files),
+        )
+        .catch(errorResponse);
     const part = url.pathname === "/part";
     return this.gate
       .run(

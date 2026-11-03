@@ -8,6 +8,7 @@ import {
   createStreamingArchive,
   StreamingZip,
   type ArchiveEntry,
+  type StreamingArchive,
 } from "../src/streaming-archive";
 
 const CHUNK_SIZE = 1024 * 1024;
@@ -152,11 +153,59 @@ export async function folderDownload(
     manifest,
     `${manifest.folder.name}.zip`,
   );
+  if (request.method === "HEAD")
+    return new Response(null, { headers: downloadHeaders(source) });
+  // Authorize and snapshot in the public Worker, then forward the response
+  // without processing bytes there. The Free Worker's short CPU allowance must
+  // not cover the checksums/copies of a multi-gigabyte ZIP. An isolated object
+  // uses the existing namespace and stores no job, archive or provider secret.
+  const object = env.STORAGE_COORDINATOR.get(
+    env.STORAGE_COORDINATOR.idFromName(
+      `folder-download:${crypto.randomUUID()}`,
+    ),
+  );
+  return object.fetch(
+    new Request("https://storage.internal/folder-download", {
+      method: "POST",
+      signal: request.signal,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        source,
+        files: rows.map(({ id, connector_id, size }) => ({
+          id,
+          connector_id,
+          size,
+        })),
+      }),
+    }),
+  );
+}
+
+function downloadHeaders(source: StreamingArchive) {
+  return new Headers({
+    "Content-Type": "application/zip",
+    "Content-Disposition": `attachment; filename="folder.zip"; filename*=UTF-8''${encodeURIComponent(source.name).replace(/['()*]/g, (c) => "%" + c.charCodeAt(0).toString(16))}`,
+    "Content-Length": String(new StreamingZip(source).size),
+    "Accept-Ranges": "none",
+    "Cache-Control": "private, no-store",
+  });
+}
+
+// Internal binding only: the signed-in route has checked every source's access.
+// There are no DB/storage writes here. At most 1,000 internal file requests are
+// made; provider I/O remains in each connector's own coordinator.
+export async function streamFolderDownload(
+  request: Request,
+  env: Env,
+  source: StreamingArchive,
+  files: Row[],
+) {
   const controller = new AbortController();
-  const sources = new Sources(env, files);
-  // Use workerd's native zlib CRC for large files, retaining the portable ZIP64
-  // format shared with resumable archives. zlib's CRC is finalized; the ZIP
-  // serializer stores the intermediate value between chunks.
+  const sources = new Sources(
+    env,
+    new Map(files.map((file) => [file.id, file])),
+  );
+  // zlib's CRC is finalized; the shared serializer keeps the intermediate CRC.
   const zip = new StreamingZip(
     source,
     (entry, offset, length, signal) =>
@@ -164,14 +213,7 @@ export async function folderDownload(
     (bytes, previous) =>
       (crc32(bytes, (previous ^ 0xffffffff) >>> 0) ^ 0xffffffff) >>> 0,
   );
-  const headers = new Headers({
-    "Content-Type": "application/zip",
-    "Content-Disposition": `attachment; filename="folder.zip"; filename*=UTF-8''${encodeURIComponent(source.name).replace(/['()*]/g, (c) => "%" + c.charCodeAt(0).toString(16))}`,
-    "Content-Length": String(zip.size),
-    "Accept-Ranges": "none",
-    "Cache-Control": "private, no-store",
-  });
-  if (request.method === "HEAD") return new Response(null, { headers });
+  const headers = downloadHeaders(source);
 
   const abort = () => {
     controller.abort();
