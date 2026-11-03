@@ -101,7 +101,12 @@ test("workspace Preview opens a read-only window on both paths and respects Publ
     const closed = viewer.waitForEvent("close");
     await viewer
       .getByRole("button", { name: "Close preview", exact: true })
-      .click();
+      .click()
+      .catch((error) => {
+        // Closing the popup can race Playwright's click acknowledgement.
+        // Still require the close event and keep the workspace tab open.
+        if (!viewer.isClosed() || page.isClosed()) throw error;
+      });
     await closed;
   }
   // A CDN can weaken the ETag when compressing text, but must never make a

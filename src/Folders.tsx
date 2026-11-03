@@ -6,6 +6,7 @@ import {
   FolderPlus,
   Trash2,
   FileArchive,
+  FolderDown,
   LayoutGrid,
   List,
 } from "lucide-react";
@@ -15,6 +16,7 @@ import { ItemMenu, type MenuAction } from "./ItemMenu";
 import { t, getLocale } from "./i18n";
 type Row = Record<string, any>;
 const FolderArchiveDialog = lazy(() => import("./FolderArchiveDialog"));
+const FolderDownloadDialog = lazy(() => import("./FolderDownloadDialog"));
 const message = (error: unknown) =>
   error instanceof Error ? error.message : "The request failed.";
 export function folderPath(id: string | null, folders: Row[]): string {
@@ -221,6 +223,7 @@ export function FolderItem({
   const [editing, setEditing] = useState(false),
     [creating, setCreating] = useState(false),
     [archive, setArchive] = useState(false),
+    [downloading, setDownloading] = useState(false),
     [busy, setBusy] = useState(false),
     [error, setError] = useState("");
   async function remove() {
@@ -248,6 +251,12 @@ export function FolderItem({
       label: t("New subfolder"),
       icon: FolderPlus,
       onSelect: () => setCreating(true),
+    },
+    {
+      id: "download",
+      label: t("Download folder"),
+      icon: FolderDown,
+      onSelect: () => setDownloading(true),
     },
     {
       id: "zip",
@@ -289,6 +298,14 @@ export function FolderItem({
         );
         const buttons = (
           <div className="row-actions folder-actions">
+            <button
+              className="icon-button"
+              title={t("Download folder")}
+              aria-label={t("Download folder {0}", { 0: folder.name })}
+              onClick={() => setDownloading(true)}
+            >
+              <FolderDown size={17} aria-hidden="true" />
+            </button>
             <button
               className="icon-button"
               title={t("Create folder ZIP")}
@@ -357,6 +374,23 @@ export function FolderItem({
                   connectors={connectors}
                   onClose={() => setArchive(false)}
                   onSaved={onChanged}
+                />
+              </Suspense>
+            )}
+            {downloading && (
+              <Suspense
+                fallback={
+                  <Modal
+                    title={t("Download folder")}
+                    onClose={() => setDownloading(false)}
+                  >
+                    {t("Preparing folder download…")}
+                  </Modal>
+                }
+              >
+                <FolderDownloadDialog
+                  folder={folder}
+                  onClose={() => setDownloading(false)}
                 />
               </Suspense>
             )}

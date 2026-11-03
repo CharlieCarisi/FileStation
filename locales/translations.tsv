@@ -960,3 +960,9 @@ Compression creates a temporary ZIP in browser storage before uploading. For vid
 Browser storage is too small for compression. Choose Stream to storage to create this ZIP without a temporary browser file.|Le stockage du navigateur est insuffisant pour la compression. Choisissez le transfert direct au stockage pour créer ce ZIP sans fichier temporaire dans le navigateur.|浏览器存储空间不足以进行压缩。请选择流式保存到存储，无需在浏览器中保存临时文件即可创建此 ZIP。
 The ZIP transfer source is invalid. Cancel this transfer and create the ZIP again.|La source du transfert ZIP est invalide. Annulez ce transfert et créez le ZIP de nouveau.|ZIP 传输源数据无效。请取消此传输并重新创建 ZIP。
 {0} files · {1} of source files|{0} fichiers · {1} de fichiers sources|{0} 个文件 · 源文件共 {1}
+Download folder|Télécharger le dossier|下载文件夹
+Download folder {0}|Télécharger le dossier {0}|下载文件夹 {0}
+Download ZIP|Télécharger le ZIP|下载 ZIP
+Preparing folder download…|Préparation du téléchargement du dossier…|正在准备文件夹下载…
+Download completed files and subfolders as a ZIP. Unfinished uploads are skipped. No copy is saved to storage.|Téléchargez les fichiers complets et les sous-dossiers dans un ZIP. Les téléversements inachevés sont ignorés. Aucune copie n’est enregistrée dans le stockage.|将已完成的文件和子文件夹下载为 ZIP。未完成的上传会被跳过，存储中不会另存副本。
+Check your browser’s downloads for progress. If the download is interrupted, start it again here.|Consultez les téléchargements de votre navigateur pour suivre la progression. Si le téléchargement est interrompu, relancez-le ici.|请在浏览器的下载列表中查看进度。如下载中断，请在此重新开始。

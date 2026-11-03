@@ -960,5 +960,11 @@
   "Compression creates a temporary ZIP in browser storage before uploading. For videos or large folders, choose Stream to storage.": "La compression crée un ZIP temporaire dans le stockage du navigateur avant le téléversement. Pour les vidéos ou les gros dossiers, choisissez le transfert direct au stockage.",
   "Browser storage is too small for compression. Choose Stream to storage to create this ZIP without a temporary browser file.": "Le stockage du navigateur est insuffisant pour la compression. Choisissez le transfert direct au stockage pour créer ce ZIP sans fichier temporaire dans le navigateur.",
   "The ZIP transfer source is invalid. Cancel this transfer and create the ZIP again.": "La source du transfert ZIP est invalide. Annulez ce transfert et créez le ZIP de nouveau.",
-  "{0} files · {1} of source files": "{0} fichiers · {1} de fichiers sources"
+  "{0} files · {1} of source files": "{0} fichiers · {1} de fichiers sources",
+  "Download folder": "Télécharger le dossier",
+  "Download folder {0}": "Télécharger le dossier {0}",
+  "Download ZIP": "Télécharger le ZIP",
+  "Preparing folder download…": "Préparation du téléchargement du dossier…",
+  "Download completed files and subfolders as a ZIP. Unfinished uploads are skipped. No copy is saved to storage.": "Téléchargez les fichiers complets et les sous-dossiers dans un ZIP. Les téléversements inachevés sont ignorés. Aucune copie n’est enregistrée dans le stockage.",
+  "Check your browser’s downloads for progress. If the download is interrupted, start it again here.": "Consultez les téléchargements de votre navigateur pour suivre la progression. Si le téléchargement est interrompu, relancez-le ici."
 }

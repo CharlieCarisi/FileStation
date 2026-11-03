@@ -109,6 +109,7 @@ export class StreamingZip {
   constructor(
     readonly source: StreamingArchive,
     private readRange?: ReadRange,
+    private checksum = crc32,
   ) {
     if (
       source.version !== 1 ||
@@ -280,7 +281,7 @@ export class StreamingZip {
               "An incomplete download part was received. Retry to continue.",
             );
           output.set(bytes, cursor - start);
-          const next = crc32(bytes, crc);
+          const next = this.checksum(bytes, crc);
           if (offset + take === segment.size)
             this.source.checksums[segment.entry!] = (next ^ CRC_START) >>> 0;
           else this.source.checkpoints[String(cursor + take)] = next;

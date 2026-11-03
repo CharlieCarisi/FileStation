@@ -3,6 +3,7 @@ import { currentUser } from "./auth.js";
 import { workspaceSpace, ownsFile, readsFile, type Space } from "./workspaces";
 import { body, ensure, json, id, now, audit, HttpError } from "./util.js";
 import { folderArchive } from "./archives";
+import { folderDownload } from "./folder-download";
 
 export async function folderForOwner(
   env: Env,
@@ -114,6 +115,14 @@ export async function removeUserFolders(env: Env, ownerId: string) {
   }
 }
 export async function folderRoutes(request: Request, env: Env, path: string) {
+  const download = path.match(/^\/api\/folders\/([^/]+)\/download$/);
+  if (download && ["GET", "HEAD"].includes(request.method))
+    return folderDownload(
+      request,
+      env,
+      await currentUser(request, env, true),
+      download[1],
+    );
   const archive = path.match(/^\/api\/folders\/([^/]+)\/archive$/);
   if (archive && request.method === "GET")
     return folderArchive(

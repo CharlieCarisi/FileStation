@@ -58,7 +58,11 @@ export function archiveEntries(folders: Row[], files: Row[], rootId: string) {
   ];
 }
 
-export async function folderArchive(env: Env, user: Row, folderId: string) {
+export async function folderArchiveManifest(
+  env: Env,
+  user: Row,
+  folderId: string,
+) {
   const root = await env.DB.prepare("SELECT * FROM folders WHERE id=?")
     .bind(folderId)
     .first<Row>();
@@ -117,7 +121,7 @@ export async function folderArchive(env: Env, user: Row, folderId: string) {
     "Move or remove unavailable shortcuts before creating a ZIP.",
   );
   const contents = [...files, ...shortcuts];
-  return json({
+  return {
     folder: {
       id: root!.id,
       name: root!.name,
@@ -127,5 +131,9 @@ export async function folderArchive(env: Env, user: Row, folderId: string) {
     entries: archiveEntries(folders, contents, folderId),
     fileCount: contents.length,
     totalSize: contents.reduce((total, file) => total + file.size, 0),
-  });
+  };
+}
+
+export async function folderArchive(env: Env, user: Row, folderId: string) {
+  return json(await folderArchiveManifest(env, user, folderId));
 }

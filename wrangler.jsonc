@@ -4,6 +4,8 @@
   "account_id": "273abc9b6e824cf5c616b95ccb64cc30",
   "compatibility_date": "2026-03-10",
   "compatibility_flags": ["nodejs_compat"],
+  // A folder ZIP may read up to 1,000 files across storage connectors.
+  "limits": { "subrequests": 10000 },
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS",

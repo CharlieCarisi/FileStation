@@ -960,5 +960,11 @@
   "Compression creates a temporary ZIP in browser storage before uploading. For videos or large folders, choose Stream to storage.": "Compression creates a temporary ZIP in browser storage before uploading. For videos or large folders, choose Stream to storage.",
   "Browser storage is too small for compression. Choose Stream to storage to create this ZIP without a temporary browser file.": "Browser storage is too small for compression. Choose Stream to storage to create this ZIP without a temporary browser file.",
   "The ZIP transfer source is invalid. Cancel this transfer and create the ZIP again.": "The ZIP transfer source is invalid. Cancel this transfer and create the ZIP again.",
-  "{0} files · {1} of source files": "{0} files · {1} of source files"
+  "{0} files · {1} of source files": "{0} files · {1} of source files",
+  "Download folder": "Download folder",
+  "Download folder {0}": "Download folder {0}",
+  "Download ZIP": "Download ZIP",
+  "Preparing folder download…": "Preparing folder download…",
+  "Download completed files and subfolders as a ZIP. Unfinished uploads are skipped. No copy is saved to storage.": "Download completed files and subfolders as a ZIP. Unfinished uploads are skipped. No copy is saved to storage.",
+  "Check your browser’s downloads for progress. If the download is interrupted, start it again here.": "Check your browser’s downloads for progress. If the download is interrupted, start it again here."
 }
