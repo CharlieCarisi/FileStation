@@ -16,7 +16,12 @@ async function resolveBase(request: Request, env: Env) {
     ? selected
     : `${env.APP_ORIGIN || new URL(request.url).origin}${env.BASE_PATH || ""}`;
 }
-export async function shareLink(request: Request, env: Env, code: string) {
+export async function shareLink(
+  request: Request,
+  env: Env,
+  code: string,
+  fragment: "share" | "link" = "share",
+) {
   // One settings snapshot per request keeps invitation lists consistent without
   // adding a database lookup for each row. Later requests see new settings.
   let pending = requestBases.get(request);
@@ -28,5 +33,5 @@ export async function shareLink(request: Request, env: Env, code: string) {
   const language = request.headers.get("X-FileStation-Language");
   const query =
     language === "fr-CA" || language === "zh-CN" ? `?lang=${language}` : "";
-  return `${base}/${query}#share=${encodeURIComponent(code)}`;
+  return `${base}/${query}#${fragment}=${encodeURIComponent(code)}`;
 }

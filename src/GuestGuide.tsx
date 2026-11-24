@@ -23,8 +23,10 @@ export function AccessSteps({ step = 1 }: { step?: number }) {
 
 export default function GuestGuide({
   mode = "access",
+  verifyEmail = true,
 }: {
   mode?: "access" | "upload" | "download" | "collaboration";
+  verifyEmail?: boolean;
 }) {
   return (
     <details className="guest-guide">
@@ -44,30 +46,34 @@ export default function GuestGuide({
       </summary>
       <div className="guest-guide-content">
         <ol>
-          <li>
-            <strong>{t("Open your invitation")}</strong>
-            <p>
-              {t(
-                "Follow the link in your email, or enter the access code your contact gave you.",
-              )}
-            </p>
-          </li>
-          <li>
-            <strong>{t("Use your invited email address")}</strong>
-            <p>
-              {t(
-                "Enter the email address the invitation was sent to, then choose Continue securely. You do not need to sign in or create an account.",
-              )}
-            </p>
-          </li>
-          <li>
-            <strong>{t("Check your inbox")}</strong>
-            <p>
-              {t(
-                "Enter the six-digit verification PIN from File Station. Check your junk or spam folder if it has not arrived.",
-              )}
-            </p>
-          </li>
+          {verifyEmail && (
+            <>
+              <li>
+                <strong>{t("Open your invitation")}</strong>
+                <p>
+                  {t(
+                    "Follow the link in your email, or enter the access code your contact gave you.",
+                  )}
+                </p>
+              </li>
+              <li>
+                <strong>{t("Use your invited email address")}</strong>
+                <p>
+                  {t(
+                    "Enter the email address the invitation was sent to, then choose Continue securely. You do not need to sign in or create an account.",
+                  )}
+                </p>
+              </li>
+              <li>
+                <strong>{t("Check your inbox")}</strong>
+                <p>
+                  {t(
+                    "Enter the six-digit verification PIN from File Station. Check your junk or spam folder if it has not arrived.",
+                  )}
+                </p>
+              </li>
+            </>
+          )}
           {mode === "download" ? (
             <li>
               <strong>{t("Preview and download")}</strong>

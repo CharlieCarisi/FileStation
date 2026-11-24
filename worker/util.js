@@ -81,8 +81,8 @@ function cookie(request, name) {
     ?.slice(name.length + 1);
 }
 __name(cookie, "cookie");
-function sessionCookie(env, name, value, seconds) {
-  return `${name}=${value}; Path=${env.BASE_PATH || "/"}; HttpOnly; SameSite=Strict; Max-Age=${seconds}${env.DEV_MODE === "true" ? "" : "; Secure"}`;
+function sessionCookie(env, name, value, seconds, path = env.BASE_PATH || "/") {
+  return `${name}=${value}; Path=${path}; HttpOnly; SameSite=Strict; Max-Age=${seconds}${env.DEV_MODE === "true" ? "" : "; Secure"}`;
 }
 __name(sessionCookie, "sessionCookie");
 function checkOrigin(request, env) {

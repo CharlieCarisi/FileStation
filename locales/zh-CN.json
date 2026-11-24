@@ -966,5 +966,16 @@
   "Download ZIP": "下载 ZIP",
   "Preparing folder download…": "正在准备文件夹下载…",
   "Download completed files and subfolders as a ZIP. Unfinished uploads are skipped. No copy is saved to storage.": "将已完成的文件和子文件夹下载为 ZIP。未完成的上传会被跳过，存储中不会另存副本。",
-  "Check your browser’s downloads for progress. If the download is interrupted, start it again here.": "请在浏览器的下载列表中查看进度。如下载中断，请在此重新开始。"
+  "Check your browser’s downloads for progress. If the download is interrupted, start it again here.": "请在浏览器的下载列表中查看进度。如下载中断，请在此重新开始。",
+  "Who can access this file?": "谁可以访问此文件？",
+  "Specific people": "指定人员",
+  "Anyone with the link": "知道链接的任何人",
+  "Anyone with this link can preview and download the file. Copy the link to share it yourself.": "知道此链接的人都可以预览和下载文件。请复制链接并自行分享。",
+  "Copy the link to share it. Anyone who has it can preview and download the file.": "复制链接即可分享。知道链接的人都可以预览和下载文件。",
+  "File deletion or storage retention invalidates this share immediately.": "手动删除文件或因存储保留策略删除文件后，此分享将立即失效。",
+  "Open shared link": "打开分享链接",
+  "Opening shared file…": "正在打开分享的文件…",
+  "This shared link is invalid or has expired.": "此分享链接无效或已过期。",
+  "Choose a valid share access type.": "请选择有效的分享访问类型。",
+  "Sign in or open a share link to download this file.": "请登录或打开分享链接以下载此文件。"
 }

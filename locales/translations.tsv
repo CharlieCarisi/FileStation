@@ -966,3 +966,14 @@ Download ZIP|Télécharger le ZIP|下载 ZIP
 Preparing folder download…|Préparation du téléchargement du dossier…|正在准备文件夹下载…
 Download completed files and subfolders as a ZIP. Unfinished uploads are skipped. No copy is saved to storage.|Téléchargez les fichiers complets et les sous-dossiers dans un ZIP. Les téléversements inachevés sont ignorés. Aucune copie n’est enregistrée dans le stockage.|将已完成的文件和子文件夹下载为 ZIP。未完成的上传会被跳过，存储中不会另存副本。
 Check your browser’s downloads for progress. If the download is interrupted, start it again here.|Consultez les téléchargements de votre navigateur pour suivre la progression. Si le téléchargement est interrompu, relancez-le ici.|请在浏览器的下载列表中查看进度。如下载中断，请在此重新开始。
+Who can access this file?|Qui peut accéder à ce fichier?|谁可以访问此文件？
+Specific people|Personnes précises|指定人员
+Anyone with the link|Toute personne ayant le lien|知道链接的任何人
+Anyone with this link can preview and download the file. Copy the link to share it yourself.|Toute personne ayant ce lien peut prévisualiser et télécharger le fichier. Copiez le lien pour le partager vous-même.|知道此链接的人都可以预览和下载文件。请复制链接并自行分享。
+Copy the link to share it. Anyone who has it can preview and download the file.|Copiez le lien pour le partager. Toute personne qui l’a peut prévisualiser et télécharger le fichier.|复制链接即可分享。知道链接的人都可以预览和下载文件。
+File deletion or storage retention invalidates this share immediately.|La suppression du fichier, y compris par la politique de conservation, désactive ce partage immédiatement.|手动删除文件或因存储保留策略删除文件后，此分享将立即失效。
+Open shared link|Ouvrir le lien de partage|打开分享链接
+Opening shared file…|Ouverture du fichier partagé…|正在打开分享的文件…
+This shared link is invalid or has expired.|Ce lien de partage est invalide ou a expiré.|此分享链接无效或已过期。
+Choose a valid share access type.|Choisissez un type d’accès valide pour ce partage.|请选择有效的分享访问类型。
+Sign in or open a share link to download this file.|Connectez-vous ou ouvrez un lien de partage pour télécharger ce fichier.|请登录或打开分享链接以下载此文件。

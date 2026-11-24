@@ -72,8 +72,15 @@ async function routes(request, env) {
       400,
       "Choose Private or Public space.",
     );
+    const sharedByMe = url.searchParams.get("sharedByMe") === "true";
+    const time = now();
+    const activeShares =
+      "s.file_id=f.id AND s.revoked_at IS NULL AND (s.expires_at IS NULL OR s.expires_at>?)";
+    const shareSummary = sharedByMe
+      ? `(SELECT COUNT(*) FROM shares s WHERE ${activeShares} AND s.created_by=?) AS share_count, EXISTS(SELECT 1 FROM shares s WHERE ${activeShares} AND s.created_by=? AND s.access_mode='anyone') AS has_anyone_share`
+      : `(SELECT COUNT(*) FROM shares s WHERE ${activeShares}) AS share_count`;
     const filters = ["f.state IN ('ready','uploading')"];
-    const bindings = [now()];
+    const bindings = sharedByMe ? [time, user.id, time, user.id] : [time];
     if (!all) {
       filters.push("(f.owner_id=? OR f.space='public')");
       bindings.push(user.id);
@@ -82,11 +89,11 @@ async function routes(request, env) {
       filters.push("f.space=?");
       bindings.push(selectedSpace);
     }
-    if (url.searchParams.get("sharedByMe") === "true") {
+    if (sharedByMe) {
       filters.push(
         "EXISTS(SELECT 1 FROM shares mine WHERE mine.file_id=f.id AND mine.created_by=? AND mine.revoked_at IS NULL AND (mine.expires_at IS NULL OR mine.expires_at>?))",
       );
-      bindings.push(user.id, now());
+      bindings.push(user.id, time);
     }
     if (url.searchParams.has("folderId")) {
       ensure(selectedSpace !== "all", 400, "Choose Private or Public space.");
@@ -111,7 +118,7 @@ async function routes(request, env) {
       if (selected) bindings.push(selected);
     }
     const rows = await env.DB.prepare(
-      `SELECT f.*,${renameAvailable("f")} AS rename_available,directory.name AS folder_name,u.email AS owner_email,c.name AS connector_name,COALESCE(c.storage_adapter,c.adapter,c.kind) AS storage_kind,(SELECT COUNT(*) FROM shares s WHERE s.file_id=f.id AND s.revoked_at IS NULL AND (s.expires_at IS NULL OR s.expires_at>?)) AS share_count FROM files f JOIN users u ON u.id=f.owner_id JOIN connectors c ON c.id=f.connector_id LEFT JOIN folders directory ON directory.id=f.folder_id WHERE ${filters.join(" AND ")} ORDER BY f.created_at DESC LIMIT 500`,
+      `SELECT f.*,${renameAvailable("f")} AS rename_available,directory.name AS folder_name,u.email AS owner_email,c.name AS connector_name,COALESCE(c.storage_adapter,c.adapter,c.kind) AS storage_kind,${shareSummary} FROM files f JOIN users u ON u.id=f.owner_id JOIN connectors c ON c.id=f.connector_id LEFT JOIN folders directory ON directory.id=f.folder_id WHERE ${filters.join(" AND ")} ORDER BY f.created_at DESC LIMIT 500`,
     )
       .bind(...bindings)
       .all();

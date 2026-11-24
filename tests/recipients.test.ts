@@ -420,6 +420,184 @@ describe("multiple email recipients", () => {
     }
     expect(fetch).toHaveBeenCalledTimes(2);
   });
+  it("grants link holders read-only access to exactly one file without creating a recipient or sending email", async () => {
+    const owner = await login("link-owner@international.gc.ca");
+    const teammate = await login("link-teammate@international.gc.ca");
+    const file = await upload(owner.cookie),
+      other = await upload(owner.cookie, "private sibling");
+    const path = `/files/${file.id}`,
+      sharesPath = `${path}/shares`;
+    const created = await sendApi(sharesPath, owner.cookie, {
+      accessMode: "anyone",
+      expiresDays: 7,
+      // Even if an older client sends stale form data, no email is sent or saved.
+      recipients: ["unused@example.com"],
+      sendEmail: true,
+    });
+    expect(created.status).toBe(201);
+    expect(created.data).toMatchObject({
+      accessMode: "anyone",
+      recipientCount: 0,
+      emailSent: false,
+      developmentEmail: false,
+    });
+    expect(created.data.code).toBeUndefined();
+    expect(fetch).not.toHaveBeenCalled();
+    const linkToken = new URLSearchParams(
+      new URL(created.data.link).hash.slice(1),
+    ).get("link")!;
+    expect(linkToken).toMatch(/^[A-HJ-NP-Z2-9]{48}$/);
+    const record = await env.DB.prepare(
+      "SELECT code_hash,encrypted_link_token FROM shares WHERE id=?",
+    )
+      .bind(created.data.id)
+      .first<Row>();
+    expect(record!.code_hash).toBe(await hash(linkToken));
+    expect(record!.encrypted_link_token).not.toContain(linkToken);
+    expect(
+      (
+        await env.DB.prepare(
+          "SELECT email FROM share_recipients WHERE share_id=?",
+        )
+          .bind(created.data.id)
+          .all()
+      ).results,
+    ).toEqual([]);
+    const listed = (await (
+      await request(sharesPath, "GET", undefined, owner.cookie, "/files")
+    ).json()) as Row;
+    expect(listed.shares).toMatchObject([
+      { access_mode: "anyone", recipients: [], link: created.data.link },
+    ]);
+    expect(listed.shares[0].encrypted_link_token).toBeUndefined();
+    expect(
+      (await request(sharesPath, "GET", undefined, teammate.cookie)).status,
+    ).toBe(404);
+    expect((await request(`${path}/download`)).status).toBe(401);
+
+    const open = (token: string) =>
+      request("/shares/open", "POST", { token }, "", "/files");
+    expect((await open("A".repeat(48))).status).toBe(410);
+    const opened = await open(linkToken);
+    expect(opened.status).toBe(200);
+    expect(await opened.json()).toMatchObject({
+      file: { id: file.id, name: file.name },
+      expiresAt: created.data.expiresAt,
+    });
+    const setCookie = opened.headers.get("set-cookie")!;
+    expect(setCookie).toContain(
+      `Path=/files/api${path}; HttpOnly; SameSite=Strict`,
+    );
+    const guest = setCookie.split(";")[0];
+    expect(
+      await (
+        await request(`${path}/preview`, "GET", undefined, guest, "/files")
+      ).text(),
+    ).toBe("original");
+    const range = await request(
+      `${path}/download`,
+      "GET",
+      undefined,
+      guest,
+      "/files",
+      { Range: "bytes=1-3" },
+    );
+    expect(range.status).toBe(206);
+    expect(await range.text()).toBe("rig");
+    expect(
+      (await request(`/files/${other.id}/download`, "GET", undefined, guest))
+        .status,
+    ).toBe(410);
+    expect(
+      (await request("/files?space=all", "GET", undefined, guest)).status,
+    ).toBe(401);
+    expect((await request(path, "DELETE", undefined, guest)).status).toBe(401);
+    expect(
+      (
+        await request(
+          `/shares/${created.data.id}`,
+          "DELETE",
+          undefined,
+          teammate.cookie,
+        )
+      ).status,
+    ).toBe(404);
+    expect(
+      (
+        await request(
+          `/shares/${created.data.id}`,
+          "DELETE",
+          undefined,
+          owner.cookie,
+        )
+      ).status,
+    ).toBe(200);
+    expect((await open(linkToken)).status).toBe(410);
+    expect(
+      (await request(`${path}/download`, "GET", undefined, guest)).status,
+    ).toBe(410);
+
+    const restricted = await sendApi(sharesPath, owner.cookie, {
+      expiresDays: 7,
+      recipients: ["partner@example.com"],
+    });
+    expect(restricted.status).toBe(201);
+    expect(restricted.data.accessMode).toBe("recipients");
+    expect((await open(restricted.data.code)).status).toBe(410);
+    expect(
+      (
+        await request(
+          `${path}/download`,
+          "GET",
+          undefined,
+          (await verify(restricted.data)).cookie,
+        )
+      ).status,
+    ).toBe(200);
+  });
+
+  it("ends link access on share and file expiry, including for a browser that already opened it", async () => {
+    const owner = await login();
+    const file = await upload(owner.cookie);
+    const path = `/files/${file.id}`;
+    async function create() {
+      const share = await sendApi(`${path}/shares`, owner.cookie, {
+        accessMode: "anyone",
+        expiresDays: 7,
+      });
+      expect(share.status).toBe(201);
+      const token = new URLSearchParams(
+        new URL(share.data.link).hash.slice(1),
+      ).get("link");
+      const open = () => request("/shares/open", "POST", { token });
+      const response = await open();
+      expect(response.status).toBe(200);
+      return {
+        share: share.data,
+        open,
+        cookie: response.headers.get("set-cookie")!.split(";")[0],
+      };
+    }
+    const first = await create();
+    await env.DB.prepare("UPDATE shares SET expires_at=1 WHERE id=?")
+      .bind(first.share.id)
+      .run();
+    expect((await first.open()).status).toBe(410);
+    expect(
+      (await request(`${path}/download`, "GET", undefined, first.cookie))
+        .status,
+    ).toBe(410);
+    const second = await create();
+    await env.DB.prepare("UPDATE files SET expires_at=1 WHERE id=?")
+      .bind(file.id)
+      .run();
+    expect((await second.open()).status).toBe(410);
+    expect(
+      (await request(`${path}/preview`, "GET", undefined, second.cookie))
+        .status,
+    ).toBe(410);
+  });
+
   it("rejects an invalid multi-recipient list before creating anything, and keeps sign-in and verification challenges bound to one email", async () => {
     const admin = await login();
     const invalid = await sendApi(

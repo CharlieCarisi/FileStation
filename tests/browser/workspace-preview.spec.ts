@@ -188,7 +188,9 @@ test("workspace Preview opens a read-only window on both paths and respects Publ
   await viewer
     .getByRole("button", { name: "Refresh preview", exact: true })
     .click();
-  await expect(viewer.getByRole("alert")).toContainText("Verify your email");
+  await expect(viewer.getByRole("alert")).toContainText(
+    "Sign in or open a share link",
+  );
   await expect(viewer.locator("pre.preview-text")).toHaveCount(0);
   await expect(
     viewer.getByRole("heading", { name: "Renamed preview.txt", exact: true }),

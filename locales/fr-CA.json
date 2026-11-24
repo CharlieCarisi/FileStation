@@ -966,5 +966,16 @@
   "Download ZIP": "Télécharger le ZIP",
   "Preparing folder download…": "Préparation du téléchargement du dossier…",
   "Download completed files and subfolders as a ZIP. Unfinished uploads are skipped. No copy is saved to storage.": "Téléchargez les fichiers complets et les sous-dossiers dans un ZIP. Les téléversements inachevés sont ignorés. Aucune copie n’est enregistrée dans le stockage.",
-  "Check your browser’s downloads for progress. If the download is interrupted, start it again here.": "Consultez les téléchargements de votre navigateur pour suivre la progression. Si le téléchargement est interrompu, relancez-le ici."
+  "Check your browser’s downloads for progress. If the download is interrupted, start it again here.": "Consultez les téléchargements de votre navigateur pour suivre la progression. Si le téléchargement est interrompu, relancez-le ici.",
+  "Who can access this file?": "Qui peut accéder à ce fichier?",
+  "Specific people": "Personnes précises",
+  "Anyone with the link": "Toute personne ayant le lien",
+  "Anyone with this link can preview and download the file. Copy the link to share it yourself.": "Toute personne ayant ce lien peut prévisualiser et télécharger le fichier. Copiez le lien pour le partager vous-même.",
+  "Copy the link to share it. Anyone who has it can preview and download the file.": "Copiez le lien pour le partager. Toute personne qui l’a peut prévisualiser et télécharger le fichier.",
+  "File deletion or storage retention invalidates this share immediately.": "La suppression du fichier, y compris par la politique de conservation, désactive ce partage immédiatement.",
+  "Open shared link": "Ouvrir le lien de partage",
+  "Opening shared file…": "Ouverture du fichier partagé…",
+  "This shared link is invalid or has expired.": "Ce lien de partage est invalide ou a expiré.",
+  "Choose a valid share access type.": "Choisissez un type d’accès valide pour ce partage.",
+  "Sign in or open a share link to download this file.": "Connectez-vous ou ouvrez un lien de partage pour télécharger ce fichier."
 }

@@ -272,6 +272,9 @@ export default function FileTable({
                                   })
                                 : file.mime || t("File")}
                           </small>
+                          {!!file.has_anyone_share && (
+                            <small>{t("Anyone with the link")}</small>
+                          )}
                           {showLocation && (
                             <small>
                               {t("Folder")}:{" "}

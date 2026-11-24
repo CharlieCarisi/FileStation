@@ -18,6 +18,7 @@ import * as D from "react";
 import * as c from "react/jsx-runtime";
 import {
   Share2 as Fi,
+  Link2,
   FolderLock,
   KeyRound,
   Inbox,
@@ -454,286 +455,276 @@ function UploadDialog({
     }),
   });
 }
-function ShareDialog({ file: S, onClose: v, onChanged: T }) {
+function ShareLinkField({ link, code, onError }) {
+  const [copied, setCopied] = D.useState(false);
+  return (
+    <div className="copy-field">
+      <input
+        aria-label={t("Share link")}
+        readOnly
+        value={link}
+        onFocus={(event) => event.target.select()}
+      />
+      <button
+        type="button"
+        className="icon-button"
+        aria-label={t("Copy share link")}
+        title={t("Copy share link")}
+        onClick={async () => {
+          try {
+            await navigator.clipboard.writeText(
+              code ? link + "\n" + t("Access code: {0}", { 0: code }) : link,
+            );
+            setCopied(true);
+          } catch {
+            onError("Copy is unavailable. Select the link manually.");
+          }
+        }}
+      >
+        {c.jsx(copied ? ki : i1, { size: 18, "aria-hidden": true })}
+      </button>
+    </div>
+  );
+}
+
+function ShareDialog({ file, onClose, onChanged, showExisting = false }) {
   const [collaboration, setCollaboration] = D.useState(false);
-  const [o, _] = D.useState(""),
-    [C, B] = D.useState(7),
-    [M, R] = D.useState(!0),
-    [J, A] = D.useState(!1),
-    [j, N] = D.useState(""),
-    [k, xe] = D.useState(),
-    [G, $] = D.useState(!1),
-    [ye, oe] = D.useState([]),
-    [sl, Qe] = D.useState(!1);
-  async function Ae() {
+  const [accessMode, setAccessMode] = D.useState("recipients");
+  const [recipients, setRecipients] = D.useState("");
+  const [days, setDays] = D.useState(7);
+  const [sendEmail, setSendEmail] = D.useState(true);
+  const [busy, setBusy] = D.useState(false);
+  const [error, setError] = D.useState("");
+  const [result, setResult] = D.useState(null);
+  const [existing, setExisting] = D.useState(null);
+  const anyone = accessMode === "anyone";
+  const sharesPath = "/files/" + file.id + "/shares";
+  const loadShares = D.useCallback(async () => {
     try {
-      (oe((await api(`/files/${S.id}/shares`)).shares), Qe(!0));
-    } catch (V) {
-      N(V.message);
+      setExisting((await api(sharesPath)).shares);
+    } catch (error) {
+      setError(error.message);
     }
-  }
-  async function De(V) {
-    (V.preventDefault(), A(!0), N(""));
+  }, [sharesPath]);
+  D.useEffect(() => {
+    if (showExisting) loadShares();
+  }, [showExisting, loadShares]);
+  async function createShare(event) {
+    event.preventDefault();
+    setBusy(true);
+    setError("");
     try {
-      const Me = await post(`/files/${S.id}/shares`, {
-        recipients: parseRecipients(o),
-        expiresDays: C,
-        sendEmail: M,
+      const share = await post(sharesPath, {
+        accessMode,
+        expiresDays: days,
+        ...(anyone
+          ? {}
+          : { recipients: parseRecipients(recipients), sendEmail }),
       });
-      (xe(Me), T());
-    } catch (Me) {
-      N(Me.message);
+      setResult(share);
+      if (existing !== null) await loadShares();
+      onChanged();
+    } catch (error) {
+      setError(error.message);
     } finally {
-      A(!1);
+      setBusy(false);
     }
   }
-  async function W(V) {
+  async function revokeShare(id) {
+    setError("");
     try {
-      (await api(`/shares/${V}`, {
-        method: "DELETE",
-      }),
-        await Ae(),
-        T());
-    } catch (Me) {
-      N(Me.message);
+      await api("/shares/" + id, { method: "DELETE" });
+      await loadShares();
+      if (result?.id === id) setResult(null);
+      onChanged();
+    } catch (error) {
+      setError(error.message);
     }
   }
   if (collaboration)
-    return c.jsx(InvitationDialog, {
-      kind: "collaboration",
-      source: S,
-      onClose: v,
-      onSaved: T,
-    });
-  return c.jsxs(Modal, {
-    title: k ? t("Ready to share") : t("A file. The right people."),
-    subtitle: S.name,
-    onClose: v,
-    children: [
-      !k &&
-        c.jsx("button", {
-          type: "button",
-          className: "button secondary full",
-          onClick: () => setCollaboration(true),
-          children: t("Share for collaboration instead"),
-        }),
-      k
-        ? c.jsxs(c.Fragment, {
-            children: [
-              c.jsxs("div", {
-                className: "share-code",
-                children: [
-                  c.jsx("span", {
-                    children: t("FILE ACCESS CODE"),
-                  }),
-                  c.jsx("strong", {
-                    children: k.code.match(/.{1,4}/g)?.join(" "),
-                  }),
-                  c.jsxs("small", {
-                    children: [t("Expires "), formatDate(k.expiresAt)],
-                  }),
-                ],
-              }),
-              c.jsxs("label", {
-                children: [
-                  t("Share link"),
-                  c.jsxs("div", {
-                    className: "copy-field",
-                    children: [
-                      c.jsx("input", {
-                        readOnly: !0,
-                        value: k.link,
-                      }),
-                      c.jsx("button", {
-                        className: "icon-button",
-                        "aria-label": t("Copy share link"),
-                        onClick: () => {
-                          navigator.clipboard
-                            .writeText(
-                              `${k.link}
-Access code: ${k.code}`,
-                            )
-                            .then(() => $(!0))
-                            .catch(() =>
-                              N(
-                                "Copy is unavailable. Select the link manually.",
-                              ),
-                            );
-                        },
-                        children: G
-                          ? c.jsx(ki, {
-                              size: 18,
-                            })
-                          : c.jsx(i1, {
-                              size: 18,
-                            }),
-                      }),
-                    ],
-                  }),
-                ],
-              }),
-              c.jsxs("p", {
-                className: "info",
-                children: [
-                  c.jsx(Gm, {
-                    size: 18,
-                  }),
-                  (k.emailError && t(k.emailError)) ||
-                    (k.developmentEmail
-                      ? t("Email simulated locally. Copy the link for testing.")
-                      : k.emailSent
-                        ? k.recipientCount === 1
-                          ? t(
-                              "Email sent to 1 recipient. They’ll verify their address before downloading.",
-                            )
-                          : t(
-                              "Email sent to {0} recipients. They’ll verify their address before downloading.",
-                              { 0: k.recipientCount },
-                            )
-                        : t(
-                            "Copy this link and send it to your recipients. They\u2019ll verify their address before downloading.",
-                          )),
-                ],
-              }),
-              c.jsx("button", {
-                className: "button primary full",
-                onClick: v,
-                children: t("Done"),
-              }),
-            ],
-          })
-        : c.jsxs("form", {
-            onSubmit: De,
-            children: [
-              c.jsx(RecipientField, {
-                label: t("Recipient email addresses"),
-                value: o,
-                onChange: _,
-              }),
-              c.jsxs("label", {
-                children: [
-                  t("Share expires in"),
-                  c.jsxs("select", {
-                    value: C,
-                    onChange: (V) => B(Number(V.target.value)),
-                    children: [
-                      c.jsx("option", {
-                        value: 1,
-                        children: t("1 day"),
-                      }),
-                      c.jsx("option", {
-                        value: 7,
-                        children: t("7 days"),
-                      }),
-                      c.jsx("option", {
-                        value: 30,
-                        children: t("30 days"),
-                      }),
-                      c.jsx("option", {
-                        value: 90,
-                        children: t("90 days"),
-                      }),
-                    ],
-                  }),
-                ],
-              }),
-              c.jsxs("label", {
-                className: "check-label",
-                children: [
-                  c.jsx("input", {
-                    type: "checkbox",
-                    checked: M,
-                    onChange: (V) => R(V.target.checked),
-                  }),
-                  c.jsxs("span", {
-                    children: [
-                      c.jsx("strong", {
-                        children: t("Email the link automatically"),
-                      }),
-                      c.jsx("small", {
-                        children: t(
-                          "Turn off to copy the link and send it yourself.",
-                        ),
-                      }),
-                    ],
-                  }),
-                ],
-              }),
-              c.jsxs("button", {
-                type: "submit",
-                className: "button primary full",
-                disabled: J,
-                children: [
-                  J ? t("Creating share\u2026") : t("Create share"),
-                  c.jsx(Fi, {
-                    size: 17,
-                  }),
-                ],
-              }),
-              c.jsx("p", {
-                className: "fineprint",
-                children: t(
-                  "File deletion or storage retention invalidates this code immediately.",
-                ),
-              }),
-            ],
-          }),
-      c.jsx(ErrorMessage, {
-        error: j,
-      }),
-      c.jsxs("div", {
-        className: "existing-shares",
-        children: [
-          c.jsx("button", {
-            className: "text-button",
-            onClick: () => {
-              Ae();
-            },
-            children: t("Manage existing shares"),
-          }),
-          sl &&
-            (ye.length
-              ? ye.map((V) =>
-                  c.jsxs(
-                    "div",
-                    {
-                      className: "existing-share",
-                      children: [
-                        c.jsxs("div", {
-                          children: [
-                            c.jsx("strong", {
-                              children: V.recipients.join(", "),
-                            }),
-                            c.jsx("small", {
-                              children: V.revoked_at
-                                ? t("Revoked")
-                                : t("Expires {0}", {
-                                    0: formatDate(V.expires_at),
-                                  }),
-                            }),
-                          ],
-                        }),
-                        !V.revoked_at &&
-                          c.jsx("button", {
-                            className: "text-button danger",
-                            onClick: () => {
-                              W(V.id);
-                            },
-                            children: t("Revoke"),
-                          }),
-                      ],
-                    },
-                    V.id,
-                  ),
+    return (
+      <InvitationDialog
+        kind="collaboration"
+        source={file}
+        onClose={onClose}
+        onSaved={onChanged}
+      />
+    );
+  return (
+    <Modal
+      title={result ? t("Ready to share") : t("A file. The right people.")}
+      subtitle={file.name}
+      onClose={onClose}
+    >
+      {result ? (
+        <>
+          <div className="share-code">
+            {result.accessMode === "anyone" ? (
+              <b>{t("Anyone with the link")}</b>
+            ) : (
+              <>
+                <span>{t("FILE ACCESS CODE")}</span>
+                <strong>{result.code.match(/.{1,4}/g)?.join(" ")}</strong>
+              </>
+            )}
+            <small>
+              {t("Expires {0}", { 0: formatDate(result.expiresAt) })}
+            </small>
+          </div>
+          <ShareLinkField
+            link={result.link}
+            code={result.code}
+            onError={setError}
+          />
+          <p className="info">
+            {result.accessMode === "anyone" ? (
+              <Link2 size={18} />
+            ) : (
+              <Gm size={18} />
+            )}
+            {result.accessMode === "anyone"
+              ? t(
+                  "Copy the link to share it. Anyone who has it can preview and download the file.",
                 )
-              : c.jsx("p", {
-                  className: "muted",
-                  children: t("No existing shares."),
-                })),
-        ],
-      }),
-    ],
-  });
+              : (result.emailError && t(result.emailError)) ||
+                (result.developmentEmail
+                  ? t("Email simulated locally. Copy the link for testing.")
+                  : result.emailSent
+                    ? result.recipientCount === 1
+                      ? t(
+                          "Email sent to 1 recipient. They’ll verify their address before downloading.",
+                        )
+                      : t(
+                          "Email sent to {0} recipients. They’ll verify their address before downloading.",
+                          { 0: result.recipientCount },
+                        )
+                    : t(
+                        "Copy this link and send it to your recipients. They’ll verify their address before downloading.",
+                      ))}
+          </p>
+          <button className="button primary full" onClick={onClose}>
+            {t("Done")}
+          </button>
+        </>
+      ) : (
+        <>
+          <button
+            type="button"
+            className="button secondary full"
+            onClick={() => setCollaboration(true)}
+          >
+            {t("Share for collaboration instead")}
+          </button>
+          <form onSubmit={createShare}>
+            <label>
+              {t("Who can access this file?")}
+              <select
+                value={accessMode}
+                disabled={busy}
+                onChange={(event) => setAccessMode(event.target.value)}
+              >
+                <option value="recipients">{t("Specific people")}</option>
+                <option value="anyone">{t("Anyone with the link")}</option>
+              </select>
+            </label>
+            {anyone ? (
+              <p className="fineprint">
+                {t(
+                  "Anyone with this link can preview and download the file. Copy the link to share it yourself.",
+                )}
+              </p>
+            ) : (
+              <RecipientField
+                label={t("Recipient email addresses")}
+                value={recipients}
+                onChange={setRecipients}
+              />
+            )}
+            <label>
+              {t("Share expires in")}
+              <select
+                value={days}
+                onChange={(event) => setDays(Number(event.target.value))}
+              >
+                <option value={1}>{t("1 day")}</option>
+                <option value={7}>{t("7 days")}</option>
+                <option value={30}>{t("30 days")}</option>
+                <option value={90}>{t("90 days")}</option>
+              </select>
+            </label>
+            {!anyone && (
+              <label className="check-label">
+                <input
+                  type="checkbox"
+                  checked={sendEmail}
+                  onChange={(event) => setSendEmail(event.target.checked)}
+                />
+                <span>
+                  <strong>{t("Email the link automatically")}</strong>
+                  <small>
+                    {t("Turn off to copy the link and send it yourself.")}
+                  </small>
+                </span>
+              </label>
+            )}
+            <button
+              type="submit"
+              className="button primary full"
+              disabled={busy}
+            >
+              {busy ? t("Creating share…") : t("Create share")}
+              <Fi size={17} />
+            </button>
+            <p className="fineprint">
+              {t(
+                "File deletion or storage retention invalidates this share immediately.",
+              )}
+            </p>
+          </form>
+        </>
+      )}
+      <ErrorMessage error={error} />
+      <div className="existing-shares">
+        <button type="button" className="text-button" onClick={loadShares}>
+          {t("Manage existing shares")}
+        </button>
+        {existing?.length === 0 && (
+          <p className="muted">{t("No existing shares.")}</p>
+        )}
+        {existing?.map((share) => (
+          <div key={share.id}>
+            <div className="existing-share">
+              <div>
+                <strong>
+                  {share.access_mode === "anyone"
+                    ? t("Anyone with the link")
+                    : share.recipients.join(", ")}
+                </strong>
+                <small>
+                  {share.revoked_at
+                    ? t("Revoked")
+                    : share.expires_at && share.expires_at <= Date.now()
+                      ? t("Expired")
+                      : t("Expires {0}", { 0: formatDate(share.expires_at) })}
+                </small>
+              </div>
+              {!share.revoked_at && (
+                <button
+                  className="text-button danger"
+                  onClick={() => revokeShare(share.id)}
+                >
+                  {t("Revoke")}
+                </button>
+              )}
+            </div>
+            {share.link && share.id !== result?.id && (
+              <ShareLinkField link={share.link} onError={setError} />
+            )}
+          </div>
+        ))}
+      </div>
+    </Modal>
+  );
 }
 function ConfirmDialog({ title: S, message: v, onClose: T, onConfirm: o }) {
   const [_, C] = D.useState(!1),
@@ -1983,6 +1974,11 @@ function App() {
   const [codeOpen, setCodeOpen] = D.useState(
     new URLSearchParams(location.hash.slice(1)).has("share"),
   );
+  const [sharedLink, setSharedLink] = D.useState(() => {
+    const token = new URLSearchParams(location.hash.slice(1)).get("link");
+    return token === null ? null : { token };
+  });
+  const [linkError, setLinkError] = D.useState("");
   const [S, v] = D.useState(null),
     [T, o] = D.useState(!1),
     [_, C] = D.useState(!1),
@@ -2009,7 +2005,7 @@ function App() {
     w = transfers.items.filter((x) => x.state === "complete").length,
     K = transfers.items.filter((x) => x.state !== "complete").length;
   (D.useEffect(() => {
-    (xl && history.replaceState(null, "", location.pathname),
+    (xl && history.replaceState(null, "", location.pathname + location.search),
       api("/me")
         .then((x) => v(x.user))
         .catch((x) => Ae(x.message))
@@ -2018,6 +2014,33 @@ function App() {
     D.useEffect(() => {
       transfers.setScope(S?.id || "guest");
     }, [S?.id]));
+  D.useEffect(() => {
+    function openLinkFromHash() {
+      const token = new URLSearchParams(location.hash.slice(1)).get("link");
+      if (token === null) return;
+      setCodeOpen(false);
+      sl(undefined);
+      setLinkError("");
+      setSharedLink({ token });
+    }
+    addEventListener("hashchange", openLinkFromHash);
+    return () => removeEventListener("hashchange", openLinkFromHash);
+  }, []);
+  D.useEffect(() => {
+    if (!sharedLink) return;
+    history.replaceState(null, "", location.pathname + location.search);
+    const controller = new AbortController();
+    post("/shares/open", sharedLink, { signal: controller.signal })
+      .then(({ file, expiresAt }) => {
+        if (controller.signal.aborted) return;
+        sl({ ...file, accessMode: "anyone", shareExpiresAt: expiresAt });
+        setSharedLink(null);
+      })
+      .catch((error) => {
+        if (!controller.signal.aborted) setLinkError(error.message);
+      });
+    return () => controller.abort();
+  }, [sharedLink]);
   const [folders, setFolders] = D.useState([]);
   const [shortcuts, setShortcuts] = D.useState([]);
   const [folderView, setFolderView] = D.useState(() =>
@@ -3078,6 +3101,7 @@ function App() {
       xe &&
         c.jsx(ShareDialog, {
           file: xe,
+          showExisting: R === "shared",
           onClose: () => G(void 0),
           onChanged: () => {
             Z();
@@ -3102,15 +3126,35 @@ function App() {
               ne("File deleted and all its shares invalidated."));
           },
         }),
+      sharedLink &&
+        c.jsx(Modal, {
+          title: t("Open shared link"),
+          onClose: () => {
+            setLinkError("");
+            setSharedLink(null);
+          },
+          children: linkError
+            ? c.jsx(ErrorMessage, { error: linkError })
+            : c.jsx("p", {
+                role: "status",
+                children: t("Opening shared file…"),
+              }),
+        }),
       oe &&
         c.jsxs(Modal, {
           title: t("A file for you."),
           wide: true,
-          subtitle: t("Your recipient email has been verified."),
+          subtitle:
+            oe.accessMode === "anyone"
+              ? t("Anyone with the link")
+              : t("Your recipient email has been verified."),
           onClose: () => sl(void 0),
           children: [
-            c.jsx(AccessSteps, { step: 3 }),
-            c.jsx(GuestGuide, { mode: "download" }),
+            oe.accessMode !== "anyone" && c.jsx(AccessSteps, { step: 3 }),
+            c.jsx(GuestGuide, {
+              mode: "download",
+              verifyEmail: oe.accessMode !== "anyone",
+            }),
             c.jsxs("div", {
               className: "received-file",
               children: [
@@ -3126,7 +3170,7 @@ function App() {
                       children: [
                         formatBytes(oe.size),
                         " \xB7 ",
-                        formatDate(oe.expires_at),
+                        formatDate(oe.shareExpiresAt ?? oe.expires_at),
                       ],
                     }),
                   ],

@@ -966,5 +966,16 @@
   "Download ZIP": "Download ZIP",
   "Preparing folder download…": "Preparing folder download…",
   "Download completed files and subfolders as a ZIP. Unfinished uploads are skipped. No copy is saved to storage.": "Download completed files and subfolders as a ZIP. Unfinished uploads are skipped. No copy is saved to storage.",
-  "Check your browser’s downloads for progress. If the download is interrupted, start it again here.": "Check your browser’s downloads for progress. If the download is interrupted, start it again here."
+  "Check your browser’s downloads for progress. If the download is interrupted, start it again here.": "Check your browser’s downloads for progress. If the download is interrupted, start it again here.",
+  "Who can access this file?": "Who can access this file?",
+  "Specific people": "Specific people",
+  "Anyone with the link": "Anyone with the link",
+  "Anyone with this link can preview and download the file. Copy the link to share it yourself.": "Anyone with this link can preview and download the file. Copy the link to share it yourself.",
+  "Copy the link to share it. Anyone who has it can preview and download the file.": "Copy the link to share it. Anyone who has it can preview and download the file.",
+  "File deletion or storage retention invalidates this share immediately.": "File deletion or storage retention invalidates this share immediately.",
+  "Open shared link": "Open shared link",
+  "Opening shared file…": "Opening shared file…",
+  "This shared link is invalid or has expired.": "This shared link is invalid or has expired.",
+  "Choose a valid share access type.": "Choose a valid share access type.",
+  "Sign in or open a share link to download this file.": "Sign in or open a share link to download this file."
 }
